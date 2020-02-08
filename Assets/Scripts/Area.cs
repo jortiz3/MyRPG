@@ -91,12 +91,13 @@ namespace AreaManagerNS.AreaNS {
 			areaTypes.Add(new AreaType("Forest", 0, 0, 3, 500, 0, 0, 25000));
 			areaTypes.Add(new AreaType("Mountain", 0, 0, 0, 200, 0, 0, 10000));
 			areaTypes.Add(new AreaType("Marsh", 0, 0, 0, 200, 0, 0, 20000));
-			areaTypes.Add(new AreaType("City_RAM", 0, 0, 4, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("City_CPR", 0, 0, 4, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("City_HoZ", 0, 0, 4, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("City_DV", 0, 0, 4, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("Dungeon_Minor Lich", 0, 0, 4, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("Dungone_Greater Demon", 0, 0, 4, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("City_RAM", 0, 0, 0, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("City_CPR", 0, 0, 0, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("City_HoZ", 0, 0, 0, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("City_DV", 0, 0, 0, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("Camp_Bandit", 0, 0, 0, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("Dungeon_Minor Lich", 0, 0, 40, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("Dungone_Greater Demon", 0, 0, 0, 200, 0, 0, 0));
 		}
 
 		public static string[] GetAllAreaTypeNames() {
@@ -171,7 +172,16 @@ namespace AreaManagerNS.AreaNS {
 			GameManager.loadingBar.Show();
 			//"Loading Area"
 
-			GameObject bg = Resources.Load<GameObject>("Backgrounds/" + type.name);
+			string bgFileName = "Backgrounds/";
+			if (type.name.Contains("City")) {
+				bgFileName += "City";
+			} else if (type.name.Contains("Camp")) {
+				bgFileName += "Camp";
+			} else {
+				bgFileName += type.name;
+			}
+
+			GameObject bg = Resources.Load<GameObject>(bgFileName);
 			if (bg != null) {
 				GameObject.Instantiate(bg, Vector3.zero, Quaternion.identity);
 			}
