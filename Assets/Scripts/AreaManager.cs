@@ -57,7 +57,7 @@ namespace AreaManagerNS {
 				}
 			}
 
-			StartCoroutine(tempArea.Populate()); //populate and save file when done -- async
+			StartCoroutine(tempArea.Populate(false)); //populate and save file when done -- async
 			return tempArea; //return the area and continue
 		}
 
@@ -245,15 +245,9 @@ namespace AreaManagerNS {
 					currFilePath = currentSaveFolder + x + "_" + y + ".xml";
 
 					if (!File.Exists(currFilePath)) {
-						if (x - 1 >= 0 && areas[x - 1, y] != null) { //if there's an area left of missing one
-							areas[x, y] = CreateArea(new Vector2Int(x, y), areas[x - 1, y].Type); //create area using left as parent type
-						} else if (x + 1 < areas.GetLength(0) && areas[x + 1, y] != null) { //if there's an area right of missing one
-							areas[x, y] = CreateArea(new Vector2Int(x, y), areas[x + 1, y].Type); //create area using right as parent type
-						} else { //both are null
-							//to do: prompt for regenerate world or cancel loading
-							StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero)); //generate everything again
-							yield break; //give up on loading
-						}
+						//to do: prompt to regenerate entire world or cancel
+						//StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero)); //generate everything again
+						yield break; //give up on loading
 					} else {
 						file = new FileStream(currFilePath, FileMode.Open);
 						areas[x, y] = xr.Deserialize(file) as Area;

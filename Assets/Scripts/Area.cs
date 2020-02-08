@@ -24,6 +24,7 @@ namespace AreaManagerNS.AreaNS {
 		private List<Entity> entities;
 		private Vector2IntS position;
 		private bool discovered;
+		private int lastUpdated;
 		private string pathToSaveTo;
 
 		[XmlElement("MapPosition")]
@@ -31,6 +32,9 @@ namespace AreaManagerNS.AreaNS {
 
 		[XmlElement("DiscoveredByPlayer")]
 		public bool Discovered { get { return discovered; } set { discovered = value; } }
+
+		[XmlElement("LastUpdatedAt")]
+		public int LastUpdated { get { return lastUpdated; } set { lastUpdated = value; } }
 
 		[XmlElement("AreaType")]
 		public AreaType Type { get { return type; } set { type = value; } }
@@ -186,7 +190,12 @@ namespace AreaManagerNS.AreaNS {
 			GameManager.loadingBar.Hide();
 		}
 
-		public IEnumerator Populate() {
+		/// <summary>
+		/// Populates the area with entities (Characters, Scenery, Structures).
+		/// </summary>
+		/// <param name="charactersOnly">To be used when repopulating dead characters</param>
+		/// <returns></returns>
+		public IEnumerator Populate(bool charactersOnly) {
 			if (type == null) {
 				if (areaTypes != null && areaTypes[0] != null) {
 					type = areaTypes[0];
@@ -206,8 +215,9 @@ namespace AreaManagerNS.AreaNS {
 			int i; //iteration index for all 3 loops
 			int numEntities = 0; //num of entites for this area
 			int currAssetCount = 0; // num of assets available for areatype
+			int assetTypeLimit = charactersOnly ? 1 : 3; //limits the loop to only do characters if true
 
-			for (int assetType = 0; assetType < 3; assetType++) { //loop through each asset type and do (mostly) the same thing
+			for (int assetType = 0; assetType < assetTypeLimit; assetType++) { //loop through each asset type and do (mostly) the same thing
 				switch (assetType) { //establish the only differences
 					case 1:
 						currAssetCount = type.sceneryAssetCount; //set the count
@@ -215,14 +225,14 @@ namespace AreaManagerNS.AreaNS {
 						numEntities = Random.Range(10, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
 						break;
 					case 2:
-						currAssetCount = type.characterAssetCount; //set the count
-						currEntityFilename = "Characters/" + entityAreaPrefix; //set folder path
-						numEntities = Random.Range(5, type.characterMaxSpawnCount); //set random quantity for character objs in this area
-						break;
-					default:
 						currAssetCount = type.structureAssetCount; //set the count
 						currEntityFilename = "Structures/" + entityAreaPrefix; //set folder path
 						numEntities = Random.Range(1, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
+						break;
+					default:
+						currAssetCount = type.characterAssetCount; //set the count
+						currEntityFilename = "Characters/" + entityAreaPrefix; //set folder path
+						numEntities = Random.Range(5, type.characterMaxSpawnCount); //set random quantity for character objs in this area
 						break;
 				}
 
