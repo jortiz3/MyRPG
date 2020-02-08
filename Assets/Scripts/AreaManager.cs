@@ -25,6 +25,7 @@ namespace AreaManagerNS {
 		private List<string> hardCodedAreaTypes; //various unique areatypes that should always exist
 
 		public static string CurrentSaveFolder { get { return currentSaveFolder; } }
+		public static int AreaSize { get { return Area.Size; } }
 
 		private void Awake() {
 			Area.LoadAreaTypes(); //ensure all area types are loaded before they are needed
@@ -74,7 +75,8 @@ namespace AreaManagerNS {
 
 			GenerateUniqueAreaData(); //create & apply necessary
 
-			bool generationComplete = true;
+			int areasCompleted = 0;
+			int prevAreasCompleted = 0;
 			AreaType typeToSpread; //the type of area that is most likely to spread
 			do {
 				for (int x = 0; x < 12; x++) {
@@ -90,24 +92,38 @@ namespace AreaManagerNS {
 
 							//createArea 4 adjacent areas
 							if (x - 1 >= 0) { //if area adjacent left exists
-								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+								if (areas[x - 1, y] == null) { //if area adjacent left is empty
+									areas[x - 1, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+									areasCompleted++;
+								}
 							}
 							if (x + 1 < areas.GetLength(0)) { //if area adjacent right exists
-								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+								if (areas[x + 1, y] == null) { //if area adjacent right is empty
+									areas[x + 1, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+									areasCompleted++;
+								}
 							}
 							if (y - 1 >= 0) { //if area adjacent up exists
-								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+								if (areas[x, y - 1] == null) { //if area adjacent up is empty
+									areas[x, y - 1] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+									areasCompleted++;
+								}
 							}
 							if (y + 1 < areas.GetLength(1)) { //if area adjacent down exists
-								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+								if (areas[x, y + 1] == null) { //if area adjacent down is empty
+									areas[x, y + 1] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+									areasCompleted++;
+								}
 							}
-						}
-					}
-					//GameManager.loadingBar.IncreaseProgress((x + 1) * 12 / 144.0f);
+						} //found non-null area for parent
+					} //y for loop
+					GameManager.loadingBar.IncreaseProgress((areasCompleted - prevAreasCompleted) / 144f);
+					prevAreasCompleted = areasCompleted;
 					yield return new WaitForEndOfFrame(); //allow for time between each row
-				}
-			} while (!generationComplete);
+				} //x for loop
+			} while (areasCompleted >= areas.GetLength(0) * areas.GetLength(1));
 
+			GameManager.loadingBar.SetProgress(1f);
 			LoadArea(startPos);
 			yield return new WaitForEndOfFrame();
 			GameManager.loadingBar.Hide();
@@ -119,7 +135,7 @@ namespace AreaManagerNS {
 			hardCodedAreaTypes.RemoveRange(0, 4); //remove the generic area types (Plains, Forest, Mountain, Marsh)
 
 			if (hardCodedAreaTypes.Count > areas.GetLength(0) * areas.GetLength(1)) { //if there are somehow more unique areas than available slots
-				Debug.Log("Error: AreaManager.GenerateHardCodedAreaData() did not run because there are " + (hardCodedAreaTypes.Count - 4) + " unique area types loaded!");
+				Debug.Log("Error: AreaManager.GenerateUniqueAreaData() did not run because there are " + (hardCodedAreaTypes.Count - 4) + " unique area types loaded!");
 				return;
 			}
 

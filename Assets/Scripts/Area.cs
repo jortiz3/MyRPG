@@ -14,9 +14,11 @@ namespace AreaManagerNS.AreaNS {
 	public class Area {
 
 		public static int GenericAreaTotalSpreadChance { get { return genericAreaTotalSpreadChance; } }
+		public static int Size { get { return boundaryRadius; } }
 
 		private static List<AreaType> areaTypes;
 		private static int genericAreaTotalSpreadChance;
+		private static int boundaryRadius = 50; //square boundary; distance (worldspace) from center to edge
 
 		private AreaType type;
 		private List<Entity> entities;
@@ -140,9 +142,9 @@ namespace AreaManagerNS.AreaNS {
 			} else {
 				AreaType generic = new AreaType();
 				generic.name = "Plains";
-				generic.structureCount = 0;
-				generic.sceneryCount = 1;
-				generic.characterCount = 0;
+				generic.structureAssetCount = 0;
+				generic.sceneryAssetCount = 1;
+				generic.characterAssetCount = 0;
 				generic.spreadChance = 40;
 
 				areaTypes = new List<AreaType>(); //instantiate the array
@@ -202,19 +204,19 @@ namespace AreaManagerNS.AreaNS {
 			for (int assetType = 0; assetType < 3; assetType++) { //loop through each asset type and do (mostly) the same thing
 				switch (assetType) { //establish the only differences
 					case 1:
-						currAssetCount = type.sceneryCount; //set the count
+						currAssetCount = type.sceneryAssetCount; //set the count
 						currEntityFilename = "Scenery/" + entityAreaPrefix; //set folder path
-						numEntities = Random.Range(10, 30); //set random quantity for scenery objs in this area
+						numEntities = Random.Range(10, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
 						break;
 					case 2:
-						currAssetCount = type.characterCount; //set the count
+						currAssetCount = type.characterAssetCount; //set the count
 						currEntityFilename = "Characters/" + entityAreaPrefix; //set folder path
-						numEntities = Random.Range(3, 15); //set random quantity for character objs in this area
+						numEntities = Random.Range(5, type.characterMaxSpawnCount); //set random quantity for character objs in this area
 						break;
 					default:
-						currAssetCount = type.structureCount; //set the count
+						currAssetCount = type.structureAssetCount; //set the count
 						currEntityFilename = "Structures/" + entityAreaPrefix; //set folder path
-						numEntities = Random.Range(0, 5); //set random quantity for scenery objs in this area
+						numEntities = Random.Range(1, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
 						break;
 				}
 
@@ -222,9 +224,8 @@ namespace AreaManagerNS.AreaNS {
 					for (i = 0; i < numEntities; i++) {
 						tempEntity = new Entity(); //instantiate new entity
 						tempEntity.name = currEntityFilename + (Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)
-						tempEntity.positionX = Random.Range(-50, 50); //generate random position
-						tempEntity.positionY = Random.Range(-50, 50);
-						//ensure position is not blocking exits
+						tempEntity.positionX = Random.Range(-boundaryRadius, boundaryRadius); //generate random position
+						tempEntity.positionY = Random.Range(-boundaryRadius, boundaryRadius);
 						tempEntity.lastUpdated = (int)WorldManager.ElapsedGameTime;
 						entities.Add(tempEntity);
 					}

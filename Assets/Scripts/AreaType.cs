@@ -9,12 +9,22 @@ namespace AreaManagerNS.AreaNS {
 	public class AreaType {
 		[XmlAttribute("Name")]
 		public string name;
+
 		[XmlAttribute("StructureAssetCount")]
-		public int structureCount;
+		public int structureAssetCount;
+		[XmlAttribute("StructureMaxSpawnCount")]
+		public int structureMaxSpawnCount;
+
 		[XmlAttribute("SceneryAssetCount")]
-		public int sceneryCount;
+		public int sceneryAssetCount;
+		[XmlAttribute("SceneryMaxSpawnCount")]
+		public int sceneryMaxSpawnCount;
+
 		[XmlAttribute("CharacterAssetCount")]
-		public int characterCount;
+		public int characterAssetCount;
+		[XmlAttribute("CharacterMaxSpawnCount")]
+		public int characterMaxSpawnCount;
+
 		[XmlAttribute("SpreadChance")]
 		public int spreadChance; //revisit & rename
 
