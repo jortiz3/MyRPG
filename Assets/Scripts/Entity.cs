@@ -3,6 +3,10 @@ using UnityEngine;
 
 namespace AreaManagerNS.AreaNS {
 
+	/// <summary>
+	/// Entity: Information regarding a GameObject that may be loaded into a Scene.
+	/// Written by Justin Ortiz
+	/// </summary>
 	[XmlType("Entity")]
 	public class Entity {
 		[XmlAttribute("Name")]

@@ -1,6 +1,10 @@
 ﻿using System.Xml.Serialization;
 
 namespace AreaManagerNS.AreaNS {
+	/// <summary>
+	/// AreaType: Information that details which entities belong within an Area.
+	/// Written by Justin Ortiz
+	/// </summary>
 	[XmlType("AreaType")]
 	public class AreaType {
 		[XmlAttribute("Name")]

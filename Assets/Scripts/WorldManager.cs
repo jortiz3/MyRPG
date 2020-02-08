@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using AreaManagerNS;
 
-//loads or generates areas using areaManager
-//Tracks in-game time
-//updates NPCs and areas based on in-game time
+/// <summary>
+/// WorldManager: Manages Area transitions & Entity update information.
+/// Written by Justin Ortiz
+/// </summary>
 public class WorldManager : MonoBehaviour {
 	private static float elapsedGameTime;
 

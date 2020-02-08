@@ -6,6 +6,10 @@ using UnityEngine;
 
 namespace AreaManagerNS.AreaNS {
 
+	/// <summary>
+	/// Area: Class that randomly populates, manages, and displays entities that belong in an area.
+	/// Written by Justin Ortiz
+	/// </summary>
 	[XmlRoot(ElementName = "Area"), XmlInclude(typeof(AreaType)), XmlInclude(typeof(Entity))]
 	public class Area {
 
@@ -40,11 +44,11 @@ namespace AreaManagerNS.AreaNS {
 			entities = new List<Entity>();
 		}
 
-		public Area(Vector2Int Position) {
+		public Area(AreaType areaType, Vector2Int Position) {
 			discovered = false;
 			position = new Vector2IntS(Position);
 			pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".xml";
-			type = areaTypes[0];
+			type = areaType;
 			entities = new List<Entity>();
 		}
 
@@ -82,16 +86,21 @@ namespace AreaManagerNS.AreaNS {
 			return temp;
 		}
 
-		public AreaType GetAreaType() {
-			return type;
-		}
-
 		public static AreaType GetAreaType(int index) {
 			if (index >= 0 && index < areaTypes.Count) {
 				return areaTypes[index];
 			} else {
 				return areaTypes[0];
 			}
+		}
+
+		public static AreaType GetAreaType(string typeName) {
+			for (int i = 0; i < areaTypes.Count; i++) {
+				if (areaTypes[i].name.Equals(typeName)) {
+					return areaTypes[i];
+				}
+			}
+			return areaTypes[0];
 		}
 
 		private void InstantiateEntities() {
@@ -239,6 +248,10 @@ namespace AreaManagerNS.AreaNS {
 				entities.AddRange(Entities);
 			}
 			Save();
+		}
+
+		public void SetPosition(Vector2Int newPosition) {
+			position = new Vector2IntS(newPosition);
 		}
 	}
 }

@@ -7,11 +7,10 @@ using AreaManagerNS.AreaNS;
 
 namespace AreaManagerNS {
 
-	//loads (instantiates background, scenery, & npcs into scene) previously generated areas
-	//procedurally generates areas
-
-	//idea: list of hard-coded positions for unique areas, list of hard-coded area types -- same list.count
-	//		-remove from list once used
+	/// <summary>
+	/// AreaManager: Class that procedurally generates, loads, and manages a grid of Areas.
+	/// Written by Justin Ortiz
+	/// </summary>
 	public class AreaManager : MonoBehaviour {
 		private static string currentSaveFolder;
 		private static Transform backgroundParent;
@@ -22,6 +21,8 @@ namespace AreaManagerNS {
 		private Transform canvas_area;
 		private Area[,] areas;
 		private Vector2Int currentAreaPos;
+		private List<Vector2Int> hardCodedPositions; //various positions on the map where specific unique locations can populate
+		private List<string> hardCodedAreaTypes; //various unique areatypes that should always exist
 
 		public static string CurrentSaveFolder { get { return currentSaveFolder; } }
 
@@ -34,9 +35,10 @@ namespace AreaManagerNS {
 		}
 
 		private Area CreateArea(Vector2Int position, AreaType parentAreaType) {
-			Area tempArea = new Area(position); //stores the area that will be returned
-			AreaType tempType; //stores the type we are currently checking
+			Area tempArea = new Area(); //stores the area that will be returned
+			tempArea.SetPosition(position);
 
+			AreaType tempType; //stores the type we are currently checking
 			int cumulativeChance = Area.GenericAreaTotalSpreadChance + parentAreaType.spreadChance; //total of all possible spread chances
 			int randomNum = Random.Range(0, cumulativeChance); //generate random number based on cumulative
 			cumulativeChance = 0; //reset cumulative to process end result
@@ -49,7 +51,7 @@ namespace AreaManagerNS {
 				}
 
 				if (randomNum < cumulativeChance) { //values increase as list goes on due to cumulative, so if num is < than value, the probability is maintained
-					tempArea.AssignType(tempType); //assign the lucky winner
+					tempArea.AssignType(tempType); //assign the type
 					break; //stop processing dictionary
 				}
 			}
@@ -69,44 +71,8 @@ namespace AreaManagerNS {
 			}
 
 			areas = new Area[12, 12]; //create array
-			Area currArea; //current area to set
-			Vector2Int currPos; //current map position
 
-			// hardcoded areas to 'fix' procedural generation
-			currPos = new Vector2Int(11, 0);
-			currArea = new Area(currPos);
-			currArea.AssignType("Mountain");
-			areas[currPos.x, currPos.y] = currArea;
-
-			currPos = new Vector2Int(1, 1);
-			currArea = new Area(currPos);
-			currArea.AssignType("City_RAM");
-			areas[currPos.x, currPos.y] = currArea;
-
-			currPos = new Vector2Int(10, 1);
-			currArea = new Area(currPos);
-			currArea.AssignType("City_HoZ");
-			areas[currPos.x, currPos.y] = currArea;
-
-			currPos = new Vector2Int(1, 10);
-			currArea = new Area(currPos);
-			currArea.AssignType("City_CPR");
-			areas[currPos.x, currPos.y] = currArea;
-
-			currPos = new Vector2Int(10, 10);
-			currArea = new Area(currPos);
-			currArea.AssignType("City_DV");
-			areas[currPos.x, currPos.y] = currArea;
-
-			currPos = new Vector2Int(6, 8);
-			currArea = new Area(currPos);
-			currArea.AssignType("Dungeon_Minor Lich");
-			areas[currPos.x, currPos.y] = currArea;
-
-			currPos = new Vector2Int(6, 8);
-			currArea = new Area(currPos);
-			currArea.AssignType("Dungeon_Greater Demon");
-			areas[currPos.x, currPos.y] = currArea;
+			GenerateUniqueAreaData(); //create & apply necessary
 
 			bool generationComplete = true;
 			AreaType typeToSpread; //the type of area that is most likely to spread
@@ -145,6 +111,41 @@ namespace AreaManagerNS {
 			LoadArea(startPos);
 			yield return new WaitForEndOfFrame();
 			GameManager.loadingBar.Hide();
+		}
+
+		private void GenerateUniqueAreaData() {
+			hardCodedAreaTypes = new List<string>();
+			hardCodedAreaTypes.AddRange(Area.GetAllAreaTypeNames());
+			hardCodedAreaTypes.RemoveRange(0, 4); //remove the generic area types (Plains, Forest, Mountain, Marsh)
+
+			if (hardCodedAreaTypes.Count > areas.GetLength(0) * areas.GetLength(1)) { //if there are somehow more unique areas than available slots
+				Debug.Log("Error: AreaManager.GenerateHardCodedAreaData() did not run because there are " + (hardCodedAreaTypes.Count - 4) + " unique area types loaded!");
+				return;
+			}
+
+			hardCodedPositions = new List<Vector2Int>(); //ensure list exists
+			hardCodedPositions.Add(new Vector2Int(1, 1)); //place city locations
+			hardCodedPositions.Add(new Vector2Int(10, 1));
+			hardCodedPositions.Add(new Vector2Int(1, 10));
+			hardCodedPositions.Add(new Vector2Int(10, 10));
+
+			int randomIndex; //stores random number
+			Vector2Int tempPos; //stores the current position
+			for (int cities = 3; cities >= 0; cities--) { //next 4 in types 'should' be cities
+				randomIndex = Random.Range(0, hardCodedPositions.Count); //pick random position
+				tempPos = hardCodedPositions[randomIndex]; //store position
+				areas[tempPos.x, tempPos.y] = new Area(Area.GetAreaType(hardCodedAreaTypes[cities]), tempPos); //add area to position
+				hardCodedAreaTypes.RemoveAt(cities); //remove type name from list
+				hardCodedPositions.RemoveAt(randomIndex); //remove position
+			}
+
+			for (int typeIndex = hardCodedAreaTypes.Count - 1; typeIndex >= 0; typeIndex--) { //go through remaining area types
+				do {
+					tempPos = new Vector2Int(Random.Range(0, 12), Random.Range(0, 12)); //get a random position
+				} while (areas[tempPos.x, tempPos.y] != null); //keep trying until we get an empty slot
+				areas[tempPos.x, tempPos.y] = new Area(Area.GetAreaType(hardCodedAreaTypes[typeIndex]), tempPos); //add next area type to the randomly generated position
+				hardCodedAreaTypes.RemoveAt(typeIndex); //remove the area type from the list
+			}
 		}
 
 		public static Transform GetEntityParent(string entityTypeName) {
