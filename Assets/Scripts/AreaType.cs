@@ -1,0 +1,17 @@
+﻿using System.Xml.Serialization;
+
+namespace AreaManagerNS.AreaNS {
+	[XmlType("AreaType")]
+	public class AreaType {
+		[XmlAttribute("Name")]
+		public string name;
+		[XmlAttribute("StructureAssetCount")]
+		public int structureCount;
+		[XmlAttribute("SceneryAssetCount")]
+		public int sceneryCount;
+		[XmlAttribute("CharacterAssetCount")]
+		public int characterCount;
+		[XmlAttribute("SpreadChance")]
+		public int spreadChance; //revisit & rename
+	}
+}
