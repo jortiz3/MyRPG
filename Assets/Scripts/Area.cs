@@ -80,6 +80,21 @@ namespace AreaManagerNS.AreaNS {
 			}
 		}
 
+		//to be called if/when the AreaTypes.xml file is missing
+		private static void GenerateDefaultAreaTypes() {
+			areaTypes = new List<AreaType>(); //instantiate the array
+			areaTypes.Add(new AreaType("Plains", 0, 0, 4, 200, 0, 0, 5000));
+			areaTypes.Add(new AreaType("Forest", 0, 0, 3, 500, 0, 0, 25000));
+			areaTypes.Add(new AreaType("Mountain", 0, 0, 0, 200, 0, 0, 10000));
+			areaTypes.Add(new AreaType("Marsh", 0, 0, 0, 200, 0, 0, 20000));
+			areaTypes.Add(new AreaType("City_RAM", 0, 0, 4, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("City_CPR", 0, 0, 4, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("City_HoZ", 0, 0, 4, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("City_DV", 0, 0, 4, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("Dungeon_Minor Lich", 0, 0, 4, 200, 0, 0, 0));
+			areaTypes.Add(new AreaType("Dungone_Greater Demon", 0, 0, 4, 200, 0, 0, 0));
+		}
+
 		public static string[] GetAllAreaTypeNames() {
 			string[] temp = new string[areaTypes.Count];
 			for (int i = 0; i < temp.Length; i++) {
@@ -140,16 +155,7 @@ namespace AreaManagerNS.AreaNS {
 					genericAreaTotalSpreadChance += areaTypes[i].spreadChance;
 				}
 			} else {
-				AreaType generic = new AreaType();
-				generic.name = "Plains";
-				generic.structureAssetCount = 0;
-				generic.sceneryAssetCount = 1;
-				generic.characterAssetCount = 0;
-				generic.spreadChance = 40;
-
-				areaTypes = new List<AreaType>(); //instantiate the array
-				areaTypes.Add(generic); //fill with basic data
-
+				GenerateDefaultAreaTypes();
 				file = File.Create(folderPath + fileName); //create the file
 				xr.Serialize(file, areaTypes); //save data to file
 				file.Close(); //close the file

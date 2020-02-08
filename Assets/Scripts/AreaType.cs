@@ -28,6 +28,35 @@ namespace AreaManagerNS.AreaNS {
 		[XmlAttribute("SpreadChance")]
 		public int spreadChance; //revisit & rename
 
+		public AreaType() {
+			name = "Empty";
+			structureAssetCount = 0;
+			structureMaxSpawnCount = 0;
+
+			sceneryAssetCount = 0;
+			sceneryMaxSpawnCount = 0;
+
+			characterAssetCount = 0;
+			characterMaxSpawnCount = 0;
+
+			spreadChance = 0;
+		}
+
+		public AreaType(string Name, int StructureAssetCount, int StructureMaxSpawnCount, int SceneryAssetCount,
+			int SceneryMaxSpawnCount, int CharacterAssetCount, int CharacterMaxSpawnCount, int SpreadChance) {
+			name = Name;
+			structureAssetCount = StructureAssetCount;
+			structureMaxSpawnCount = StructureMaxSpawnCount;
+
+			sceneryAssetCount = SceneryAssetCount;
+			sceneryMaxSpawnCount = SceneryMaxSpawnCount;
+
+			characterAssetCount = CharacterAssetCount;
+			characterMaxSpawnCount = CharacterMaxSpawnCount;
+
+			spreadChance = SpreadChance;
+		}
+
 		public override bool Equals(object obj) {
 			if (obj.GetType().Equals(typeof(AreaType))) {
 				AreaType cast = (AreaType)obj;
