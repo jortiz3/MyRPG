@@ -22,7 +22,7 @@ public class WorldManager : MonoBehaviour {
 	}
 
 	public void GenerateWorldAreas(string playerName, string worldName) {
-		StartCoroutine(areaManager.GenerateWorldAreas(playerName, worldName));
+		StartCoroutine(areaManager.GenerateAllAreas(playerName, worldName, Vector2Int.zero));
 	}
 
 	public void LoadAdjacentArea(Directions direction) {
@@ -46,7 +46,7 @@ public class WorldManager : MonoBehaviour {
 	}
 
 	public void LoadAreaData(string playerName, string worldName) {
-		StartCoroutine(areaManager.LoadAreasFromWorld(playerName, worldName));
+		StartCoroutine(areaManager.LoadAreasFromSave(playerName, worldName, Vector2Int.zero));
 	}
 
 	private void FixedUpdate() {

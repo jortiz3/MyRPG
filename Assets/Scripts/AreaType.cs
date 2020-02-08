@@ -13,5 +13,23 @@ namespace AreaManagerNS.AreaNS {
 		public int characterCount;
 		[XmlAttribute("SpreadChance")]
 		public int spreadChance; //revisit & rename
+
+		public override bool Equals(object obj) {
+			if (obj.GetType().Equals(typeof(AreaType))) {
+				AreaType cast = (AreaType)obj;
+				if (cast.name.Equals(name)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public override int GetHashCode() {
+			return base.GetHashCode();
+		}
+
+		public override string ToString() {
+			return name;
+		}
 	}
 }

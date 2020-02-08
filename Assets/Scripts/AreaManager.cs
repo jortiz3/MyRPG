@@ -9,9 +9,11 @@ namespace AreaManagerNS {
 
 	//loads (instantiates background, scenery, & npcs into scene) previously generated areas
 	//procedurally generates areas
+
+	//idea: list of hard-coded positions for unique areas, list of hard-coded area types -- same list.count
+	//		-remove from list once used
 	public class AreaManager : MonoBehaviour {
 		private static string currentSaveFolder;
-
 		private static Transform backgroundParent;
 		private static Transform structureParent;
 		private static Transform characterParent;
@@ -31,79 +33,32 @@ namespace AreaManagerNS {
 			characterParent = transform.Find("Characters");
 		}
 
-		private Area CreateArea(Vector2Int position) {
-			Area tempArea = new Area(position);
+		private Area CreateArea(Vector2Int position, AreaType parentAreaType) {
+			Area tempArea = new Area(position); //stores the area that will be returned
+			AreaType tempType; //stores the type we are currently checking
 
-			Dictionary<AreaType, int> chances = new Dictionary<AreaType, int>();
-			AreaType tempType;
-			if (position.x - 1 >= 0 && areas[position.x - 1, position.y] != null) { //if the area is within bounds of the array
-				tempType = areas[position.x - 1, position.y].GetAreaType(); //try to get the type
-				if (tempType != null) { //if areatype has value
-					chances.Add(tempType, 1); //set spreadchance in dictionary to cumulative so far
-				}
-			}
-			if (position.x + 1 < areas.GetLength(0) && areas[position.x + 1, position.y] != null) {
-				tempType = areas[position.x + 1, position.y].GetAreaType();
-				if (tempType != null) {
-					if (!chances.ContainsKey(tempType)) {
-						chances.Add(tempType, 1);
-					} else {
-						chances[tempType] += 1;
-					}
-				}
-			}
-			if (position.y - 1 >= 0 && areas[position.x, position.y - 1] != null) {
-				tempType = areas[position.x, position.y - 1].GetAreaType();
-				if (tempType != null) {
-					if (!chances.ContainsKey(tempType)) {
-						chances.Add(tempType, 1);
-					} else {
-						chances[tempType] += 1;
-					}
-				}
-			}
-			if (position.y + 1 < areas.GetLength(1) && areas[position.x, position.y + 1] != null) {
-				tempType = areas[position.x, position.y + 1].GetAreaType();
-				if (tempType != null) {
-					if (!chances.ContainsKey(tempType)) {
-						chances.Add(tempType, 1);
-					} else {
-						chances[tempType] += 1;
-					}
-				}
-			}
-
-			if (chances.Count < 4) { //none of surrounding areas have been instantiated
-				for (int i = 0; i < 4; i++) { //get the base generic area types
-					tempType = Area.GetAreaType(i);
-					if (!chances.ContainsKey(tempType)) {
-						chances.Add(tempType, 1);
-					}
-				}
-			}
-
-			int cumulativeChance = 0;
-			foreach (KeyValuePair<AreaType, int> kvp in chances) { //go through and update appropriate values
-				cumulativeChance += chances[kvp.Key] * kvp.Key.spreadChance; //update cumulative chance
-			}
-
+			int cumulativeChance = Area.GenericAreaTotalSpreadChance + parentAreaType.spreadChance; //total of all possible spread chances
 			int randomNum = Random.Range(0, cumulativeChance); //generate random number based on cumulative
-			cumulativeChance = 0;
-			foreach (KeyValuePair<AreaType, int> kvp in chances) { //go through and update appropriate values
-				cumulativeChance += chances[kvp.Key] * kvp.Key.spreadChance; //update cumulative chance
+			cumulativeChance = 0; //reset cumulative to process end result
+			for (int i = 0; i < 4; i++) { //go through generic area types
+				tempType = Area.GetAreaType(i); //get current type
+
+				cumulativeChance += tempType.spreadChance; //update cumulative chance
+				if (tempType.Equals(parentAreaType)) { //if same type as parent area
+					cumulativeChance += tempType.spreadChance; //add chance again
+				}
+
 				if (randomNum < cumulativeChance) { //values increase as list goes on due to cumulative, so if num is < than value, the probability is maintained
-					tempArea.AssignType(kvp.Key); //assign the lucky winner
+					tempArea.AssignType(tempType); //assign the lucky winner
 					break; //stop processing dictionary
 				}
 			}
-
-			tempArea.AssignType(0);
 
 			StartCoroutine(tempArea.Populate()); //populate and save file when done -- async
 			return tempArea; //return the area and continue
 		}
 
-		public IEnumerator GenerateWorldAreas(string playerName, string worldName) {
+		public IEnumerator GenerateAllAreas(string playerName, string worldName, Vector2Int startPos) {
 			GameManager.loadingBar.ResetProgress();
 			GameManager.loadingBar.Show();
 
@@ -113,37 +68,81 @@ namespace AreaManagerNS {
 				Directory.CreateDirectory(currentSaveFolder);
 			}
 
-			areas = new Area[12, 12];
-			Area currArea;
-			Vector2Int currPos;
+			areas = new Area[12, 12]; //create array
+			Area currArea; //current area to set
+			Vector2Int currPos; //current map position
+
+			// hardcoded areas to 'fix' procedural generation
+			currPos = new Vector2Int(11, 0);
+			currArea = new Area(currPos);
+			currArea.AssignType("Mountain");
+			areas[currPos.x, currPos.y] = currArea;
 
 			currPos = new Vector2Int(1, 1);
 			currArea = new Area(currPos);
 			currArea.AssignType("City_RAM");
 			areas[currPos.x, currPos.y] = currArea;
 
+			currPos = new Vector2Int(10, 1);
 			currArea = new Area(currPos);
 			currArea.AssignType("City_HoZ");
-			areas[10, 10] = currArea;
+			areas[currPos.x, currPos.y] = currArea;
 
+			currPos = new Vector2Int(1, 10);
 			currArea = new Area(currPos);
 			currArea.AssignType("City_CPR");
-			areas[1, 10] = currArea;
+			areas[currPos.x, currPos.y] = currArea;
 
+			currPos = new Vector2Int(10, 10);
 			currArea = new Area(currPos);
 			currArea.AssignType("City_DV");
-			areas[10, 1] = currArea;
+			areas[currPos.x, currPos.y] = currArea;
 
-			for (int x = 0; x < 12; x++) {
-				for (int y = 0; y < 12; y++) {
-					if (areas[x, y] == null) {
-						areas[x, y] = CreateArea(new Vector2Int(x, y)); //store reference
+			currPos = new Vector2Int(6, 8);
+			currArea = new Area(currPos);
+			currArea.AssignType("Dungeon_Minor Lich");
+			areas[currPos.x, currPos.y] = currArea;
+
+			currPos = new Vector2Int(6, 8);
+			currArea = new Area(currPos);
+			currArea.AssignType("Dungeon_Greater Demon");
+			areas[currPos.x, currPos.y] = currArea;
+
+			bool generationComplete = true;
+			AreaType typeToSpread; //the type of area that is most likely to spread
+			do {
+				for (int x = 0; x < 12; x++) {
+					for (int y = 0; y < 12; y++) {
+						if (areas[x, y] != null) { //start with hard-coded areas
+							if (areas[x,y].Type.name.Contains("City")) { //Cities are always in plains
+								typeToSpread = Area.GetAreaType(0); //spread plains type
+							} else if (areas[x, y].Type.name.Contains("Dungeon")) { //dungeons are alwas in marshes
+								typeToSpread = Area.GetAreaType(2); //spread dungeon type
+							} else {
+								typeToSpread = areas[x, y].Type;
+							}
+
+							//createArea 4 adjacent areas
+							if (x - 1 >= 0) { //if area adjacent left exists
+								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+							}
+							if (x + 1 < areas.GetLength(0)) { //if area adjacent right exists
+								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+							}
+							if (y - 1 >= 0) { //if area adjacent up exists
+								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+							}
+							if (y + 1 < areas.GetLength(1)) { //if area adjacent down exists
+								areas[x, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+							}
+						}
 					}
+					//GameManager.loadingBar.IncreaseProgress((x + 1) * 12 / 144.0f);
+					yield return new WaitForEndOfFrame(); //allow for time between each row
 				}
-				GameManager.loadingBar.IncreaseProgress((x + 1) * 12 / 144.0f);
-				yield return new WaitForEndOfFrame(); //allow for time between each row
-			}
+			} while (!generationComplete);
 
+			LoadArea(startPos);
 			yield return new WaitForEndOfFrame();
 			GameManager.loadingBar.Hide();
 		}
@@ -205,14 +204,14 @@ namespace AreaManagerNS {
 			}
 		}
 
-		public IEnumerator LoadAreasFromWorld(string playerName, string worldName) {
+		public IEnumerator LoadAreasFromSave(string playerName, string worldName, Vector2Int loadedPos) {
 			GameManager.loadingBar.ResetProgress();
 			GameManager.loadingBar.Show();
 
 			currentSaveFolder = Application.persistentDataPath + "/saves" + "/" + playerName + "/" + worldName + "/";
 
 			if (!Directory.Exists(currentSaveFolder)) {
-				GenerateWorldAreas(playerName, worldName);
+				StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero));
 				yield break; //exit enumerator
 			}
 
@@ -229,7 +228,15 @@ namespace AreaManagerNS {
 					currFilePath = currentSaveFolder + x + "_" + y + ".xml";
 
 					if (!File.Exists(currFilePath)) {
-						areas[x, y] = CreateArea(new Vector2Int(x, y));
+						if (x - 1 >= 0 && areas[x - 1, y] != null) { //if there's an area left of missing one
+							areas[x, y] = CreateArea(new Vector2Int(x, y), areas[x - 1, y].Type); //create area using left as parent type
+						} else if (x + 1 < areas.GetLength(0) && areas[x + 1, y] != null) { //if there's an area right of missing one
+							areas[x, y] = CreateArea(new Vector2Int(x, y), areas[x + 1, y].Type); //create area using right as parent type
+						} else { //both are null
+							//to do: prompt for regenerate world or cancel loading
+							StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero)); //generate everything again
+							yield break; //give up on loading
+						}
 					} else {
 						file = new FileStream(currFilePath, FileMode.Open);
 						areas[x, y] = xr.Deserialize(file) as Area;
@@ -239,7 +246,8 @@ namespace AreaManagerNS {
 				GameManager.loadingBar.IncreaseProgress((x + 1) * 12 / 144.0f);
 				yield return new WaitForEndOfFrame(); //allow for time between each row
 			}
-
+			LoadArea(loadedPos);
+			yield return new WaitForEndOfFrame();
 			GameManager.loadingBar.Hide();
 		}
 	}

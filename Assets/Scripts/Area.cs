@@ -9,11 +9,11 @@ namespace AreaManagerNS.AreaNS {
 	[XmlRoot(ElementName = "Area"), XmlInclude(typeof(AreaType)), XmlInclude(typeof(Entity))]
 	public class Area {
 
-		public static int NumberOfGenericAreaTypes { get { return areaTypes != null ? areaTypes.Count : 0; } }
+		public static int GenericAreaTotalSpreadChance { get { return genericAreaTotalSpreadChance; } }
 
 		private static List<AreaType> areaTypes;
+		private static int genericAreaTotalSpreadChance;
 
-		#region properties
 		private AreaType type;
 		private List<Entity> entities;
 		private Vector2IntS position;
@@ -31,7 +31,6 @@ namespace AreaManagerNS.AreaNS {
 
 		[XmlArray("EntityList"), XmlArrayItem(ElementName = "Entity", Type = typeof(Entity))]
 		public List<Entity> Entities { get { return entities; } set { entities = value; } }
-		#endregion
 
 		public Area() {
 			discovered = false;
@@ -75,6 +74,14 @@ namespace AreaManagerNS.AreaNS {
 			}
 		}
 
+		public static string[] GetAllAreaTypeNames() {
+			string[] temp = new string[areaTypes.Count];
+			for (int i = 0; i < temp.Length; i++) {
+				temp[i] = areaTypes[i].name;
+			}
+			return temp;
+		}
+
 		public AreaType GetAreaType() {
 			return type;
 		}
@@ -116,6 +123,11 @@ namespace AreaManagerNS.AreaNS {
 				file = File.OpenRead(folderPath + fileName); //open the file
 				areaTypes = xr.Deserialize(file) as List<AreaType>; //load data into list
 				file.Close(); //close file
+
+				genericAreaTotalSpreadChance = 0;
+				for (int i = 0; i < 4 && i < areaTypes.Count; i++) {
+					genericAreaTotalSpreadChance += areaTypes[i].spreadChance;
+				}
 			} else {
 				AreaType generic = new AreaType();
 				generic.name = "Plains";
