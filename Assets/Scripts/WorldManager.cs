@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using AreaManagerNS;
 
-//loads or generates areas using areaManager
-//Tracks in-game time
-//updates NPCs and areas based on in-game time
+/// <summary>
+/// WorldManager: Manages Area transitions & Entity update information.
+/// Written by Justin Ortiz
+/// </summary>
 public class WorldManager : MonoBehaviour {
 	private static float elapsedGameTime;
 
@@ -22,7 +23,7 @@ public class WorldManager : MonoBehaviour {
 	}
 
 	public void GenerateWorldAreas(string playerName, string worldName) {
-		StartCoroutine(areaManager.GenerateWorldAreas(playerName, worldName));
+		StartCoroutine(areaManager.GenerateAllAreas(playerName, worldName, Vector2Int.zero));
 	}
 
 	public void LoadAdjacentArea(Directions direction) {
@@ -46,7 +47,7 @@ public class WorldManager : MonoBehaviour {
 	}
 
 	public void LoadAreaData(string playerName, string worldName) {
-		StartCoroutine(areaManager.LoadAreasFromWorld(playerName, worldName));
+		StartCoroutine(areaManager.LoadAreasFromSave(playerName, worldName, Vector2Int.zero));
 	}
 
 	private void FixedUpdate() {
