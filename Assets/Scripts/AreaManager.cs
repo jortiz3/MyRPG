@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using UnityEngine;
+using UnityEngine.AI;
 using AreaManagerNS.AreaNS;
 
 namespace AreaManagerNS {
@@ -17,6 +18,7 @@ namespace AreaManagerNS {
 		private static Transform structureParent;
 		private static Transform characterParent;
 		private static Transform sceneryParent;
+		private static NavMeshSurface navMesh;
 
 		private Transform canvas_area;
 		private Area[,] areas;
@@ -33,6 +35,7 @@ namespace AreaManagerNS {
 			structureParent = transform.Find("Structures");
 			sceneryParent = transform.Find("Scenery");
 			characterParent = transform.Find("Characters");
+			navMesh = transform.Find("NavMesh").GetComponent<NavMeshSurface>();
 		}
 
 		private Area CreateArea(Vector2Int position, AreaType parentAreaType) {
@@ -199,9 +202,14 @@ namespace AreaManagerNS {
 		}
 
 		public void LoadArea(Vector2Int position) {
+			GameManager.loadingBar.ResetProgress();
+			GameManager.loadingBar.SetText("Gathering save data..");
+			GameManager.loadingBar.Show();
+
 			if (position.x < areas.GetLength(0) && 0 <= position.x) { //if the x is within map bounds
 				if (position.y < areas.GetLength(1) && 0 <= position.y) { //if y is within map bounds
 					if (areas[position.x, position.y] != null) { //if the desired area isn't empty
+						float loadIncrement = 0.45f / transform.childCount;
 						List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
 						foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
 							Transform child;
@@ -211,10 +219,14 @@ namespace AreaManagerNS {
 									currEntities.Add(Entity.Parse(child)); //convert child to entity format
 									Destroy(child.gameObject); //destroy transform from scene
 								}
+								GameManager.loadingBar.IncreaseProgress(loadIncrement / parent.childCount);
 							}
 						}
+						GameManager.loadingBar.SetProgress(0.45f);
+						GameManager.loadingBar.SetText("Saving..");
 						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities);
-						StartCoroutine(areas[position.x, position.y].LoadToScene());
+						GameManager.loadingBar.SetProgress(0.5f);
+						StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh));
 						currentAreaPos = position;
 					}
 				}
@@ -223,6 +235,7 @@ namespace AreaManagerNS {
 
 		public IEnumerator LoadAreasFromSave(string playerName, string worldName, Vector2Int loadedPos) {
 			GameManager.loadingBar.ResetProgress();
+			GameManager.loadingBar.SetText("Loading..");
 			GameManager.loadingBar.Show();
 
 			currentSaveFolder = Application.persistentDataPath + "/saves" + "/" + playerName + "/" + worldName + "/";

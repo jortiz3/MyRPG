@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Slider))]
 public class LoadingBar : MonoBehaviour {
+	[SerializeField]
+	private Text text;
+	[SerializeField]
 	private Slider slider;
 	private GameObject background; //load background & display simultaneously
 	void Awake() {
@@ -12,27 +14,59 @@ public class LoadingBar : MonoBehaviour {
 			GameManager.loadingBar = this;
 		}
 
-		slider = GetComponent<Slider>();
+		if (slider == null) {
+			slider = GetComponent<Slider>();
+		}
+		if (text == null) {
+			text = GetComponent<Text>();
+		}
+
 		Hide();
 	}
 
+	public float GetProgress() {
+		if (slider != null) {
+			return slider.value;
+		}
+		return 0f;
+	}
+
 	public void Hide() {
-		gameObject.SetActive(false);
+		if (gameObject.activeSelf) {
+			gameObject.SetActive(false);
+		}
 	}
 
 	public void IncreaseProgress(float amount) {
-		slider.value += amount;
+		if (slider != null) {
+			slider.value += amount;
+		}
 	}
 
 	public void ResetProgress() {
-		slider.value = 0;
+		if (slider != null) {
+			slider.value = 0;
+		}
+		if (text != null) {
+			text.text = "";
+		}
 	}
 
 	public void SetProgress(float amount) {
-		slider.value = amount;
+		if (slider != null) {
+			slider.value = amount;
+		}
+	}
+
+	public void SetText(string textToDisplay) {
+		if (text != null) {
+			text.text = textToDisplay;
+		}
 	}
 
 	public void Show() {
-		gameObject.SetActive(true);
+		if (!gameObject.activeSelf) {
+			gameObject.SetActive(true);
+		}
 	}
 }
