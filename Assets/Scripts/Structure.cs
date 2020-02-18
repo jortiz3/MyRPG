@@ -9,7 +9,7 @@ public class Structure : MonoBehaviour {
 
 	private Color defaultColor;
 	private SpriteRenderer sprite;
-	[SerializeField, Tooltip("The structure's cell size (x,y)")]
+	[SerializeField, Tooltip("The structure's additional cell size (x,y); Default size of 1 == (0,0)")]
 	private Vector2Int dimensions;
 
 	public Vector2Int Dimensions { get { return dimensions; } }

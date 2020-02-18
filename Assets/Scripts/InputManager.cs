@@ -6,6 +6,8 @@ public enum Directions { none, up, down, left, right, up_left, up_right, down_le
 
 [XmlRoot(ElementName = "InputManager")]
 public class InputManager : MonoBehaviour {
+	public static InputManager instance;
+
 	private Dictionary<string, KeyCode> keyBindings;
 
 	[XmlArray("KeyBindings"), XmlArrayItem("Actions")]
@@ -15,31 +17,42 @@ public class InputManager : MonoBehaviour {
 	private bool sprintEnabled;
 
 	private void Awake() {
-		bool setDefaultKeys = true;
-		//attempt to load keys from xml file
+		if (instance != null) {
+			Destroy(gameObject);
+		} else {
+			instance = this;
 
-		if (setDefaultKeys) {
-			keyBindings = new Dictionary<string, KeyCode>();
-			keyBindings.Add("Movement_Up", KeyCode.W);
-			keyBindings.Add("Movement_Down", KeyCode.S);
-			keyBindings.Add("Movement_Left", KeyCode.A);
-			keyBindings.Add("Movement_Right", KeyCode.D);
-			keyBindings.Add("Movement_Sprint", KeyCode.LeftShift);
-			keyBindings.Add("Attack_Basic", KeyCode.Space);
-			keyBindings.Add("Slot_1", KeyCode.Alpha1);
-			keyBindings.Add("Slot_2", KeyCode.Alpha2);
-			keyBindings.Add("Slot_3", KeyCode.Alpha3);
-			keyBindings.Add("Slot_4", KeyCode.Alpha4);
-			keyBindings.Add("Slot_5", KeyCode.Alpha5);
-			keyBindings.Add("Slot_6", KeyCode.Alpha6);
-			keyBindings.Add("Slot_7", KeyCode.Alpha7);
-			keyBindings.Add("Slot_8", KeyCode.Alpha8);
-			keyBindings.Add("Slot_9", KeyCode.Alpha9);
-			keyBindings.Add("Slot_10", KeyCode.Alpha0);
+			bool setDefaultKeys = true;
+			//attempt to load keys from xml file
+
+			if (setDefaultKeys) {
+				keyBindings = new Dictionary<string, KeyCode>();
+				keyBindings.Add("Interact", KeyCode.E);
+				keyBindings.Add("Movement_Up", KeyCode.W);
+				keyBindings.Add("Movement_Down", KeyCode.S);
+				keyBindings.Add("Movement_Left", KeyCode.A);
+				keyBindings.Add("Movement_Right", KeyCode.D);
+				keyBindings.Add("Movement_Sprint", KeyCode.LeftShift);
+				keyBindings.Add("Attack_Basic", KeyCode.Space);
+				keyBindings.Add("Slot_1", KeyCode.Alpha1);
+				keyBindings.Add("Slot_2", KeyCode.Alpha2);
+				keyBindings.Add("Slot_3", KeyCode.Alpha3);
+				keyBindings.Add("Slot_4", KeyCode.Alpha4);
+				keyBindings.Add("Slot_5", KeyCode.Alpha5);
+				keyBindings.Add("Slot_6", KeyCode.Alpha6);
+				keyBindings.Add("Slot_7", KeyCode.Alpha7);
+				keyBindings.Add("Slot_8", KeyCode.Alpha8);
+				keyBindings.Add("Slot_9", KeyCode.Alpha9);
+				keyBindings.Add("Slot_10", KeyCode.Alpha0);
+			}
 		}
 	}
 
-	void Update() {
+	public string GetKeyCodeName(string axisName) {
+		return keyBindings[axisName].ToString();
+	}
+
+	private void Update() {
 		moveDirection = Directions.none;
 		sprintEnabled = false;
 

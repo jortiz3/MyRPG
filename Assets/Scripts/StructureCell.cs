@@ -19,6 +19,7 @@ public class StructureCell : MonoBehaviour {
 
 	private void Awake() {
 		sprite = GetComponent<SpriteRenderer>();
+		SetColor(color_default);
 	}
 	
 	/// <summary>

@@ -44,7 +44,7 @@ public class StructureGridManager : MonoBehaviour {
 	}
 
 	public void BeginStructureEdit(string structureName) {
-		currEditStructure = Resources.Load<Structure>(structureName); //attempt to load structure from assets
+		currEditStructure = Resources.Load<Structure>("Structures/" + structureName); //attempt to load structure from assets
 
 		if (currEditStructure != null) { //if it was retrieved
 			SetGridActive(true); //show the grid
@@ -175,8 +175,12 @@ public class StructureGridManager : MonoBehaviour {
 	/// Resets all cells in grid to unoccupied status
 	/// </summary>
 	public void ResetGridStatus() {
-		foreach (StructureCell cell in transform) {
-			cell.Reset();
+		StructureCell currCell;
+		for (int i = 0; i < transform.childCount; i++) {
+			currCell = transform.GetChild(i).GetComponent<StructureCell>();
+			if (currCell != null) {
+				currCell.Reset();
+			}
 		}
 	}
 
