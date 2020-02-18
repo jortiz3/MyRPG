@@ -222,15 +222,16 @@ namespace AreaManagerNS {
 								GameManager.loadingBar.IncreaseProgress(loadIncrement / parent.childCount);
 							}
 						}
-						GameManager.loadingBar.SetProgress(0.45f);
-						GameManager.loadingBar.SetText("Saving..");
-						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities);
-						GameManager.loadingBar.SetProgress(0.5f);
-						StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh));
+						GameManager.loadingBar.SetProgress(0.45f); //update load progress
+						GameManager.loadingBar.SetText("Saving.."); //inform player of process
+						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities); //save to file
+						GameManager.loadingBar.SetProgress(0.5f); //update progress once complete
+						StructureGridManager.instance.ResetGridStatus(); //reset grid so any loaded structures can properly snap to it
+						StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh)); //initiate async load area
 						currentAreaPos = position;
-					}
-				}
-			}
+					} //endif area empty check
+				} //endif y bounds check
+			} //endif x bounds check
 		}
 
 		public IEnumerator LoadAreasFromSave(string playerName, string worldName, Vector2Int loadedPos) {

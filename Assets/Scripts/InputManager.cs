@@ -75,29 +75,29 @@ public class InputManager : MonoBehaviour {
 		}
 
 		//send movement info to player
-		if (GameManager.player != null) {
-			GameManager.player.MoveDirection(moveDirection, sprintEnabled);
+		if (Player.instance != null) {
+			Player.instance.MoveDirection(moveDirection, sprintEnabled);
 		}
 
 #if UNITY_EDITOR
 		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-			GameManager.worldManager.LoadAdjacentArea(Directions.left);
+			WorldManager.instance.LoadAdjacentArea(Directions.left);
 		}
 		if (Input.GetKeyDown(KeyCode.RightArrow)) {
-			GameManager.worldManager.LoadAdjacentArea(Directions.right);
+			WorldManager.instance.LoadAdjacentArea(Directions.right);
 		}
 		if (Input.GetKeyDown(KeyCode.UpArrow)) {
-			GameManager.worldManager.LoadAdjacentArea(Directions.up);
+			WorldManager.instance.LoadAdjacentArea(Directions.up);
 		}
 		if (Input.GetKeyDown(KeyCode.DownArrow)) {
-			GameManager.worldManager.LoadAdjacentArea(Directions.down);
+			WorldManager.instance.LoadAdjacentArea(Directions.down);
 		}
 
 		if (Input.GetKeyDown(KeyCode.G)) {
-			GameManager.worldManager.GenerateWorldAreas("Player1", "Debug World");
+			WorldManager.instance.GenerateWorldAreas("Player1", "Debug World");
 		}
 		if (Input.GetKeyDown(KeyCode.L)) {
-			GameManager.worldManager.LoadAreaData("Player1", "Debug World");
+			WorldManager.instance.LoadAreaData("Player1", "Debug World");
 		}
 #endif
 	}
