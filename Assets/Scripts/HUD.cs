@@ -1,8 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Modifies various text and slider objects displayed on the static HUD. Written by Justin Ortiz
+/// </summary>
 public class HUD : MonoBehaviour {
 	public static HUD instance;
 

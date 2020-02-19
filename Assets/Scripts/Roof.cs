@@ -5,13 +5,18 @@ using UnityEngine;
 /// Used to animate roofs as the player traverses underneath them. Written by Justin Ortiz
 /// </summary>
 public class Roof : MonoBehaviour {
+	private static float transitionSpeed = 0.95f;
+
 	private bool transitionEnabled;
 	private bool transitioning;
 	private bool cancelCurrentTransition;
+	[SerializeField, Tooltip("The sprite to make transparent upon player trigger.")]
 	private SpriteRenderer sprite;
 
 	private void Awake() {
-		sprite = GetComponent<SpriteRenderer>();
+		if (sprite == null) { //if not given value in inspector
+			sprite = GetComponent<SpriteRenderer>(); //try to get attached sprite
+		}
 	}
 
 	public void Disable() {
@@ -64,14 +69,14 @@ public class Roof : MonoBehaviour {
 		Color currColor = sprite.color; //store current color
 		while (!cancelCurrentTransition) { //infinitely loop unless a cancel is needed
 			if (alphaIncrease) { //if increase needed
-				currColor.a += 0.01f * Time.deltaTime; //increase the alpha
+				currColor.a += transitionSpeed * Time.deltaTime; //increase the alpha
 				sprite.color = currColor; //set the curr color
 
 				if (sprite.color.a >= desiredAlpha) { //if alpha is at desired
 					break; //transition complete; leave loop
 				}
 			} else {
-				currColor.a -= 0.01f * Time.deltaTime; //decrease the alpha
+				currColor.a -= transitionSpeed * Time.deltaTime; //decrease the alpha
 				sprite.color = currColor; //set the curr color
 
 				if (sprite.color.a <= desiredAlpha) { //if alpha is at desired

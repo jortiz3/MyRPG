@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// Used to define objects the player will interact with. Written by Justin Ortiz

@@ -68,8 +68,15 @@ public class StructureGridManager : MonoBehaviour {
 	/// <returns></returns>
 	private bool CheckForFinalize(Vector2Int cellIndex, Structure s) {
 		if (gridInitialized) { //if the grid has been initialized, then we can check
+			Vector2Int originalIndex;
 			for (int x = cellIndex.x; x < cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
 				for (int y = cellIndex.y; y < cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size
+					originalIndex = cellIndex; //store current index
+					cellIndex.Clamp(Vector2Int.zero, new Vector2Int(columns, rows)); //try to clamp the current index to bounds
+
+					if (!originalIndex.Equals(cellIndex)) { //if index was clamped, then original was outside of bounds
+						return false; //cannot finalize if part of structure is out of bounds
+					}
 					if (GetCell(x, y).Occupied) { //if the cell is occupied
 						return false;
 					}
@@ -80,29 +87,34 @@ public class StructureGridManager : MonoBehaviour {
 		return false;
 	}
 
-	/// <summary>
-	/// Ends editing & registers the structure to the grid.
-	/// </summary>
-	/// <param name="cell">The top-left cell within which to place the structure</param>
 	public void FinalizeStructureEdit(StructureCell cell) {
-		FinalizeStructureEdit(cell, currEditStructure);
+		FinalizeStructureEdit(GetCellIndex(cell));
+	}
+
+	/// <summary>
+	/// Ends editing & registers the current edit structure to the grid.
+	/// </summary>
+	/// <param name="cellIndex">The top-left cell within which to place the structure</param>
+	public void FinalizeStructureEdit(Vector2Int cellIndex) {
+		if (currEditStructure != null) {
+			FinalizeStructureEdit(cellIndex, currEditStructure);
+		}
 	}
 
 	/// <summary>
 	/// Ends editing & registers the structure to the grid.
 	/// </summary>
-	/// <param name="cell">The top-left cell within which to place the structure</param>
+	/// <param name="cellIndex">The top-left cell within which to place the structure</param>
 	/// <param name="s">The structure to finalize</param>
-	public void FinalizeStructureEdit(StructureCell cell, Structure s) {
+	public void FinalizeStructureEdit(Vector2Int cellIndex, Structure s) {
 		if (!canFinalize) {
 			//play error noise?
 		} else {
 			SetGridActive(false);
 			s.ResetColor();
 
-			Vector2Int cellPos = cell.GetGridIndex(columns, rows);
-			for (int x = cellPos.x; x < cellPos.x + s.Dimensions.x; x++) { //start current x, go to dimension size
-				for (int y = cellPos.y; y < cellPos.y + s.Dimensions.y; y++) { //start current y, go to dimension size
+			for (int x = cellIndex.x; x < cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
+				for (int y = cellIndex.y; y < cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size
 					GetCell(x, y).SetOccupied();
 				}
 			}
@@ -110,6 +122,10 @@ public class StructureGridManager : MonoBehaviour {
 			editEnabled = false;
 			canFinalize = false;
 		}
+	}
+
+	private StructureCell GetCell(Vector2Int index) {
+		return GetCell(index.x, index.y);
 	}
 
 	/// <summary>
@@ -126,14 +142,18 @@ public class StructureGridManager : MonoBehaviour {
 		return null; //not a valid grid index
 	}
 
-	private StructureCell GetNearestCell(Vector3 worldPosition) {
-		StructureCell nearestCell = transform.GetChild(0).GetComponent<StructureCell>(); //default to first cell
+	private Vector2Int GetCellIndex(StructureCell cell) {
+		return cell.GetGridIndex(columns, rows);
+	}
+
+	private Vector2Int GetNearestCellIndex(Vector3 worldPosition) {
+		Vector2Int nearestCell = Vector2Int.zero; //default to first cell
 		float nearestDistance = Mathf.Abs(Vector3.Distance(transform.GetChild(0).position, worldPosition)); //default to distance from first cell
 		float currentDistance;
 		for (int i = 0; i < transform.childCount; i++) { //go through all cells
 			currentDistance = Mathf.Abs(Vector3.Distance(transform.GetChild(i).position, worldPosition)); //get absolute value of current distance
 			if (currentDistance < nearestDistance) { //if current is closer than nearest
-				nearestCell = transform.GetChild(i).GetComponent<StructureCell>(); //get the cell
+				nearestCell = GetCellIndex(transform.GetChild(i).GetComponent<StructureCell>()); //get the cell
 				nearestDistance = currentDistance; //update nearest
 			}
 		}
@@ -160,7 +180,7 @@ public class StructureGridManager : MonoBehaviour {
 
 	public void MoveStructureEdit(StructureCell cell) {
 		currEditStructure.transform.position = cell.transform.position; //move the structure to the cell's world position
-		Vector2Int cellPos = cell.GetGridIndex(columns, rows); //get the cell's 2D index
+		Vector2Int cellPos = GetCellIndex(cell); //get the cell's 2D index
 
 		canFinalize = CheckForFinalize(cellPos, currEditStructure); //check to see if structure can be finalized in this index
 
@@ -169,14 +189,49 @@ public class StructureGridManager : MonoBehaviour {
 		}
 	}
 
-	public void RegisterExistingStructure(Structure s) {
-		StructureCell temp = GetNearestCell(s.transform.position); //get the nearest cell to the given structure
-		canFinalize = CheckForFinalize(temp.GetGridIndex(columns, rows), s); //see if structure can be placed where it already is
+	public IEnumerator RegisterExistingStructure(Structure s) {
+		while (!gridInitialized) {
+			yield return new WaitForEndOfFrame();
+		}
+
+		Vector2Int tempCellIndex = GetNearestCellIndex(s.transform.position); //get the nearest cell to the given structure
+		canFinalize = CheckForFinalize(tempCellIndex, s); //see if structure can be placed where it already is
 
 		if (canFinalize) { //if structure can be placed where it already is
-			FinalizeStructureEdit(temp, s); //ensure all cells know they are occupied
-		} else {
-			//find alternate position
+			FinalizeStructureEdit(tempCellIndex, s); //ensure all cells know they are occupied
+		} else { //another structure is taking some of the required space; move is required
+			bool alternateIndexFound = false;
+			Vector2Int currIndex;
+			Vector2Int adjustment;
+			int attempts = 0;
+			while (!alternateIndexFound) {
+				if (attempts % 4 == 0) { //every 4 attempts
+					adjustment = Vector2Int.left * attempts; //go left
+				} else if (attempts % 4 == 1) {
+					adjustment = Vector2Int.right * attempts; //go right
+				} else if (attempts % 4 == 2) {
+					adjustment = Vector2Int.down * attempts; //go up (reversed)
+				} else {
+					adjustment = Vector2Int.up * attempts; //go down
+				}
+				currIndex = tempCellIndex + adjustment; //add adjustment
+				currIndex.Clamp(Vector2Int.zero, new Vector2Int(columns, rows)); //ensure the index isn't out of bounds
+
+				yield return new WaitForSeconds(0.01f);
+				canFinalize = CheckForFinalize(currIndex, s); //see if structure can be placed at adjusted position
+				yield return new WaitForSeconds(0.01f);
+
+				if (canFinalize) {
+					s.transform.position = GetCell(currIndex).transform.position; //set the position of the structure to the position of the cell
+					FinalizeStructureEdit(currIndex, s); //ensure required cells are flagged as occupied
+				}
+
+				if (attempts >= 100) { //if we have tried too many times
+					Destroy(s.gameObject); //give up on the structure
+					break; //leave the loop
+				}
+				attempts++;
+			} //new position loop
 		}
 	}
 

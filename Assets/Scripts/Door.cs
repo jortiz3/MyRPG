@@ -8,8 +8,10 @@ public class Door : Interactable {
 	private string keyName;
 	[SerializeField]
 	private bool consumeKey;
-	[SerializeField, Tooltip("The object that will be disabled once the door is opened.")]
+	[SerializeField, Tooltip("The object that will be disabled once the door is opened; typically it will be the door itself.")]
 	private GameObject disableOnOpen;
+	[SerializeField, Tooltip("The roof to enable once the door is opened. (Enables transparency)")]
+	private Roof enableRoofOnOpen;
 
 	protected override void Initialize() {
 		SetInteractMessage("to open door.");
@@ -17,10 +19,18 @@ public class Door : Interactable {
 	}
 
 	protected override void InteractInternal() {
-		//check if player has the key
-		//if consume key >> display message "The key crumbles after you use it."
+		if (keyName != null && !keyName.Equals("")) { //if there is a key name
+			//check if player has the key
+			if (consumeKey) {
+				//remove key from inventory
+				//display message: "[keyName] crumbled into dust.."
+			}
+		}
 		if (disableOnOpen != null) {
 			disableOnOpen.SetActive(false);
+		}
+		if (enableRoofOnOpen != null) {
+			enableRoofOnOpen.Enable();
 		}
 		base.InteractInternal();
 	}
