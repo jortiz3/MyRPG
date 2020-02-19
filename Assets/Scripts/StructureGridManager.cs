@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 /// <summary>
 /// Manages the grid with which structure positions are conformed to. Written by Justin Ortiz
@@ -11,6 +12,7 @@ public class StructureGridManager : MonoBehaviour {
 	[SerializeField]
 	private int rows = 10; //y
 
+	private bool gridInitialized;
 	private bool editEnabled;
 	private bool canFinalize;
 
@@ -35,8 +37,9 @@ public class StructureGridManager : MonoBehaviour {
 
 			editEnabled = false;
 			canFinalize = false;
+			gridInitialized = false;
 
-			InitializeGrid();
+			StartCoroutine(InitializeGrid());
 
 			canvasGroup = GetComponent<CanvasGroup>(); //shows/hides the cells
 			SetGridActive(false); //uses canvasGroup
@@ -64,14 +67,17 @@ public class StructureGridManager : MonoBehaviour {
 	/// <param name="cellIndex">The 2D index of a cell on the grid.</param>
 	/// <returns></returns>
 	private bool CheckForFinalize(Vector2Int cellIndex, Structure s) {
-		for (int x = cellIndex.x; x < cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
-			for (int y = cellIndex.y; y < cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size
-				if (GetCell(x, y).Occupied) { //if the cell is occupied
-					return false;
+		if (gridInitialized) { //if the grid has been initialized, then we can check
+			for (int x = cellIndex.x; x < cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
+				for (int y = cellIndex.y; y < cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size
+					if (GetCell(x, y).Occupied) { //if the cell is occupied
+						return false;
+					}
 				}
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	/// <summary>
@@ -135,8 +141,9 @@ public class StructureGridManager : MonoBehaviour {
 		return nearestCell; //return the nearest cell
 	}
 
-	private void InitializeGrid() {
+	private IEnumerator InitializeGrid() {
 		ResetGridStatus(); //reset status of current cells
+		yield return new WaitForSeconds(0.01f);
 
 		if (transform.childCount > 0) { //if template cell is available
 			GameObject cellTemplate = transform.GetChild(0).gameObject; //get template
@@ -145,8 +152,10 @@ public class StructureGridManager : MonoBehaviour {
 			for (int i = transform.childCount; i < count; i++) { //start with current child count, increase to desired count
 				StructureCell sc = Instantiate(cellTemplate, transform).GetComponent<StructureCell>(); //instantiate template, ensure transform remains parent
 				sc.SetChildIndex(i); //store the cell's index for later use
+				yield return new WaitForSeconds(0.01f);
 			}
 		}
+		gridInitialized = true;
 	}
 
 	public void MoveStructureEdit(StructureCell cell) {

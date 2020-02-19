@@ -92,6 +92,10 @@ public class InputManager : MonoBehaviour {
 			Player.instance.MoveDirection(moveDirection, sprintEnabled);
 		}
 
+		if (Input.GetKeyDown(keyBindings["Interact"])) {
+			Interactable.Interact();
+		}
+
 #if UNITY_EDITOR
 		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
 			WorldManager.instance.LoadAdjacentArea(Directions.left);
