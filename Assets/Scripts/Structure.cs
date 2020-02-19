@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 //To do: add character ownership
-//To do: manage door & roof
+//To do: add LoadCustomStructure(string baseFileName, string roofFileName, string doorFileName) { load template structure, apply filenames>sprite to sprites[] }
 /// <summary>
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
@@ -22,6 +22,24 @@ public class Structure : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Adds a custom structure to the scene.
+	/// </summary>
+	/// <param name="dimensions">The extra grid cells required by the structure. Default: Size of 1 cell = (0, 0)</param>
+	/// <param name="worldPosition">Where the structure should be placed in the world prior to snapping to grid.</param>
+	public static void LoadCustomStructure(Sprite sprite_base, Sprite sprite_roof, Sprite sprite_door, Vector2Int dimensions, Vector3 worldPosition) {
+		Structure s = Resources.Load<Structure>("Structures/template_structure");
+		if (s != null) { //if the template was loaded
+			s.sprites[0].sprite = sprite_base; //update the sprites
+			s.sprites[1].sprite = sprite_roof;
+			s.sprites[2].sprite = sprite_door;
+
+			Instantiate(s.gameObject); //add to the scene
+			s.transform.localScale = new Vector3(5 + (5 * dimensions.x), 5 + (5 * dimensions.y), 1); //adjust the size of the building to conform to the grid
+			s.transform.position = worldPosition; //set the position
+		}
+	}
+
+	/// <summary>
 	/// Resets the sprite color to default; To be used on structure edit end.
 	/// </summary>
 	public void ResetColor() {
@@ -37,6 +55,7 @@ public class Structure : MonoBehaviour {
 	}
 
 	private void Start() {
+		transform.SetParent(AreaManagerNS.AreaManager.GetEntityParent("Structure"));
 		if (!StructureGridManager.instance.EditEnabled) { //if this structure was instantiated via loading, edit will not be enabled
 			StartCoroutine(StructureGridManager.instance.RegisterExistingStructure(this)); //register cells as occupied
 		}

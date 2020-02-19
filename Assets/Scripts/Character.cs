@@ -172,6 +172,10 @@ public class Character : MonoBehaviour {
 		}
 	}
 
+	private void Start() {
+		transform.SetParent(AreaManagerNS.AreaManager.GetEntityParent("Character"));
+	}
+
 	private void ToggleSprint() {
 		if (status_sprinting) {
 			navAgent.speed = walkSpeed;

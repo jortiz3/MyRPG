@@ -5,7 +5,7 @@ using AreaManagerNS;
 
 public class SceneryObject : MonoBehaviour
 {
-	private void Awake() {
+	private void Start() {
 		transform.SetParent(AreaManager.GetEntityParent("Scenery"));
 	}
 }

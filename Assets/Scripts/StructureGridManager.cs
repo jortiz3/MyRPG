@@ -172,7 +172,10 @@ public class StructureGridManager : MonoBehaviour {
 			for (int i = transform.childCount; i < count; i++) { //start with current child count, increase to desired count
 				StructureCell sc = Instantiate(cellTemplate, transform).GetComponent<StructureCell>(); //instantiate template, ensure transform remains parent
 				sc.SetChildIndex(i); //store the cell's index for later use
-				yield return new WaitForSeconds(0.01f);
+
+				if (i % 10 == 0) { //every 5 cells
+					yield return new WaitForSeconds(0.01f); //insert pause
+				}
 			}
 		}
 		gridInitialized = true;
