@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6446400907757984119}
   - component: {fileID: 6446400907757984104}
-  - component: {fileID: 3722877904135942303}
   - component: {fileID: 4555966104866955702}
   - component: {fileID: 4596500103425962789}
   - component: {fileID: 5324055503312880483}
+  - component: {fileID: 6150359701354492290}
   m_Layer: 5
   m_Name: Forest_1
   m_TagString: Untagged
@@ -89,22 +89,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!58 &3722877904135942303
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6446400907757984118}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.1}
-  serializedVersion: 2
-  m_Radius: 0.3
 --- !u!114 &4555966104866955702
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,3 +130,16 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: -0.1, z: 0}
   m_TimeToStationary: 0.5
+--- !u!135 &6150359701354492290
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6446400907757984118}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}

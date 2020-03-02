@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 2561262813769975990}
   - component: {fileID: 2561262813769975977}
-  - component: {fileID: 5284701721395372382}
   - component: {fileID: 5028078241455698039}
   - component: {fileID: 4987549602812453604}
   - component: {fileID: 6598069237994549429}
+  - component: {fileID: 1234613137211719513}
   m_Layer: 5
   m_Name: Plains_0
   m_TagString: Untagged
@@ -89,22 +89,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!58 &5284701721395372382
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2561262813769975991}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.1}
-  serializedVersion: 2
-  m_Radius: 0.3
 --- !u!114 &5028078241455698039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,3 +130,16 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: -0.1, z: 0}
   m_TimeToStationary: 0.5
+--- !u!135 &1234613137211719513
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2561262813769975991}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}

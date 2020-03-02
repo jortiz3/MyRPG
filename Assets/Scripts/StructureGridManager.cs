@@ -14,6 +14,7 @@ public class StructureGridManager : MonoBehaviour {
 
 	private bool gridInitialized;
 	private bool editEnabled;
+	private bool editFinalizing;
 	private bool canFinalize;
 
 	private Structure currEditStructure;
@@ -21,6 +22,7 @@ public class StructureGridManager : MonoBehaviour {
 	private CanvasGroup canvasGroup;
 
 	public bool EditEnabled { get { return editEnabled; } }
+	public bool EditFinalizing { get { return editFinalizing; } }
 
 	private void Awake() {
 		if (instance != null) { //if another instance exists
@@ -97,7 +99,7 @@ public class StructureGridManager : MonoBehaviour {
 	/// <param name="cellIndex">The top-left cell within which to place the structure</param>
 	public void FinalizeStructureEdit(Vector2Int cellIndex) {
 		if (currEditStructure != null) {
-			FinalizeStructureEdit(cellIndex, currEditStructure);
+			StartCoroutine(FinalizeStructureEdit(cellIndex, currEditStructure));
 		}
 	}
 
@@ -106,10 +108,15 @@ public class StructureGridManager : MonoBehaviour {
 	/// </summary>
 	/// <param name="cellIndex">The top-left cell within which to place the structure</param>
 	/// <param name="s">The structure to finalize</param>
-	public void FinalizeStructureEdit(Vector2Int cellIndex, Structure s) {
+	public IEnumerator FinalizeStructureEdit(Vector2Int cellIndex, Structure s) {
+		while (editFinalizing) {
+			yield return new WaitForEndOfFrame();
+		}
+
 		if (!canFinalize) {
 			//play error noise?
 		} else {
+			editFinalizing = true;
 			SetGridActive(false);
 			s.ResetColor();
 
@@ -119,7 +126,10 @@ public class StructureGridManager : MonoBehaviour {
 				}
 			}
 
+			yield return new WaitForSeconds(0.2f);
+
 			editEnabled = false;
+			editFinalizing = false;
 			canFinalize = false;
 		}
 	}
@@ -201,7 +211,7 @@ public class StructureGridManager : MonoBehaviour {
 		canFinalize = CheckForFinalize(tempCellIndex, s); //see if structure can be placed where it already is
 
 		if (canFinalize) { //if structure can be placed where it already is
-			FinalizeStructureEdit(tempCellIndex, s); //ensure all cells know they are occupied
+			StartCoroutine(FinalizeStructureEdit(tempCellIndex, s)); //ensure all cells know they are occupied
 		} else { //another structure is taking some of the required space; move is required
 			bool alternateIndexFound = false;
 			Vector2Int currIndex;
@@ -220,13 +230,14 @@ public class StructureGridManager : MonoBehaviour {
 				currIndex = tempCellIndex + adjustment; //add adjustment
 				currIndex.Clamp(Vector2Int.zero, new Vector2Int(columns, rows)); //ensure the index isn't out of bounds
 
-				yield return new WaitForSeconds(0.01f);
+				yield return new WaitForEndOfFrame();
 				canFinalize = CheckForFinalize(currIndex, s); //see if structure can be placed at adjusted position
 				yield return new WaitForSeconds(0.01f);
 
 				if (canFinalize) {
 					s.transform.position = GetCell(currIndex).transform.position; //set the position of the structure to the position of the cell
-					FinalizeStructureEdit(currIndex, s); //ensure required cells are flagged as occupied
+					StartCoroutine(FinalizeStructureEdit(currIndex, s)); //ensure required cells are flagged as occupied
+					alternateIndexFound = true;
 				}
 
 				if (attempts >= 100) { //if we have tried too many times
