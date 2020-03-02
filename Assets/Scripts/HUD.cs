@@ -22,14 +22,18 @@ public class HUD : MonoBehaviour {
 
 	public void HideInteractionText() {
 		if (interactionText != null) {
-			interactionText.gameObject.SetActive(false);
+			if (interactionText.gameObject.activeSelf) {
+				interactionText.gameObject.SetActive(false);
+			}
 		}
 	}
 
 	public void ShowInteractionText(string text) {
 		if (interactionText != null) {
 			interactionText.text = text;
-			interactionText.gameObject.SetActive(true);
+			if (!interactionText.gameObject.activeSelf) {
+				interactionText.gameObject.SetActive(true);
+			}
 		}
 	}
 }

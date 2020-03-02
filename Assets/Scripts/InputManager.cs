@@ -27,6 +27,8 @@ public class InputManager : MonoBehaviour {
 
 			if (setDefaultKeys) {
 				keyBindings = new Dictionary<string, KeyCode>();
+				keyBindings.Add("Submit", KeyCode.Return);
+				keyBindings.Add("Cancel", KeyCode.Escape);
 				keyBindings.Add("Interact", KeyCode.E);
 				keyBindings.Add("Movement_Up", KeyCode.W);
 				keyBindings.Add("Movement_Down", KeyCode.S);
@@ -96,6 +98,16 @@ public class InputManager : MonoBehaviour {
 			Interactable.Interact();
 		}
 
+		if (Input.GetKeyDown(keyBindings["Submit"])) {
+			//do nothing for now
+		}
+
+		if (Input.GetKeyDown(keyBindings["Cancel"])) {
+			if (StructureGridManager.instance.EditEnabled) {
+				StructureGridManager.instance.CancelStructureEdit();
+			}
+		}
+
 #if UNITY_EDITOR
 		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
 			WorldManager.instance.LoadAdjacentArea(Directions.left);
@@ -115,6 +127,9 @@ public class InputManager : MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.L)) {
 			WorldManager.instance.LoadAreaData("Player1", "Debug World");
+		}
+		if (Input.GetKeyDown(KeyCode.P)) {
+			StructureGridManager.instance.BeginStructureEdit("City_0");
 		}
 #endif
 	}

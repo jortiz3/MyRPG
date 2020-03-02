@@ -28,6 +28,8 @@ public class WorldManager : MonoBehaviour {
 	}
 
 	public void LoadAdjacentArea(Directions direction) {
+		HUD.instance.HideInteractionText(); //ensure hud is cleared as next area is loaded
+
 		switch (direction) {
 			case Directions.up:
 				areaManager.LoadArea(direction);

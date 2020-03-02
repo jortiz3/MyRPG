@@ -30,25 +30,29 @@ public class Interactable : MonoBehaviour {
 	}
 
 	private void OnTriggerEnter(Collider other) {
-		if (other.CompareTag("Player")) { //player enters the interact range
-			if (displayedInteractable != null) { //if something is already displayed
-				displayedInteractable.interactable = false; //ensure only 1 interactable is used at a time
+		if (!StructureGridManager.instance.EditEnabled) {
+			if (other.CompareTag("Player")) { //player enters the interact range
+				if (displayedInteractable != null) { //if something is already displayed
+					displayedInteractable.interactable = false; //ensure only 1 interactable is used at a time
+				}
+				HUD.instance.ShowInteractionText(interactMessage); //show the interaction text
+				displayedInteractable = this; //flag this as shown
+				interactable = true; //allow player to interact
 			}
-			HUD.instance.ShowInteractionText(interactMessage); //show the interaction text
-			displayedInteractable = this; //flag this as shown
-			interactable = true; //allow player to interact
 		}
 	}
 
 	private void OnTriggerExit(Collider other) {
-		if (other.CompareTag("Player")) { //player exits the interact range
-			if (displayedInteractable != null) { //if an interaction is displayed
-				if (displayedInteractable.Equals(this)) { //if this is the interaction currently being displayed
-					HUD.instance.HideInteractionText(); //hide the text
-					displayedInteractable = null; //remove flag for this being the displayed interaction
+		if (!StructureGridManager.instance.EditEnabled) {
+			if (other.CompareTag("Player")) { //player exits the interact range
+				if (displayedInteractable != null) { //if an interaction is displayed
+					if (displayedInteractable.Equals(this)) { //if this is the interaction currently being displayed
+						HUD.instance.HideInteractionText(); //hide the text
+						displayedInteractable = null; //remove flag for this being the displayed interaction
+					}
 				}
+				interactable = false; //ensure player can no longer interact
 			}
-			interactable = false; //ensure player can no longer interact
 		}
 	}
 

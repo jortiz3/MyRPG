@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// Tracks whether it is occupied; Detects mouse input while in edit mode. Written by Justin Ortiz
@@ -28,14 +29,14 @@ public class StructureCell : MonoBehaviour {
 	/// <param name="columns">Number of columns in the grid.</param>
 	/// <param name="rows">Number of rows in the grid.</param>
 	/// <returns>Vector2Int grid index/position.</returns>
-	public Vector2Int GetGridIndex(int columns, int rows) {
-		return new Vector2Int(childIndex / rows, childIndex / columns);
+	public Vector2Int GetGridIndex(int columns) {
+		return new Vector2Int(childIndex % columns, childIndex / columns);
 	}
 
 	/// <summary>
 	/// Called by event trigger script in inspector; Finalizes edit mode
 	/// </summary>
-	public void PointerClick() {
+	public void OnPointerClick() {
 		if (StructureGridManager.instance.EditEnabled) { //only trigger while edit is enabled
 			StructureGridManager.instance.FinalizeStructureEdit(this);
 		}
@@ -44,7 +45,7 @@ public class StructureCell : MonoBehaviour {
 	/// <summary>
 	/// Called by event trigger script in inspector; Moves edit structure & updates this cell's color
 	/// </summary>
-	public void PointerEnter() {
+	public void OnPointerEnter() {
 		if (StructureGridManager.instance.EditEnabled) { //only trigger while edit is enabled
 			StructureGridManager.instance.MoveStructureEdit(this); //move the structure to this pos
 		}

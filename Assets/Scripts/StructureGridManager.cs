@@ -17,6 +17,7 @@ public class StructureGridManager : MonoBehaviour {
 	private bool editFinalizing;
 	private bool canFinalize;
 
+	private StructureCell currCell;
 	private Structure currEditStructure;
 
 	private CanvasGroup canvasGroup;
@@ -49,15 +50,31 @@ public class StructureGridManager : MonoBehaviour {
 	}
 
 	public void BeginStructureEdit(string structureName) {
+		if (editEnabled) { //this method should not be called after editing starts.. but just in case
+			if (currEditStructure != null) { //if there's already a structure being edited somehow
+				Destroy(currEditStructure.gameObject); //delete that structure
+			}
+		}
+
 		currEditStructure = Resources.Load<Structure>("Structures/" + structureName); //attempt to load structure from assets
 
 		if (currEditStructure != null) { //if it was retrieved
 			SetGridActive(true); //show the grid
 			editEnabled = true; //start edit
+
+			currEditStructure = Instantiate(currEditStructure);
+
+			currCell = GetCell(GetNearestCellIndex(Player.instance.transform.position));
+			MoveStructureEdit(currCell);
+
+			CameraManager.instance.ShowStructureCam(currEditStructure.transform);
 		}
 	}
 
 	public void CancelStructureEdit() {
+		CameraManager.instance.Reset(); //camera follow player again
+		HUD.instance.HideInteractionText(); //ensure no text is displayed
+		currCell = null; //remove pointer to cell
 		Destroy(currEditStructure.gameObject); //remove the temp structure from scene
 		SetGridActive(false); //hide the grid
 		editEnabled = false; //end edit
@@ -70,15 +87,16 @@ public class StructureGridManager : MonoBehaviour {
 	/// <returns></returns>
 	private bool CheckForFinalize(Vector2Int cellIndex, Structure s) {
 		if (gridInitialized) { //if the grid has been initialized, then we can check
-			Vector2Int originalIndex;
-			for (int x = cellIndex.x; x < cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
-				for (int y = cellIndex.y; y < cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size
-					originalIndex = cellIndex; //store current index
-					cellIndex.Clamp(Vector2Int.zero, new Vector2Int(columns, rows)); //try to clamp the current index to bounds
+			for (int x = cellIndex.x; x <= cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
+				if (x >= columns) { //if dimensions are going out of bounds
+					return false;
+				}
 
-					if (!originalIndex.Equals(cellIndex)) { //if index was clamped, then original was outside of bounds
-						return false; //cannot finalize if part of structure is out of bounds
+				for (int y = cellIndex.y; y <= cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size
+					if (y >= rows) { //if dimensions are going out of bounds
+						return false;
 					}
+
 					if (GetCell(x, y).Occupied) { //if the cell is occupied
 						return false;
 					}
@@ -87,6 +105,12 @@ public class StructureGridManager : MonoBehaviour {
 			return true;
 		}
 		return false;
+	}
+
+	public void FinalizeStructureEdit() {
+		if (currCell != null) {
+			FinalizeStructureEdit(currCell);
+		}
 	}
 
 	public void FinalizeStructureEdit(StructureCell cell) {
@@ -128,9 +152,21 @@ public class StructureGridManager : MonoBehaviour {
 
 			yield return new WaitForSeconds(0.2f);
 
+			CameraManager.instance.Reset();
+
 			editEnabled = false;
 			editFinalizing = false;
 			canFinalize = false;
+		}
+	}
+
+	private void FixedUpdate() {
+		if (editEnabled) { //only update interactions during editing
+			if (canFinalize) { //if the the building can be placed
+				HUD.instance.ShowInteractionText("Left-Click to finalize.");
+			} else {
+				HUD.instance.HideInteractionText();
+			}
 		}
 	}
 
@@ -153,7 +189,7 @@ public class StructureGridManager : MonoBehaviour {
 	}
 
 	private Vector2Int GetCellIndex(StructureCell cell) {
-		return cell.GetGridIndex(columns, rows);
+		return cell.GetGridIndex(columns);
 	}
 
 	private Vector2Int GetNearestCellIndex(Vector3 worldPosition) {
@@ -195,11 +231,15 @@ public class StructureGridManager : MonoBehaviour {
 		currEditStructure.transform.position = cell.transform.position; //move the structure to the cell's world position
 		Vector2Int cellPos = GetCellIndex(cell); //get the cell's 2D index
 
-		canFinalize = CheckForFinalize(cellPos, currEditStructure); //check to see if structure can be finalized in this index
+		//canFinalize = CheckForFinalize(cellPos, currEditStructure); //check to see if structure can be finalized in this index
 
 		if (canFinalize) { //if all the required cells were unoccupied
 			currEditStructure.SetColor(StructureCell.Color_Unoccupied); //show the player they are able to place there
+		} else {
+			currEditStructure.SetColor(StructureCell.Color_Occupied); //show the player they can't place there
 		}
+
+		currCell = cell;
 	}
 
 	public IEnumerator RegisterExistingStructure(Structure s) {
@@ -253,13 +293,13 @@ public class StructureGridManager : MonoBehaviour {
 	/// Resets all cells in grid to unoccupied status
 	/// </summary>
 	public void ResetGridStatus() {
-		StructureCell currCell;
 		for (int i = 0; i < transform.childCount; i++) {
 			currCell = transform.GetChild(i).GetComponent<StructureCell>();
 			if (currCell != null) {
 				currCell.Reset();
 			}
 		}
+		currCell = null;
 	}
 
 	private void SetGridActive(bool active) {
