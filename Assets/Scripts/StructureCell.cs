@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// Tracks whether it is occupied; Detects mouse input while in edit mode. Written by Justin Ortiz
@@ -11,7 +11,7 @@ public class StructureCell : MonoBehaviour {
 
 	private int childIndex;
 	private bool occupied;
-	private SpriteRenderer sprite;
+	private Image image;
 
 	public static Color Color_Occupied { get { return color_occupied; } }
 	public static Color Color_Unoccupied { get { return color_unoccupied; } }
@@ -19,7 +19,7 @@ public class StructureCell : MonoBehaviour {
 	public bool Occupied { get { return occupied; } }
 
 	private void Awake() {
-		sprite = GetComponent<SpriteRenderer>();
+		image = GetComponent<Image>();
 		SetColor(color_default);
 	}
 	
@@ -31,15 +31,6 @@ public class StructureCell : MonoBehaviour {
 	/// <returns>Vector2Int grid index/position.</returns>
 	public Vector2Int GetGridIndex(int columns) {
 		return new Vector2Int(childIndex % columns, childIndex / columns);
-	}
-
-	/// <summary>
-	/// Called by event trigger script in inspector; Finalizes edit mode
-	/// </summary>
-	public void OnPointerClick() {
-		if (StructureGridManager.instance.EditEnabled) { //only trigger while edit is enabled
-			StructureGridManager.instance.FinalizeStructureEdit(this);
-		}
 	}
 
 	/// <summary>
@@ -65,8 +56,8 @@ public class StructureCell : MonoBehaviour {
 	}
 
 	private void SetColor(Color c) {
-		if (sprite != null) {
-			sprite.color = c;
+		if (image != null) {
+			image.color = c;
 		}
 	}
 

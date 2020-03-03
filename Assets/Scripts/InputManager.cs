@@ -30,12 +30,14 @@ public class InputManager : MonoBehaviour {
 				keyBindings.Add("Submit", KeyCode.Return);
 				keyBindings.Add("Cancel", KeyCode.Escape);
 				keyBindings.Add("Interact", KeyCode.E);
+				keyBindings.Add("Attack_Basic", KeyCode.Mouse0);
+				keyBindings.Add("Attack_Special", KeyCode.Mouse1);
 				keyBindings.Add("Movement_Up", KeyCode.W);
 				keyBindings.Add("Movement_Down", KeyCode.S);
 				keyBindings.Add("Movement_Left", KeyCode.A);
 				keyBindings.Add("Movement_Right", KeyCode.D);
 				keyBindings.Add("Movement_Sprint", KeyCode.LeftShift);
-				keyBindings.Add("Attack_Basic", KeyCode.Space);
+				keyBindings.Add("Movement_Dodge", KeyCode.Space);
 				keyBindings.Add("Slot_1", KeyCode.Alpha1);
 				keyBindings.Add("Slot_2", KeyCode.Alpha2);
 				keyBindings.Add("Slot_3", KeyCode.Alpha3);
@@ -98,8 +100,16 @@ public class InputManager : MonoBehaviour {
 			Interactable.Interact();
 		}
 
+		if (Input.GetKeyDown(keyBindings["Attack_Basic"])) {
+			if (StructureGridManager.instance.EditEnabled) { //only trigger while edit is enabled
+				StructureGridManager.instance.FinalizeStructureEdit();
+			}
+		}
+
 		if (Input.GetKeyDown(keyBindings["Submit"])) {
-			//do nothing for now
+			if (StructureGridManager.instance.EditEnabled) { //only trigger while edit is enabled
+				StructureGridManager.instance.FinalizeStructureEdit();
+			}
 		}
 
 		if (Input.GetKeyDown(keyBindings["Cancel"])) {
