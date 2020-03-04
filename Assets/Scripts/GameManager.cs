@@ -5,6 +5,4 @@ using UnityEngine.AI;
 
 public class GameManager : MonoBehaviour {
 	public static LoadingBar loadingBar;
-	public static WorldManager worldManager;
-	public static Player player;
 }

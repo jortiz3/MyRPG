@@ -8,6 +8,7 @@ using AreaManagerNS;
 /// Written by Justin Ortiz
 /// </summary>
 public class WorldManager : MonoBehaviour {
+	public static WorldManager instance;
 	private static float elapsedGameTime;
 
 	private AreaManager areaManager;
@@ -15,10 +16,10 @@ public class WorldManager : MonoBehaviour {
 	public static float ElapsedGameTime { get { return elapsedGameTime; } }
 
 	private void Awake() {
-		if (GameManager.worldManager != null) {
+		if (instance != null) {
 			Destroy(gameObject);
 		} else {
-			GameManager.worldManager = this;
+			instance = this;
 		}
 	}
 
@@ -27,6 +28,8 @@ public class WorldManager : MonoBehaviour {
 	}
 
 	public void LoadAdjacentArea(Directions direction) {
+		HUD.instance.HideInteractionText(); //ensure hud is cleared as next area is loaded
+
 		switch (direction) {
 			case Directions.up:
 				areaManager.LoadArea(direction);

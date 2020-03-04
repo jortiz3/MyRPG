@@ -1,13 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player : Character {
+	public static Player instance;
+
 	protected override void Initialize() {
-		if (GameManager.player != null) {
+		if (instance != null) {
 			Destroy(gameObject);
 		} else {
-			GameManager.player = this;
+			instance = this;
 		}
 
 		base.Initialize();
