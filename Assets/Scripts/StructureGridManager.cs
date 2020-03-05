@@ -16,6 +16,7 @@ public class StructureGridManager : MonoBehaviour {
 	private bool editEnabled;
 	private bool editFinalizing;
 	private bool canFinalize;
+	private bool usePlayerResources;
 
 	private StructureCell currCell;
 	private Structure currEditStructure;
@@ -49,10 +50,10 @@ public class StructureGridManager : MonoBehaviour {
 		}
 	}
 
-	public void BeginStructureEdit(string structureName) {
+	public void BeginStructureCreate(string structureName) {
 		if (editEnabled) { //this method should not be called after editing starts.. but just in case
 			if (currEditStructure != null) { //if there's already a structure being edited somehow
-				Destroy(currEditStructure.gameObject); //delete that structure
+				return; //don't do anything
 			}
 		}
 
@@ -60,7 +61,7 @@ public class StructureGridManager : MonoBehaviour {
 
 		if (currEditStructure != null) { //if it was retrieved
 			SetGridActive(true); //show the grid
-			editEnabled = true; //start edit
+			
 
 			currEditStructure = Instantiate(currEditStructure);
 
@@ -68,7 +69,31 @@ public class StructureGridManager : MonoBehaviour {
 			MoveStructureEdit(currCell);
 
 			CameraManager.instance.ShowStructureCam(currEditStructure.transform);
+
+			usePlayerResources = true;
+			editEnabled = true; //start edit
 		}
+	}
+
+	public void BeginStructureEdit(Structure s) {
+		if (editEnabled) { //if somehow edit is enabled
+			if (currEditStructure != null) { //if there's a structure already being edited
+				return; //do nothing
+			}
+		}
+
+		currEditStructure = s; //set the structure to edit
+		SetGridActive(true); //show the grid
+
+		//unregister structure from grid
+
+		currCell = GetCell(GetNearestCellIndex(s.transform.position)); //establish current cell based on where structure already is
+		MoveStructureEdit(currCell); //update the colors and finalization possibility
+
+		CameraManager.instance.ShowStructureCam(currEditStructure.transform); //follow structure with cam
+
+		usePlayerResources = false;
+		editEnabled = true;
 	}
 
 	public void CancelStructureEdit() {
@@ -77,6 +102,7 @@ public class StructureGridManager : MonoBehaviour {
 		currCell = null; //remove pointer to cell
 		Destroy(currEditStructure.gameObject); //remove the temp structure from scene
 		SetGridActive(false); //hide the grid
+		usePlayerResources = false;
 		editEnabled = false; //end edit
 	}
 
@@ -111,6 +137,11 @@ public class StructureGridManager : MonoBehaviour {
 		if (currCell != null) {
 			if (canFinalize) {
 				FinalizeStructureEdit(currCell);
+
+				if (usePlayerResources) {
+					//remove resources from player inventory
+					usePlayerResources = false;
+				}
 			}
 		}
 	}

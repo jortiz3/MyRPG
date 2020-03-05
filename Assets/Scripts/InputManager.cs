@@ -52,6 +52,22 @@ public class InputManager : MonoBehaviour {
 		}
 	}
 
+	private void CheckForCancel() {
+		if (StructureGridManager.instance.EditEnabled) {
+			StructureGridManager.instance.CancelStructureEdit();
+		} else if (Furniture.EditEnabled) {
+			Furniture.CancelEdit();
+		}
+	}
+
+	private void CheckForFinalize() {
+		if (StructureGridManager.instance.EditEnabled) {
+			StructureGridManager.instance.FinalizeStructureEdit();
+		} else if (Furniture.EditEnabled) {
+			Furniture.FinalizeEdit();
+		}
+	}
+
 	public string GetKeyCodeName(string axisName) {
 		return keyBindings[axisName].ToString();
 	}
@@ -101,21 +117,21 @@ public class InputManager : MonoBehaviour {
 		}
 
 		if (Input.GetKeyDown(keyBindings["Attack_Basic"])) {
-			if (StructureGridManager.instance.EditEnabled) { //only trigger while edit is enabled
-				StructureGridManager.instance.FinalizeStructureEdit();
-			}
+			//if game status != normal
+			CheckForFinalize();
+		}
+
+		if (Input.GetKeyDown(keyBindings["Attack_Special"])) {
+			//if game status != normal
+			CheckForCancel();
 		}
 
 		if (Input.GetKeyDown(keyBindings["Submit"])) {
-			if (StructureGridManager.instance.EditEnabled) { //only trigger while edit is enabled
-				StructureGridManager.instance.FinalizeStructureEdit();
-			}
+			CheckForFinalize();
 		}
 
 		if (Input.GetKeyDown(keyBindings["Cancel"])) {
-			if (StructureGridManager.instance.EditEnabled) {
-				StructureGridManager.instance.CancelStructureEdit();
-			}
+			CheckForCancel();
 		}
 
 #if UNITY_EDITOR
@@ -139,7 +155,10 @@ public class InputManager : MonoBehaviour {
 			WorldManager.instance.LoadAreaData("Player1", "Debug World");
 		}
 		if (Input.GetKeyDown(KeyCode.P)) {
-			StructureGridManager.instance.BeginStructureEdit("City_0");
+			StructureGridManager.instance.BeginStructureCreate("City_0");
+		}
+		if (Input.GetKeyDown(KeyCode.F)) {
+			Furniture.Create("Chest_0", null);
 		}
 #endif
 	}

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 //To do: add character ownership
 //To do: add LoadCustomStructure(string baseFileName, string roofFileName, string doorFileName) { load template structure, apply filenames>sprite to sprites[] }
@@ -12,8 +13,11 @@ public class Structure : MonoBehaviour {
 	private SpriteRenderer[] sprites;
 	[SerializeField, Tooltip("The structure's additional cell size (x,y); Default size of 1 == (0,0)")]
 	private Vector2Int dimensions;
+	private string owner;
+	private List<Furniture> furniture;
 
 	public Vector2Int Dimensions { get { return dimensions; } }
+	public string Owner { get { return owner; } }
 
 	private void Awake() {
 		if (sprites != null && sprites.Length > 0) {
@@ -39,6 +43,13 @@ public class Structure : MonoBehaviour {
 		}
 	}
 
+	public void RegisterFurniture(Furniture f) {
+		if (furniture == null) {
+			furniture = new List<Furniture>();
+		}
+		furniture.Add(f);
+	}
+
 	/// <summary>
 	/// Resets the sprite color to default; To be used on structure edit end.
 	/// </summary>
@@ -52,6 +63,18 @@ public class Structure : MonoBehaviour {
 				sprites[i].color = c;
 			}
 		}
+	}
+
+	public void SetFurnitureAsChildren() {
+		if (furniture != null) {
+			for (int i = 0; i < furniture.Count; i++) {
+				furniture[i].transform.SetParent(transform);
+			}
+		}
+	}
+
+	public void SetOwner(string name) {
+		owner = name;
 	}
 
 	private void Start() {

@@ -18,6 +18,7 @@ namespace AreaManagerNS {
 		private static Transform structureParent;
 		private static Transform characterParent;
 		private static Transform sceneryParent;
+		private static Transform furnitureParent;
 		private static NavMeshSurface navMesh;
 
 		private Transform canvas_area;
@@ -35,6 +36,7 @@ namespace AreaManagerNS {
 			structureParent = transform.Find("Structures");
 			sceneryParent = transform.Find("Scenery");
 			characterParent = transform.Find("Characters");
+			furnitureParent = transform.Find("Furniture");
 			navMesh = transform.Find("NavMesh").GetComponent<NavMeshSurface>();
 		}
 
@@ -190,6 +192,8 @@ namespace AreaManagerNS {
 					return characterParent;
 				case "Background":
 					return backgroundParent;
+				case "Furniture":
+					return furnitureParent;
 				default:
 					return characterParent;
 			}
