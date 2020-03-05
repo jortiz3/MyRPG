@@ -1,4 +1,4 @@
-﻿using System.Xml.Serialization;
+﻿using System;
 using UnityEngine;
 
 namespace AreaManagerNS.AreaNS {
@@ -7,15 +7,11 @@ namespace AreaManagerNS.AreaNS {
 	/// Entity: Information regarding a GameObject that may be loaded into a Scene.
 	/// Written by Justin Ortiz
 	/// </summary>
-	[XmlType("Entity")]
+	[Serializable]
 	public class Entity {
-		[XmlAttribute("Name")]
 		public string name;
-		[XmlAttribute("Position.X")]
 		public float positionX;
-		[XmlAttribute("Position.Y")]
 		public float positionY;
-		[XmlAttribute("LastUpdatedAt")]
 		public int lastUpdated; // time since last update (seconds)
 
 		public static Entity Parse(GameObject gameObject) {
@@ -24,7 +20,7 @@ namespace AreaManagerNS.AreaNS {
 
 		public static Entity Parse(Transform transform) {
 			Entity temp = new Entity();
-			temp.name = transform.name;
+			temp.name = transform.parent.name + "/" + transform.name.Replace("(Clone)", "");
 			temp.positionX = transform.position.x;
 			temp.positionY = transform.position.y;
 			temp.lastUpdated = (int)WorldManager.ElapsedGameTime;
