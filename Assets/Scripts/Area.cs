@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,119 +11,57 @@ namespace AreaManagerNS.AreaNS {
 	/// Area: Class that randomly populates, manages, and displays entities that belong in an area.
 	/// Written by Justin Ortiz
 	/// </summary>
-	[XmlRoot(ElementName = "Area"), XmlInclude(typeof(AreaType)), XmlInclude(typeof(Entity))]
+	[Serializable]
 	public class Area {
-
-		public static int GenericAreaTotalSpreadChance { get { return genericAreaTotalSpreadChance; } }
 		public static int Size { get { return boundaryRadius; } }
 
-		private static List<AreaType> areaTypes;
-		private static int genericAreaTotalSpreadChance;
-		private static int boundaryRadius = 50; //square boundary; distance (worldspace) from center to edge
+		private static int boundaryRadius = 100; //square boundary; distance (worldspace) from center to edge
 
+		[SerializeField]
 		private AreaType type;
+		[SerializeField]
 		private List<Entity> entities;
+		[SerializeField]
 		private Vector2IntS position;
+		[SerializeField]
 		private bool discovered;
+		[SerializeField]
 		private int lastUpdated;
-		private string pathToSaveTo;
 
-		[XmlElement("MapPosition")]
-		public Vector2IntS MapPosition { get { return position; } set { position = value; } }
-
-		[XmlElement("DiscoveredByPlayer")]
-		public bool Discovered { get { return discovered; } set { discovered = value; } }
-
-		[XmlElement("LastUpdatedAt")]
-		public int LastUpdated { get { return lastUpdated; } set { lastUpdated = value; } }
-
-		[XmlElement("AreaType")]
-		public AreaType Type { get { return type; } set { type = value; } }
-
-		[XmlArray("EntityList"), XmlArrayItem(ElementName = "Entity", Type = typeof(Entity))]
-		public List<Entity> Entities { get { return entities; } set { entities = value; } }
+		
+		public Vector2IntS MapPosition { get { return position; } }
+		public bool Discovered { get { return discovered; } }
+		public int LastUpdated { get { return lastUpdated; } }
+		public AreaType Type { get { return type; } }
+		public List<Entity> Entities { get { return entities; } }
 
 		public Area() {
 			discovered = false;
 			position = Vector2IntS.zero;
-			pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".xml";
-			type = areaTypes[0];
+			type = AreaTypeManager.GetAreaType(0);
 			entities = new List<Entity>();
 		}
 
-		public Area(AreaType areaType, Vector2Int Position) {
+		public Area(Vector2Int Position) {
 			discovered = false;
 			position = new Vector2IntS(Position);
-			pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".xml";
-			type = areaType;
+			type = AreaTypeManager.GetAreaType(0);
 			entities = new List<Entity>();
 		}
 
-		public void AssignType(int typeID) {
-			if (typeID >= 0 && typeID < areaTypes.Count) {
-				if (areaTypes != null) {
-					type = areaTypes[typeID];
-				}
-			}
-		}
-
-		public void AssignType(string areaName) {
-			for (int i = 0; i < areaTypes.Count; i++) { //search through list
-				if (areaTypes[i].name.Equals(areaName)) { //if name matches
-					type = areaTypes[i]; //return the type
-					return; //leave method
-				}
-			} //if loop completes, area name was not found
-			type = areaTypes[0]; //assign default type
+		public Area(Vector2Int Position, AreaType areaType) {
+			discovered = false;
+			position = new Vector2IntS(Position);
+			type = areaType;
+			entities = new List<Entity>();
 		}
 
 		public void AssignType(AreaType atype) {
 			if (atype != null) {
 				type = atype;
 			} else {
-				type = areaTypes[0];
+				type = AreaTypeManager.GetAreaType(0);
 			}
-		}
-
-		//to be called if/when the AreaTypes.xml file is missing
-		private static void GenerateDefaultAreaTypes() {
-			areaTypes = new List<AreaType>(); //instantiate the array
-			areaTypes.Add(new AreaType("Plains", 0, 0, 4, 200, 0, 0, 5000));
-			areaTypes.Add(new AreaType("Forest", 0, 0, 3, 500, 0, 0, 25000));
-			areaTypes.Add(new AreaType("Mountain", 0, 0, 2, 200, 0, 0, 10000));
-			areaTypes.Add(new AreaType("Marsh", 0, 0, 0, 200, 0, 0, 20000));
-			areaTypes.Add(new AreaType("City_RAM", 0, 0, 0, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("City_CPR", 0, 0, 0, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("City_HoZ", 0, 0, 0, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("City_DV", 0, 0, 0, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("Camp_Bandit", 0, 0, 0, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("Dungeon_Minor Lich", 0, 0, 40, 200, 0, 0, 0));
-			areaTypes.Add(new AreaType("Dungone_Greater Demon", 0, 0, 0, 200, 0, 0, 0));
-		}
-
-		public static string[] GetAllAreaTypeNames() {
-			string[] temp = new string[areaTypes.Count];
-			for (int i = 0; i < temp.Length; i++) {
-				temp[i] = areaTypes[i].name;
-			}
-			return temp;
-		}
-
-		public static AreaType GetAreaType(int index) {
-			if (index >= 0 && index < areaTypes.Count) {
-				return areaTypes[index];
-			} else {
-				return areaTypes[0];
-			}
-		}
-
-		public static AreaType GetAreaType(string typeName) {
-			for (int i = 0; i < areaTypes.Count; i++) {
-				if (areaTypes[i].name.Equals(typeName)) {
-					return areaTypes[i];
-				}
-			}
-			return areaTypes[0];
 		}
 
 		private void InstantiateEntities() {
@@ -137,34 +75,6 @@ namespace AreaManagerNS.AreaNS {
 						entities.RemoveAt(i); //remove from entity list
 					}
 				}
-			}
-		}
-
-		public static void LoadAreaTypes() {
-			string folderPath = Application.persistentDataPath + "/data/";
-			string fileName = "AreaTypes.xml";
-
-			if (!Directory.Exists(folderPath)) { //ensure the folderpath exists
-				Directory.CreateDirectory(folderPath);
-			}
-
-			XmlSerializer xr = new XmlSerializer(typeof(List<AreaType>)); //create serializer necessities
-			FileStream file;
-
-			if (File.Exists(folderPath + fileName)) { //if the areatypes have been created already
-				file = File.OpenRead(folderPath + fileName); //open the file
-				areaTypes = xr.Deserialize(file) as List<AreaType>; //load data into list
-				file.Close(); //close file
-
-				genericAreaTotalSpreadChance = 0;
-				for (int i = 0; i < 4 && i < areaTypes.Count; i++) {
-					genericAreaTotalSpreadChance += areaTypes[i].spreadChance;
-				}
-			} else {
-				GenerateDefaultAreaTypes();
-				file = File.Create(folderPath + fileName); //create the file
-				xr.Serialize(file, areaTypes); //save data to file
-				file.Close(); //close the file
 			}
 		}
 
@@ -214,9 +124,7 @@ namespace AreaManagerNS.AreaNS {
 		/// <returns></returns>
 		public IEnumerator Populate(bool charactersOnly) {
 			if (type == null) {
-				if (areaTypes != null && areaTypes[0] != null) {
-					type = areaTypes[0];
-				}
+				type = AreaTypeManager.GetAreaType(0);
 			}
 
 			string entityAreaPrefix = type.name + "_";
@@ -239,26 +147,26 @@ namespace AreaManagerNS.AreaNS {
 					case 1:
 						currAssetCount = type.sceneryAssetCount; //set the count
 						currEntityFilename = "Scenery/" + entityAreaPrefix; //set folder path
-						numEntities = Random.Range(10, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
+						numEntities = UnityEngine.Random.Range(10, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
 						break;
 					case 2:
 						currAssetCount = type.structureAssetCount; //set the count
 						currEntityFilename = "Structures/" + entityAreaPrefix; //set folder path
-						numEntities = Random.Range(1, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
+						numEntities = UnityEngine.Random.Range(1, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
 						break;
 					default:
 						currAssetCount = type.characterAssetCount; //set the count
 						currEntityFilename = "Characters/" + entityAreaPrefix; //set folder path
-						numEntities = Random.Range(5, type.characterMaxSpawnCount); //set random quantity for character objs in this area
+						numEntities = UnityEngine.Random.Range(5, type.characterMaxSpawnCount); //set random quantity for character objs in this area
 						break;
 				}
 
 				if (currAssetCount > 0) { //if asset type has assets to offer
 					for (i = 0; i < numEntities; i++) {
 						tempEntity = new Entity(); //instantiate new entity
-						tempEntity.name = currEntityFilename + (Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)
-						tempEntity.positionX = Random.Range(-boundaryRadius, boundaryRadius); //generate random position
-						tempEntity.positionY = Random.Range(-boundaryRadius, boundaryRadius);
+						tempEntity.name = currEntityFilename + (UnityEngine.Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)
+						tempEntity.positionX = UnityEngine.Random.Range(-boundaryRadius, boundaryRadius); //generate random position
+						tempEntity.positionY = UnityEngine.Random.Range(-boundaryRadius, boundaryRadius);
 						tempEntity.lastUpdated = (int)WorldManager.ElapsedGameTime;
 						entities.Add(tempEntity);
 					}
@@ -270,10 +178,11 @@ namespace AreaManagerNS.AreaNS {
 		}
 
 		private void Save() {
-			XmlSerializer xr = new XmlSerializer(typeof(Area));
-			FileStream file = new FileStream(pathToSaveTo, FileMode.Create);
-			xr.Serialize(file, this);
-			file.Close();
+			string pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json";
+			StreamWriter writer = new StreamWriter(File.Create(pathToSaveTo));//initialize writer with creating/opening filepath
+			string json = JsonUtility.ToJson(this, true);
+			writer.Write(json); //convert this object to json and write it
+			writer.Close(); //close the file
 		}
 
 		public void SaveEntities(List<Entity> Entities) {

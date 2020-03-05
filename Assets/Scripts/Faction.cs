@@ -1,24 +1,23 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+using UnityEngine;
 
-[XmlRoot(ElementName = "Faction")]
+
+[Serializable]
 public class Faction {
 	private static int maxFavor = 500;
 	private static int minFavor = -500;
 
 	[SerializeField]
 	private string name;
+	[SerializeField]
 	private int playerFavor;
 	[SerializeField]
 	private List<string> hostileFactions;
 
-	[XmlElement("Name")]
-	public string Name { get { return name; } set { name = value; } }
-	[XmlElement("PlayerFavor")]
-	public int PlayerFavor { get { return playerFavor; } set { playerFavor = value; } }
-	[XmlArray("HostileFactions"), XmlArrayItem("Faction")]
-	public List<string> HostileFactions { get { return hostileFactions; } set { hostileFactions = value; } }
+	public string Name { get { return name; } }
+	public int PlayerFavor { get { return playerFavor; } }
+	public List<string> HostileFactions { get { return hostileFactions; } }
 
 	public Faction() {
 		name = "empty";
