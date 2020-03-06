@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4607333297435519870}
   - component: {fileID: -6607899772497738407}
   - component: {fileID: 4607333297435519871}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Chest_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,6 +100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd2143aee9d855e48b1a93e7fde23aa7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  parent: {fileID: 0}
 --- !u!114 &-6607899772497738407
 MonoBehaviour:
   m_ObjectHideFlags: 0

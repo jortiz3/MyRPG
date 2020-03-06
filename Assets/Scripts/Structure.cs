@@ -47,6 +47,7 @@ public class Structure : MonoBehaviour {
 		if (furniture == null) {
 			furniture = new List<Furniture>();
 		}
+		f.SetStructureParent(this);
 		furniture.Add(f);
 	}
 
@@ -57,6 +58,14 @@ public class Structure : MonoBehaviour {
 		SetColor(defaultColor);
 	}
 
+	public void ResetFurnitureTransformParent() {
+		if (furniture != null) {
+			for (int i = 0; i < furniture.Count; i++) {
+				furniture[i].ResetTransformParent();
+			}
+		}
+	}
+
 	public void SetColor(Color c) {
 		if (sprites != null) {
 			for (int i = 0; i < sprites.Length; i++) {
@@ -65,10 +74,10 @@ public class Structure : MonoBehaviour {
 		}
 	}
 
-	public void SetFurnitureAsChildren() {
+	public void SetFurnitureAsTransformChildren() {
 		if (furniture != null) {
 			for (int i = 0; i < furniture.Count; i++) {
-				furniture[i].transform.SetParent(transform);
+				furniture[i].SetTransformParent(transform);
 			}
 		}
 	}

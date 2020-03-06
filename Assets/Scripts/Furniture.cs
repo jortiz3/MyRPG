@@ -8,15 +8,19 @@ public class Furniture : MonoBehaviour {
 	private static Furniture editObj;
 	private static Vector3 editPos;
 
+	[SerializeField]
 	private Structure parent;
 	private SpriteRenderer sr;
 	private Color defaultColor;
+	private Vector3 desiredScale;
+	private float triggered;
 
 	public static bool EditEnabled { get { return editEnabled; } }
 
 	private void Awake() {
 		sr = GetComponent<SpriteRenderer>();
 		defaultColor = sr.color;
+		desiredScale = transform.localScale;
 	}
 
 	public static void BeginEdit(Furniture f) {
@@ -33,7 +37,9 @@ public class Furniture : MonoBehaviour {
 		Furniture temp = Resources.Load<Furniture>("Furniture/" + furnitureName);
 		if (temp != null) {
 			temp = GameObject.Instantiate(temp) as Furniture;
-			temp.SetParent(parentStructure);
+			if (parentStructure != null) {
+				parentStructure.RegisterFurniture(temp);
+			}
 			usePlayerResources = true;
 			BeginEdit(temp);
 		}
@@ -67,44 +73,57 @@ public class Furniture : MonoBehaviour {
 		return "";
 	}
 
-	private void OnTriggerExit(Collider other) {
-		if (editEnabled) {
-			if (editObj.Equals(this)) {
-				if (other.CompareTag("structure")) {
-					if (parent != null && other.GetComponent<Structure>().Equals(parent)) {
-						sr.color = StructureCell.Color_Occupied;
-						canFinalize = false;
+	private void OnTriggerStay(Collider other) {
+		if (other.CompareTag("structure")) { //if triggered by structure
+			Structure currStructure = other.GetComponent<Structure>(); //get structure script
+			if (currStructure != null) { //if script found
+				if (editEnabled) { //if editing a furniture obj
+					if (editObj.Equals(this)) { //if this is the obj
+						if (parent == null || currStructure.Equals(parent)) { //if triggered by parent structure or no parent structure
+							sr.color = StructureCell.Color_Unoccupied; //color = green
+							canFinalize = true; //can place here
+							triggered = 0f; //flag canFinalize as triggered recently
+						}
 					}
+				} else if (parent == null) {
+					currStructure.RegisterFurniture(this);
 				}
 			}
 		}
 	}
 
-	private void OnTriggerStay(Collider other) {
-		if (editEnabled) { //if editing a furniture obj
-			if (editObj.Equals(this)) { //if this is the obj
-				if (other.CompareTag("structure")) { //if triggered by structure
-					if (parent == null || other.GetComponent<Structure>().Equals(parent)) { //if triggered by parent structure or no parent structure
-						sr.color = StructureCell.Color_Unoccupied; //color = green
-						canFinalize = true; //can place here
-					} else { //triggered by random other structure
-						sr.color = StructureCell.Color_Occupied; //color = red
-						canFinalize = false; //cannot place here
-					}
-				}
-			}
-		}
+	public void ResetTransformParent() {
+		SetTransformParent(AreaManager.GetEntityParent("Furniture"));
 	}
 
 	private void Start() {
-		transform.SetParent(AreaManager.GetEntityParent("Furniture"));
+		if (parent != null) {
+			SetTransformParent(parent.transform);
+			parent.RegisterFurniture(this);
+		} else {
+			ResetTransformParent();
+		}
 	}
 
-	public void SetParent(Structure s) {
+	public void SetStructureParent(Structure s) {
 		if (s != null) {
-			s.RegisterFurniture(this);
 			parent = s;
 		}
+	}
+
+	public void SetTransformParent(Transform t) {
+		transform.SetParent(t);
+
+		Vector3 newScale = Vector3.one;
+		if (t.localScale.sqrMagnitude > desiredScale.sqrMagnitude) {
+			newScale.x =  desiredScale.x / t.localScale.x;
+			newScale.y = desiredScale.y / t.localScale.y;
+		} else if (t.localScale.sqrMagnitude > desiredScale.sqrMagnitude) {
+			newScale.x = t.localScale.x / desiredScale.x;
+			newScale.y = t.localScale.y / desiredScale.y;
+		}
+
+		transform.localScale = newScale;
 	}
 
 	private void Update() {
@@ -114,13 +133,15 @@ public class Furniture : MonoBehaviour {
 				editPos.z = 0;
 				transform.position = editPos;
 
-				if (parent == null) {
-					if (!canFinalize) {
-						sr.color = StructureCell.Color_Unoccupied;
-						canFinalize = true;
-					}
+				if (triggered < 0.15f) { //if triggered recently
+					triggered += Time.deltaTime;
+				} else { //not triggered recently
+					sr.color = StructureCell.Color_Occupied;
+					canFinalize = false; //flag for not placing
 				}
 			}
 		}
+		
+		
 	}
 }

@@ -87,6 +87,8 @@ public class StructureGridManager : MonoBehaviour {
 		currCell = GetCell(GetNearestCellIndex(s.transform.position)); //establish current cell based on where structure already is
 		originalCell = currCell;
 
+		s.SetFurnitureAsTransformChildren(); //ensure furniture moves with structure
+
 		UnregisterExistingStructure(s, currCell);
 		MoveStructureEdit(currCell); //update the colors and finalization possibility
 
@@ -110,6 +112,7 @@ public class StructureGridManager : MonoBehaviour {
 		SetGridActive(false); //hide the grid
 		currCell = null; //remove pointer to cell
 		originalCell = null;
+		currEditStructure = null;
 		usePlayerResources = false;
 		editEnabled = false; //end edit
 	}
@@ -141,32 +144,25 @@ public class StructureGridManager : MonoBehaviour {
 		return false;
 	}
 
+	/// <summary>
+	/// Ends editing & registers the current edit structure to the grid.
+	/// </summary>
 	public void FinalizeStructureEdit() {
-		if (currCell != null) {
-			if (canFinalize) {
-				FinalizeStructureEdit(currCell);
+		if (canFinalize) { //if finalization is possible
+			if (currEditStructure != null && currCell != null) { //if the variables we need have value
+				StartCoroutine(FinalizeStructureEdit(GetCellIndex(currCell), currEditStructure)); //start coroutine
 
-				if (usePlayerResources) {
+				currCell = null;
+				originalCell = null;
+
+				currEditStructure.ResetFurnitureTransformParent();
+				currEditStructure = null;
+
+				if (usePlayerResources) { //if player needs to spend resources
 					//remove resources from player inventory
 					usePlayerResources = false;
 				}
 			}
-		}
-	}
-
-	public void FinalizeStructureEdit(StructureCell cell) {
-		if (canFinalize) {
-			FinalizeStructureEdit(GetCellIndex(cell));
-		}
-	}
-
-	/// <summary>
-	/// Ends editing & registers the current edit structure to the grid.
-	/// </summary>
-	/// <param name="cellIndex">The top-left cell within which to place the structure</param>
-	private void FinalizeStructureEdit(Vector2Int cellIndex) {
-		if (currEditStructure != null) {
-			StartCoroutine(FinalizeStructureEdit(cellIndex, currEditStructure));
 		}
 	}
 
@@ -198,7 +194,6 @@ public class StructureGridManager : MonoBehaviour {
 		editEnabled = false;
 		editFinalizing = false;
 		canFinalize = false;
-
 	}
 
 	private void FixedUpdate() {

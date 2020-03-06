@@ -162,6 +162,7 @@ public class InputManager : MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.F)) {
 			Furniture.Create("Chest_0", null);
+			//Furniture.Create("Chest_0", AreaManagerNS.AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
 		}
 #endif
 	}
