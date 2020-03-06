@@ -19,6 +19,7 @@ public class StructureGridManager : MonoBehaviour {
 	private bool usePlayerResources;
 
 	private StructureCell currCell;
+	private StructureCell originalCell; //the cell in which the edit began (pre-existing structure edit)
 	private Structure currEditStructure;
 
 	private CanvasGroup canvasGroup;
@@ -83,12 +84,13 @@ public class StructureGridManager : MonoBehaviour {
 		}
 
 		currEditStructure = s; //set the structure to edit
-		SetGridActive(true); //show the grid
-
-		//unregister structure from grid
-
 		currCell = GetCell(GetNearestCellIndex(s.transform.position)); //establish current cell based on where structure already is
+		originalCell = currCell;
+
+		UnregisterExistingStructure(s, currCell);
 		MoveStructureEdit(currCell); //update the colors and finalization possibility
+
+		SetGridActive(true); //show the grid
 
 		CameraManager.instance.ShowStructureCam(currEditStructure.transform); //follow structure with cam
 
@@ -99,9 +101,15 @@ public class StructureGridManager : MonoBehaviour {
 	public void CancelStructureEdit() {
 		CameraManager.instance.Reset(); //camera follow player again
 		HUD.instance.HideInteractionText(); //ensure no text is displayed
-		currCell = null; //remove pointer to cell
-		Destroy(currEditStructure.gameObject); //remove the temp structure from scene
+		if (originalCell != null) {
+			MoveStructureEdit(originalCell);
+			FinalizeStructureEdit();
+		} else {
+			Destroy(currEditStructure.gameObject); //remove the created structure from scene
+		}
 		SetGridActive(false); //hide the grid
+		currCell = null; //remove pointer to cell
+		originalCell = null;
 		usePlayerResources = false;
 		editEnabled = false; //end edit
 	}
@@ -339,5 +347,23 @@ public class StructureGridManager : MonoBehaviour {
 		canvasGroup.interactable = active; //set whether events are triggered
 		canvasGroup.blocksRaycasts = active; //set whether anything behind it is triggered
 		canvasGroup.alpha = active ? 1f : 0f; //set the visibility
+	}
+
+	/// <summary>
+	/// Removes the occupied flag for cells currently occupied by a structure.
+	/// </summary>
+	private void UnregisterExistingStructure(Structure s, StructureCell cellOrigin) {
+		if (gridInitialized) { //if the grid has been initialized, then we can check
+			Vector2Int cellIndex = cellOrigin.GetGridIndex(columns);
+			for (int x = cellIndex.x; x <= cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
+				if (x < columns) { //if dimensions are in bounds
+					for (int y = cellIndex.y; y <= cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size
+						if (y < rows) { //if dimensions are in bounds
+							GetCell(x, y).Reset(); //free up the cells
+						}
+					} //y loop
+				} //x if
+			} //x loop
+		}
 	}
 }
