@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public class Structure : MonoBehaviour {
 
-	private Color defaultColor;
+	private Color[] defaultColors;
 	[SerializeField, Tooltip("All of the sprites that make up the structure.")]
 	private SpriteRenderer[] sprites;
 	[SerializeField, Tooltip("The structure's additional cell size (x,y); Default size of 1 == (0,0)")]
@@ -20,8 +20,15 @@ public class Structure : MonoBehaviour {
 	public string Owner { get { return owner; } }
 
 	private void Awake() {
-		if (sprites != null && sprites.Length > 0) {
-			defaultColor = sprites[0].color;
+		Initialize();
+	}
+
+	public void Initialize() {
+		if (sprites != null && sprites.Length > 0) { //if there are managed sprites
+			defaultColors = new Color[sprites.Length]; //instantiate the default colors array
+			for (int i = 0; i < defaultColors.Length; i++) { //get the default colors from sprites
+				defaultColors[i] = sprites[i].color;
+			}
 		}
 	}
 
@@ -33,13 +40,16 @@ public class Structure : MonoBehaviour {
 	public static void LoadCustomStructure(Sprite sprite_base, Sprite sprite_roof, Sprite sprite_door, Vector2Int dimensions, Vector3 worldPosition) {
 		Structure s = Resources.Load<Structure>("Structures/template_structure");
 		if (s != null) { //if the template was loaded
+			s = Instantiate(s.gameObject).GetComponent<Structure>(); //add to the scene, store reference to script in scene
+
 			s.sprites[0].sprite = sprite_base; //update the sprites
 			s.sprites[1].sprite = sprite_roof;
 			s.sprites[2].sprite = sprite_door;
-
-			Instantiate(s.gameObject); //add to the scene
+			
 			s.transform.localScale = new Vector3(5 + (5 * dimensions.x), 5 + (5 * dimensions.y), 1); //adjust the size of the building to conform to the grid
 			s.transform.position = worldPosition; //set the position
+
+			s.Initialize();
 		}
 	}
 
@@ -55,7 +65,15 @@ public class Structure : MonoBehaviour {
 	/// Resets the sprite color to default; To be used on structure edit end.
 	/// </summary>
 	public void ResetColor() {
-		SetColor(defaultColor);
+		if (sprites != null) {
+			if (defaultColors != null) {
+				if (defaultColors.Length == sprites.Length) {
+					for (int i = 0; i < sprites.Length; i++) {
+						sprites[i].color = defaultColors[i];
+					}
+				}
+			}
+		}
 	}
 
 	public void ResetFurnitureTransformParent() {

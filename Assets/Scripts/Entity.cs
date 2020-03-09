@@ -14,6 +14,20 @@ namespace AreaManagerNS.AreaNS {
 		public float positionY;
 		public int lastUpdated; // time since last update (seconds)
 
+		public Entity() {
+			name = "";
+			positionX = 0;
+			positionY = 0;
+			lastUpdated = 0;
+		}
+
+		public Entity(string Name, float PositionX, float PositionY) {
+			name = Name;
+			positionX = PositionX;
+			positionY = PositionY;
+			lastUpdated = 0;
+		}
+
 		public static Entity Parse(GameObject gameObject) {
 			return Parse(gameObject.transform);
 		}

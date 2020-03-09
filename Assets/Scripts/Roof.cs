@@ -7,6 +7,7 @@ using UnityEngine;
 public class Roof : MonoBehaviour {
 	private static float transitionSpeed = 0.95f;
 
+	[SerializeField]
 	private bool transitionEnabled;
 	private bool transitioning;
 	private bool cancelCurrentTransition;
