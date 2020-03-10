@@ -220,22 +220,26 @@ public class AreaManager : MonoBehaviour {
 					GameManager.loadingBar.SetText("Gathering save data..");
 					GameManager.loadingBar.Show();
 
-					if (saveEntities) {
-						float loadIncrement = 0.45f / transform.childCount;
-						List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
-						foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
-							Transform child;
-							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
-								child = parent.GetChild(index);
-								if (!child.CompareTag("Player")) { //if the object isn't the player
+
+					float loadIncrement = 0.45f / transform.childCount;
+					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
+					foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
+						Transform child;
+						for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
+							child = parent.GetChild(index);
+							if (!child.CompareTag("Player")) { //if the object isn't the player
+								if (saveEntities) { //worry about populating entity list only if saving
 									if (!child.CompareTag("background")) { //if it is not a background
 										currEntities.Add(Entity.Parse(child)); //convert child to entity format
 									}
-									Destroy(child.gameObject); //destroy transform from scene
 								}
-								GameManager.loadingBar.IncreaseProgress(loadIncrement / parent.childCount);
+								Destroy(child.gameObject); //destroy transform from scene
 							}
+							GameManager.loadingBar.IncreaseProgress(loadIncrement / parent.childCount);
 						}
+					}
+
+					if (saveEntities) {
 						GameManager.loadingBar.SetProgress(0.45f); //update load progress
 						GameManager.loadingBar.SetText("Saving.."); //inform player of process
 						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities); //save to file
@@ -262,13 +266,8 @@ public class AreaManager : MonoBehaviour {
 			yield break; //exit enumerator
 		}
 
-		string currFilePath;
-		areas = new Area[12, 12];
-
-		StreamReader reader;
-
-		GameManager.loadingBar.IncreaseProgress(0.1f);
-
+		areas = new Area[12, 12]; //instantiate array
+		string currFilePath; //for storing current area filename
 		for (int x = 0; x < 12; x++) {
 			for (int y = 0; y < 12; y++) {
 				currFilePath = currentSaveFolder + x + "_" + y + ".json";
@@ -279,7 +278,7 @@ public class AreaManager : MonoBehaviour {
 					Debug.Log("File Not Found: " + currFilePath);
 					yield break; //give up on loading
 				} else {
-					reader = new StreamReader(File.Open(currFilePath, FileMode.Open));
+					StreamReader reader = new StreamReader(File.Open(currFilePath, FileMode.Open));
 					areas[x, y] = JsonUtility.FromJson<Area>(reader.ReadToEnd());
 					reader.Close();
 				}

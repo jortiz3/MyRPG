@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// WorldManager: Manages Area transitions & Entity update information.
+/// WorldManager: Manages Area transitions, the time within the game, & day/night cycle (future scope)
 /// Written by Justin Ortiz
 /// </summary>
 public class WorldManager : MonoBehaviour {

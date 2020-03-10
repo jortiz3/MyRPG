@@ -126,15 +126,15 @@ namespace internal_Area {
 		/// <param name="charactersOnly">To be used when repopulating dead characters</param>
 		/// <returns></returns>
 		public IEnumerator Populate(bool charactersOnly) {
-			bool isCity = false;
-			bool isCamp = false;
+			bool isInhabited = false;
+			bool isDungeon = false;
 
 			if (type == null) {
 				type = AreaTypeManager.GetAreaType(0);
-			} else if (type.name.Contains("City")) {
-				isCity = true;
-			} else if (type.name.Contains("Camp")) {
-				isCamp = true;
+			} else if (type.name.Contains("City") || type.name.Contains("Camp")) {
+				isInhabited = true;
+			} else if (type.name.Contains("Dungeon")) {
+				isDungeon = true;
 			}
 
 			string entityAreaPrefix = type.name + "_";
@@ -166,22 +166,25 @@ namespace internal_Area {
 						currEntityFilename = "Structures/" + entityAreaPrefix; //set folder path
 						numEntities = UnityEngine.Random.Range(1, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
 
-						if (isCity) {
+						string tempAssetPrefix = currEntityFilename.Split('_')[0]; //i.e. "Structures/City" || "Structures/Camp" || "Structures/Dungeon"
+						if (isInhabited) {
 							currRadius = cityRadius;
 
-							//instantiate walls
-							tempEntity = new Entity("Structures/City_Wall_Horizontal", -60, 60); //top
+							//add the walls surrounding the city/camp
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", -60, 60); //top
 							entities.Add(tempEntity);
-							tempEntity = new Entity("Structures/City_Wall_Horizontal", -60, -50); //bottom
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", -60, -50); //bottom
 							entities.Add(tempEntity);
-							tempEntity = new Entity("Structures/City_Wall_Vertical", -60, 50); //left
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", -60, 50); //left
 							entities.Add(tempEntity);
-							tempEntity = new Entity("Structures/City_Wall_Vertical", 55, 50); //right
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", 55, 50); //right
 							entities.Add(tempEntity);
-						} else if (isCamp) {
-							currRadius = cityRadius;
+						} else if (isDungeon) {
+							currRadius = boundaryRadius;
 
-							//add the appropriate walls
+							//add the dungeon entrance
+							tempEntity = new Entity(tempAssetPrefix + "_Entrance", 0, 0);
+							entities.Add(tempEntity);
 						} else {
 							currRadius = boundaryRadius;
 						}
