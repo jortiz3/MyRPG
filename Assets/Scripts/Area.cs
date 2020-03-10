@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace AreaManagerNS.AreaNS {
+namespace internal_Area {
 
 	/// <summary>
 	/// Area: Class that randomly populates, manages, and displays entities that belong in an area.
@@ -97,6 +97,8 @@ namespace AreaManagerNS.AreaNS {
 			GameObject bg = Resources.Load<GameObject>(bgFileName);
 			if (bg != null) {
 				GameObject.Instantiate(bg, Vector3.zero, Quaternion.identity);
+			} else {
+				Debug.Log("File Not Found: " + bgFileName);
 			}
 			//enable/disable area exits -- up, left, right, down
 			yield return new WaitForSeconds(0.3f);

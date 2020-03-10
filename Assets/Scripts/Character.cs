@@ -173,7 +173,7 @@ public class Character : MonoBehaviour {
 	}
 
 	private void Start() {
-		transform.SetParent(AreaManagerNS.AreaManager.GetEntityParent("Character"));
+		transform.SetParent(AreaManager.GetEntityParent("Character"));
 	}
 
 	private void ToggleSprint() {

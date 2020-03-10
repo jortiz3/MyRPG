@@ -158,7 +158,7 @@ public class InputManager : MonoBehaviour {
 			StructureGridManager.instance.BeginStructureCreate("City_0");
 		}
 		if (Input.GetKeyDown(KeyCode.N)) {
-			StructureGridManager.instance.BeginStructureEdit(AreaManagerNS.AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
+			StructureGridManager.instance.BeginStructureEdit(AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
 		}
 		if (Input.GetKeyDown(KeyCode.F)) {
 			Furniture.Create("Chest_0", null);

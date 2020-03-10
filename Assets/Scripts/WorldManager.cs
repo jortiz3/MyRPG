@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using AreaManagerNS;
 
 /// <summary>
 /// WorldManager: Manages Area transitions & Entity update information.
@@ -29,24 +28,7 @@ public class WorldManager : MonoBehaviour {
 
 	public void LoadAdjacentArea(Directions direction) {
 		HUD.instance.HideInteractionText(); //ensure hud is cleared as next area is loaded
-
-		switch (direction) {
-			case Directions.up:
-				areaManager.LoadArea(direction);
-				break;
-			case Directions.down:
-				areaManager.LoadArea(direction);
-				break;
-			case Directions.left:
-				areaManager.LoadArea(direction);
-				break;
-			case Directions.right:
-				areaManager.LoadArea(direction);
-				break;
-			default:
-				LoadAdjacentArea(Directions.right);
-				break;
-		}
+		areaManager.LoadArea(direction);
 	}
 
 	public void LoadAreaData(string playerName, string worldName) {

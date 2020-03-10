@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AreaManagerNS.AreaNS {
+namespace internal_Area {
 
 	[Serializable]
 	public class AreaTypeManager {

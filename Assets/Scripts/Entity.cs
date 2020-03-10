@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace AreaManagerNS.AreaNS {
+namespace internal_Area {
 
 	/// <summary>
 	/// Entity: Information regarding a GameObject that may be loaded into a Scene.

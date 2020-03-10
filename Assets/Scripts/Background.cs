@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using AreaManagerNS;
 
 public class Background : MonoBehaviour
 {

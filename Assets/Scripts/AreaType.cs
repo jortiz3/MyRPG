@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AreaManagerNS.AreaNS {
+namespace internal_Area {
 	/// <summary>
 	/// AreaType: Information that details which entities belong within an Area.
 	/// Written by Justin Ortiz

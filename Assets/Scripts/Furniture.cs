@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using AreaManagerNS;
 
 public class Furniture : MonoBehaviour {
 	private static bool editEnabled;
