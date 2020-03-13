@@ -49,7 +49,7 @@ public class AreaManager : MonoBehaviour {
 			}
 
 			if (randomNum < cumulativeChance) { //values increase as list goes on due to cumulative, so if num is < than value, the probability is maintained
-				tempArea.AssignType(tempType); //assign the type
+				tempArea.AssignType(tempType.name); //assign the type
 				break; //stop processing dictionary
 			}
 		}
@@ -73,41 +73,41 @@ public class AreaManager : MonoBehaviour {
 		int totalNumAreas = areas.GetLength(0) * areas.GetLength(1);
 		int areasCompleted = GenerateUniqueAreaData();
 		int prevAreasCompleted = 0;
-		AreaType typeToSpread; //the type of area that is most likely to spread
+		string typeToSpread; //the type of area that is most likely to spread
 		while (areasCompleted < totalNumAreas) {
 			for (int x = 0; x < areas.GetLength(0); x++) {
 				for (int y = 0; y < areas.GetLength(1); y++) {
 					if (areas[x, y] != null) { //start with hard-coded areas
-						if (areas[x, y].Type.name.Contains("City")) { //Cities are always in plains
-							typeToSpread = AreaTypeManager.GetAreaType(0); //spread plains type
-						} else if (areas[x, y].Type.name.Contains("Dungeon")) { //dungeons are alwas in marshes
-							typeToSpread = AreaTypeManager.GetAreaType(2); //spread marsh type
+						if (areas[x, y].TypeName.Contains("City")) { //Cities are always in plains
+							typeToSpread = AreaTypeManager.GetAreaType(0).name; //spread plains type
+						} else if (areas[x, y].TypeName.Contains("Dungeon")) { //dungeons are alwas in marshes
+							typeToSpread = AreaTypeManager.GetAreaType(2).name; //spread marsh type
 						} else {
-							typeToSpread = areas[x, y].Type;
+							typeToSpread = areas[x, y].TypeName;
 						}
 
 						//create 4 adjacent areas
 						if (x - 1 >= 0) { //if area adjacent left exists
 							if (areas[x - 1, y] == null) { //if area adjacent left is empty
-								areas[x - 1, y] = CreateArea(new Vector2Int(x - 1, y), typeToSpread); //create area adjacent left
+								areas[x - 1, y] = CreateArea(new Vector2Int(x - 1, y), AreaTypeManager.GetAreaType(typeToSpread)); //create area adjacent left
 								areasCompleted++;
 							}
 						}
 						if (x + 1 < areas.GetLength(0)) { //if area adjacent right exists
 							if (areas[x + 1, y] == null) { //if area adjacent right is empty
-								areas[x + 1, y] = CreateArea(new Vector2Int(x + 1, y), typeToSpread); //create area adjacent left
+								areas[x + 1, y] = CreateArea(new Vector2Int(x + 1, y), AreaTypeManager.GetAreaType(typeToSpread)); //create area adjacent left
 								areasCompleted++;
 							}
 						}
 						if (y - 1 >= 0) { //if area adjacent up exists
 							if (areas[x, y - 1] == null) { //if area adjacent up is empty
-								areas[x, y - 1] = CreateArea(new Vector2Int(x, y - 1), typeToSpread); //create area adjacent left
+								areas[x, y - 1] = CreateArea(new Vector2Int(x, y - 1), AreaTypeManager.GetAreaType(typeToSpread)); //create area adjacent left
 								areasCompleted++;
 							}
 						}
 						if (y + 1 < areas.GetLength(1)) { //if area adjacent down exists
 							if (areas[x, y + 1] == null) { //if area adjacent down is empty
-								areas[x, y + 1] = CreateArea(new Vector2Int(x, y + 1), typeToSpread); //create area adjacent left
+								areas[x, y + 1] = CreateArea(new Vector2Int(x, y + 1), AreaTypeManager.GetAreaType(typeToSpread)); //create area adjacent left
 								areasCompleted++;
 							}
 						}
@@ -153,7 +153,7 @@ public class AreaManager : MonoBehaviour {
 			randomIndex = UnityEngine.Random.Range(0, hardCodedPositions.Count); //pick random position
 			tempPos = hardCodedPositions[randomIndex]; //store position
 
-			currArea = new Area(tempPos, AreaTypeManager.GetAreaType(hardCodedAreaTypes[cities])); //create area at position
+			currArea = new Area(tempPos, hardCodedAreaTypes[cities]); //create area at position
 			StartCoroutine(currArea.Populate(false)); //populate the area
 			areas[tempPos.x, tempPos.y] = currArea; //add area to array
 
@@ -166,7 +166,7 @@ public class AreaManager : MonoBehaviour {
 				tempPos = new Vector2Int(UnityEngine.Random.Range(0, 12), UnityEngine.Random.Range(0, 12)); //get a random position
 			} while (areas[tempPos.x, tempPos.y] != null); //keep trying until we get an empty slot
 
-			currArea = new Area(tempPos, AreaTypeManager.GetAreaType(hardCodedAreaTypes[typeIndex])); //create new area at location
+			currArea = new Area(tempPos, hardCodedAreaTypes[typeIndex]); //create new area at location
 			StartCoroutine(currArea.Populate(false)); //populate the area
 			areas[tempPos.x, tempPos.y] = currArea; //add next area type to the randomly generated position
 
@@ -219,7 +219,6 @@ public class AreaManager : MonoBehaviour {
 					GameManager.loadingBar.ResetProgress();
 					GameManager.loadingBar.SetText("Gathering save data..");
 					GameManager.loadingBar.Show();
-
 
 					float loadIncrement = 0.45f / transform.childCount;
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene

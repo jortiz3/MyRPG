@@ -19,7 +19,7 @@ namespace internal_Area {
 		private static int cityRadius = 50;
 
 		[SerializeField]
-		private AreaType type;
+		private string typeName;
 		[SerializeField]
 		private List<Entity> entities;
 		[SerializeField]
@@ -33,36 +33,32 @@ namespace internal_Area {
 		public Vector2IntS MapPosition { get { return position; } }
 		public bool Discovered { get { return discovered; } }
 		public int LastUpdated { get { return lastUpdated; } }
-		public AreaType Type { get { return type; } }
+		public string TypeName { get { return typeName; } }
 		public List<Entity> Entities { get { return entities; } }
 
 		public Area() {
 			discovered = false;
 			position = Vector2IntS.zero;
-			type = AreaTypeManager.GetAreaType(0);
+			typeName = AreaTypeManager.GetAreaType(0).name;
 			entities = new List<Entity>();
 		}
 
 		public Area(Vector2Int Position) {
 			discovered = false;
 			position = new Vector2IntS(Position);
-			type = AreaTypeManager.GetAreaType(0);
+			typeName = AreaTypeManager.GetAreaType(0).name;
 			entities = new List<Entity>();
 		}
 
-		public Area(Vector2Int Position, AreaType areaType) {
+		public Area(Vector2Int Position, string areaTypeName) {
 			discovered = false;
 			position = new Vector2IntS(Position);
-			type = areaType;
+			typeName = areaTypeName;
 			entities = new List<Entity>();
 		}
 
-		public void AssignType(AreaType atype) {
-			if (atype != null) {
-				type = atype;
-			} else {
-				type = AreaTypeManager.GetAreaType(0);
-			}
+		public void AssignType(string TypeName) {
+			typeName = TypeName;
 		}
 
 		private void InstantiateEntities() {
@@ -86,12 +82,12 @@ namespace internal_Area {
 			float loadingIncrement = (1f - GameManager.loadingBar.GetProgress()) / 3f; //get remaining progress, divide by how many load sections
 
 			string bgFileName = "Backgrounds/";
-			if (type.name.Contains("City")) {
+			if (typeName.Contains("City")) {
 				bgFileName += "City";
-			} else if (type.name.Contains("Camp")) {
+			} else if (typeName.Contains("Camp")) {
 				bgFileName += "Camp";
 			} else {
-				bgFileName += type.name;
+				bgFileName += typeName;
 			}
 
 			GameObject bg = Resources.Load<GameObject>(bgFileName);
@@ -129,9 +125,9 @@ namespace internal_Area {
 			bool isInhabited = false;
 			bool isDungeon = false;
 
-			if (type == null) {
-				type = AreaTypeManager.GetAreaType(0);
-			} else if (type.name.Contains("City") || type.name.Contains("Camp")) {
+			AreaType type = AreaTypeManager.GetAreaType(typeName);
+
+			if (type.name.Contains("City") || type.name.Contains("Camp")) {
 				isInhabited = true;
 			} else if (type.name.Contains("Dungeon")) {
 				isDungeon = true;
