@@ -11,7 +11,7 @@ namespace internal_Area {
 
 		private static AreaTypeManager instance;
 		private static string folderPath = Application.persistentDataPath + "/data/";
-		private static string fileName = "AreaTypes.json";
+		private static string fileName = "areaTypes.json";
 		private static int totalSpreadChance;
 
 		[SerializeField]

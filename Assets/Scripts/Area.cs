@@ -143,9 +143,10 @@ namespace internal_Area {
 			}
 
 			Entity tempEntity; //current entity to add
-			int i; //iteration index for all 3 loops
+			int i; //index for all 3 iterations
 			int numEntities = 0; //num of entites for this area
 			int currAssetCount = 0; // num of assets available for areatype
+			int minAssetSpawnCount = 20;
 			int assetTypeLimit = charactersOnly ? 1 : 3; //limits the loop to only do characters if true
 			int currRadius;
 
@@ -154,13 +155,14 @@ namespace internal_Area {
 					case 1:
 						currAssetCount = type.sceneryAssetCount; //set the count
 						currEntityFilename = "Scenery/" + entityAreaPrefix; //set folder path
-						numEntities = UnityEngine.Random.Range(10, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
+						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
 						currRadius = boundaryRadius;
 						break;
 					case 2:
 						currAssetCount = type.structureAssetCount; //set the count
 						currEntityFilename = "Structures/" + entityAreaPrefix; //set folder path
-						numEntities = UnityEngine.Random.Range(1, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
+						minAssetSpawnCount = isInhabited ? 20 : 1;
+						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
 
 						string tempAssetPrefix = currEntityFilename.Split('_')[0]; //i.e. "Structures/City" || "Structures/Camp" || "Structures/Dungeon"
 						if (isInhabited) {
@@ -188,7 +190,7 @@ namespace internal_Area {
 					default: //aka 0
 						currAssetCount = type.characterAssetCount; //set the count
 						currEntityFilename = "Characters/" + entityAreaPrefix; //set folder path
-						numEntities = UnityEngine.Random.Range(5, type.characterMaxSpawnCount); //set random quantity for character objs in this area
+						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.characterMaxSpawnCount); //set random quantity for character objs in this area
 						currRadius = boundaryRadius;
 						break;
 				}
@@ -197,8 +199,14 @@ namespace internal_Area {
 					for (i = 0; i < numEntities; i++) {
 						tempEntity = new Entity(); //instantiate new entity
 						tempEntity.name = currEntityFilename + (UnityEngine.Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)
-						tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius); //generate random position
+
+						//generate position for the entity
+						tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
 						tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
+						if (assetType == 2 && isInhabited) { //if asset is a structure && is a city
+							tempEntity.positionY = ((int)tempEntity.positionY / 5) * 5; //conform pos.y to grid
+						}
+
 						tempEntity.lastUpdated = (int)WorldManager.ElapsedGameTime;
 						entities.Add(tempEntity);
 						yield return new WaitForEndOfFrame(); //add time between iterations

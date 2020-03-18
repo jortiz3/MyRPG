@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -17,10 +18,12 @@ public class StructureGridManager : MonoBehaviour {
 	private bool editFinalizing;
 	private bool canFinalize;
 	private bool usePlayerResources;
+	private bool registeringStructure;
 
 	private StructureCell currCell;
 	private StructureCell originalCell; //the cell in which the edit began (pre-existing structure edit)
 	private Structure currEditStructure;
+	private List<Structure> registerQueue;
 
 	private CanvasGroup canvasGroup;
 
@@ -43,6 +46,9 @@ public class StructureGridManager : MonoBehaviour {
 			editEnabled = false;
 			canFinalize = false;
 			gridInitialized = false;
+			registeringStructure = false;
+
+			registerQueue = new List<Structure>();
 
 			StartCoroutine(InitializeGrid());
 
@@ -278,7 +284,15 @@ public class StructureGridManager : MonoBehaviour {
 		currCell = cell;
 	}
 
-	public IEnumerator RegisterExistingStructure(Structure s) {
+	public void RegisterExistingStructure(Structure s) {
+		if (registerQueue != null) {
+			registerQueue.Add(s);
+		}
+	}
+
+	private IEnumerator RegisterStructure(Structure s) {
+		registeringStructure = true;
+
 		while (!gridInitialized) {
 			yield return new WaitForEndOfFrame();
 		}
@@ -287,6 +301,7 @@ public class StructureGridManager : MonoBehaviour {
 		bool tempFinalizeCheck = CheckForFinalize(tempCellIndex, s); //see if structure can be placed where it already is
 
 		if (tempFinalizeCheck) { //if structure can be placed where it already is
+			s.transform.position = GetCell(tempCellIndex).transform.position;
 			StartCoroutine(FinalizeStructureEdit(tempCellIndex, s)); //ensure all cells know they are occupied
 		} else { //another structure is taking some of the required space; move is required
 			bool alternateIndexFound = false;
@@ -322,7 +337,8 @@ public class StructureGridManager : MonoBehaviour {
 				}
 				attempts++;
 			} //new position loop
-		}
+		} //end if
+		registeringStructure = false;
 	}
 
 	/// <summary>
@@ -359,6 +375,15 @@ public class StructureGridManager : MonoBehaviour {
 					} //y loop
 				} //x if
 			} //x loop
+		}
+	}
+
+	private void Update() {
+		if (registerQueue != null && registerQueue.Count > 0) { //if there are structures to register
+			if (!registeringStructure) { //if registering isn't underway
+				StartCoroutine(RegisterStructure(registerQueue[0])); //begin fixing position against other structures
+				registerQueue.RemoveAt(0); //remove from queue
+			}
 		}
 	}
 }

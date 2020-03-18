@@ -107,7 +107,7 @@ public class Structure : MonoBehaviour {
 	private void Start() {
 		transform.SetParent(AreaManager.GetEntityParent("Structure"));
 		if (!StructureGridManager.instance.EditEnabled) { //if this structure was instantiated via loading, edit will not be enabled
-			StartCoroutine(StructureGridManager.instance.RegisterExistingStructure(this)); //register cells as occupied
+			StructureGridManager.instance.RegisterExistingStructure(this); //register cells as occupied
 		}
 	}
 }
