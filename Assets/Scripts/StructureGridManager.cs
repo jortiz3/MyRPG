@@ -178,8 +178,9 @@ public class StructureGridManager : MonoBehaviour {
 	/// <param name="cellIndex">The top-left cell within which to place the structure</param>
 	/// <param name="s">The structure to finalize</param>
 	public IEnumerator FinalizeStructureEdit(Vector2Int cellIndex, Structure s) {
-		while (editFinalizing) {
-			yield return new WaitForEndOfFrame();
+		if (editFinalizing) {
+			Debug.Log("Unable to finalize structure '" + s.name + "'.");
+			yield break;
 		}
 
 		editFinalizing = true;
@@ -192,7 +193,7 @@ public class StructureGridManager : MonoBehaviour {
 			}
 		}
 
-		yield return new WaitForSeconds(0.2f);
+		yield return new WaitForEndOfFrame();
 
 		CameraManager.instance.Reset();
 		HUD.instance.HideInteractionText();
@@ -200,6 +201,7 @@ public class StructureGridManager : MonoBehaviour {
 		editEnabled = false;
 		editFinalizing = false;
 		canFinalize = false;
+		registeringStructure = false;
 	}
 
 	private void FixedUpdate() {
@@ -301,24 +303,20 @@ public class StructureGridManager : MonoBehaviour {
 		bool tempFinalizeCheck = CheckForFinalize(tempCellIndex, s); //see if structure can be placed where it already is
 
 		if (tempFinalizeCheck) { //if structure can be placed where it already is
-			s.transform.position = GetCell(tempCellIndex).transform.position;
-			StartCoroutine(FinalizeStructureEdit(tempCellIndex, s)); //ensure all cells know they are occupied
+			s.transform.position = GetCell(tempCellIndex).transform.position; //ensure structure snaps to grid
+			StartCoroutine(FinalizeStructureEdit(tempCellIndex, s)); //finalize this structure to occupy the cells
 		} else { //another structure is taking some of the required space; move is required
 			bool alternateIndexFound = false;
 			Vector2Int currIndex;
 			Vector2Int adjustment;
-			int attempts = 0;
+			int attempts = 1;
 			while (!alternateIndexFound) {
-				if (attempts % 4 == 0) { //every 4 attempts
-					adjustment = Vector2Int.left * attempts; //go left
-				} else if (attempts % 4 == 1) {
-					adjustment = Vector2Int.right * attempts; //go right
-				} else if (attempts % 4 == 2) {
-					adjustment = Vector2Int.down * attempts; //go up (reversed)
+				if (attempts % 2 == 0) { //every other attempt; try left, then try right
+					adjustment = ((Vector2Int.left + (Vector2Int.left * s.Dimensions)) * attempts) + Vector2Int.left; //set adjustment to left + dimensions.x, then amplify by attempts, then add 1 cell padding
 				} else {
-					adjustment = Vector2Int.up * attempts; //go down
+					adjustment = (Vector2Int.right * attempts) + Vector2Int.right; //set adjustment right amplified by attempt number, then add 1 cell padding
 				}
-				currIndex = tempCellIndex + adjustment; //add adjustment
+				currIndex = tempCellIndex + adjustment; //add adjustment to cell index
 				currIndex.Clamp(Vector2Int.zero, new Vector2Int(columns, rows)); //ensure the index isn't out of bounds
 
 				yield return new WaitForEndOfFrame();
@@ -333,12 +331,12 @@ public class StructureGridManager : MonoBehaviour {
 
 				if (attempts >= 100) { //if we have tried too many times
 					Destroy(s.gameObject); //give up on the structure
+					registeringStructure = false;
 					break; //leave the loop
 				}
 				attempts++;
 			} //new position loop
 		} //end if
-		registeringStructure = false;
 	}
 
 	/// <summary>

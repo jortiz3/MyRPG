@@ -63,7 +63,7 @@ namespace internal_Area {
 
 		private void InstantiateEntities() {
 			if (entities != null) {
-				for (int i = entities.Count - 1; i >= 0; i--) {
+				for (int i = 0; i < entities.Count; i++) {
 					GameObject temp = Resources.Load<GameObject>(entities[i].name);
 					if (temp != null) {
 						temp = GameObject.Instantiate(temp, new Vector3(entities[i].positionX, entities[i].positionY, 0), Quaternion.identity);
@@ -166,7 +166,7 @@ namespace internal_Area {
 
 						string tempAssetPrefix = currEntityFilename.Split('_')[0]; //i.e. "Structures/City" || "Structures/Camp" || "Structures/Dungeon"
 						if (isInhabited) {
-							currRadius = cityRadius;
+							currRadius = cityRadius - 5; //1 cell margin for sides
 
 							//add the walls surrounding the city/camp
 							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", -60, 60); //top
@@ -202,9 +202,12 @@ namespace internal_Area {
 
 						//generate position for the entity
 						tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
-						tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
 						if (assetType == 2 && isInhabited) { //if asset is a structure && is a city
-							tempEntity.positionY = ((int)tempEntity.positionY / 5) * 5; //conform pos.y to grid
+							float cellsHeight = 5 * 3; //5 (cell width) * 3 (num of cells)
+							float randRange = currRadius / cellsHeight; //the range for the random row
+							tempEntity.positionY = (int)UnityEngine.Random.Range(-randRange, randRange) * cellsHeight; //get random row, then convert to world pos using cell height
+						} else { //just random position
+							tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
 						}
 
 						tempEntity.lastUpdated = (int)WorldManager.ElapsedGameTime;
