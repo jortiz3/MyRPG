@@ -94,7 +94,7 @@ namespace internal_Area {
 			if (bg != null) {
 				GameObject.Instantiate(bg, Vector3.zero, Quaternion.identity);
 			} else {
-				Debug.Log("File Not Found: " + bgFileName);
+				Debug.Log("Asset Load Error: Area.LoadToScene(...) => background filename: " + bgFileName);
 			}
 			//enable/disable area exits -- up, left, right, down
 			yield return new WaitForSeconds(0.3f);
@@ -149,6 +149,8 @@ namespace internal_Area {
 			int minAssetSpawnCount = 20;
 			int assetTypeLimit = charactersOnly ? 1 : 3; //limits the loop to only do characters if true
 			int currRadius;
+			float heightSpacing = 0;
+			float numOfRowsForRadius = 0;
 
 			for (int assetType = 0; assetType < assetTypeLimit; assetType++) { //loop through each asset type and do (mostly) the same thing
 				switch (assetType) { //establish the only differences
@@ -186,6 +188,9 @@ namespace internal_Area {
 						} else {
 							currRadius = boundaryRadius;
 						}
+
+						heightSpacing = CustomMath.GetLargestFactor(currRadius); //get largest factor to determine structure row spacing
+						numOfRowsForRadius = currRadius / heightSpacing; //get num of rows depending on spacing
 						break;
 					default: //aka 0
 						currAssetCount = type.characterAssetCount; //set the count
@@ -203,9 +208,7 @@ namespace internal_Area {
 						//generate position for the entity
 						tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
 						if (assetType == 2 && isInhabited) { //if asset is a structure && is a city
-							float cellsHeight = 5 * 3; //5 (cell width) * 3 (num of cells)
-							float randRange = currRadius / cellsHeight; //the range for the random row
-							tempEntity.positionY = (int)UnityEngine.Random.Range(-randRange, randRange) * cellsHeight; //get random row, then convert to world pos using cell height
+							tempEntity.positionY = (int)UnityEngine.Random.Range(-numOfRowsForRadius, numOfRowsForRadius) * heightSpacing; //get random row, then convert to world pos using cell height
 						} else { //just random position
 							tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
 						}

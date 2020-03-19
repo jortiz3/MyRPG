@@ -136,7 +136,7 @@ public class AreaManager : MonoBehaviour {
 		int numUniqueAreas = hardCodedAreaTypes.Count;
 
 		if (hardCodedAreaTypes.Count > areas.GetLength(0) * areas.GetLength(1)) { //if there are somehow more unique areas than available slots
-			Debug.Log("Error: AreaManager.GenerateUniqueAreaData() did not run because there are " + (hardCodedAreaTypes.Count - 4) + " unique area types loaded!");
+			Debug.Log("Out of Range Error: AreaManager.GenerateUniqueAreaData() => loaded types (" + (hardCodedAreaTypes.Count - 4) + ") > map size (" + (areas.GetLength(0) * areas.GetLength(1)) + ")");
 			return 0;
 		}
 
@@ -274,7 +274,7 @@ public class AreaManager : MonoBehaviour {
 				if (!File.Exists(currFilePath)) {
 					//to do: prompt to regenerate entire world or cancel
 					//StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero)); //generate everything again
-					Debug.Log("File Not Found: " + currFilePath);
+					Debug.Log("Save Data Error: AreaManager.LoadAreasFromSave(...) => filename: " + currFilePath);
 					yield break; //give up on loading
 				} else {
 					StreamReader reader = new StreamReader(File.Open(currFilePath, FileMode.Open));

@@ -79,6 +79,8 @@ public class StructureGridManager : MonoBehaviour {
 
 			usePlayerResources = true;
 			editEnabled = true; //start edit
+		} else {
+			Debug.Log("Asset Load Error: StructureGridManager.BeginStructureCreate(" + structureName + ")");
 		}
 	}
 
@@ -178,9 +180,10 @@ public class StructureGridManager : MonoBehaviour {
 	/// <param name="cellIndex">The top-left cell within which to place the structure</param>
 	/// <param name="s">The structure to finalize</param>
 	public IEnumerator FinalizeStructureEdit(Vector2Int cellIndex, Structure s) {
-		if (editFinalizing) {
-			Debug.Log("Unable to finalize structure '" + s.name + "'.");
-			yield break;
+		if (editFinalizing) { //this 'should' never happen, but if it does
+			RegisterExistingStructure(s); //put it back in the queue to be registered
+			registeringStructure = false; //end registering
+			yield break; //abort
 		}
 
 		editFinalizing = true;
