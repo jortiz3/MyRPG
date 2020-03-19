@@ -64,12 +64,8 @@ namespace internal_Area {
 		private void InstantiateEntities() {
 			if (entities != null) {
 				for (int i = 0; i < entities.Count; i++) {
-					GameObject temp = Resources.Load<GameObject>(entities[i].name);
-					if (temp != null) {
-						temp = GameObject.Instantiate(temp, new Vector3(entities[i].positionX, entities[i].positionY, 0), Quaternion.identity);
-						entities[i].lastUpdated = (int)WorldManager.ElapsedGameTime; //replace 10 with gamemanager time
-					} else { //asset not found
-						entities.RemoveAt(i); //remove from entity list
+					if (!entities[i].Instantiate()) { //try instantiate entity
+						entities.RemoveAt(i); //if failed, remove from list
 					}
 				}
 			}
@@ -213,7 +209,7 @@ namespace internal_Area {
 							tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
 						}
 
-						tempEntity.lastUpdated = (int)WorldManager.ElapsedGameTime;
+						tempEntity.lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 						entities.Add(tempEntity);
 						yield return new WaitForEndOfFrame(); //add time between iterations
 					}

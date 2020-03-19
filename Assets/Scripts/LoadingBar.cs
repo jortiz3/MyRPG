@@ -7,6 +7,9 @@ public class LoadingBar : MonoBehaviour {
 	[SerializeField]
 	private Slider slider;
 	private GameObject background; //load background & display simultaneously
+
+	public bool isActive { get { return gameObject.activeSelf; } }
+
 	void Awake() {
 		if (GameManager.loadingBar != null) {
 			Destroy(gameObject);

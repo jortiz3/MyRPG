@@ -30,7 +30,7 @@ public class Interactable : MonoBehaviour {
 	}
 
 	private void OnTriggerEnter(Collider other) {
-		if (!StructureGridManager.instance.EditEnabled) {
+		if (GameManager.instance.State_Play) {
 			if (other.CompareTag("Player")) { //player enters the interact range
 				if (displayedInteractable != null) { //if something is already displayed
 					displayedInteractable.interactable = false; //ensure only 1 interactable is used at a time
@@ -43,7 +43,7 @@ public class Interactable : MonoBehaviour {
 	}
 
 	private void OnTriggerExit(Collider other) {
-		if (!StructureGridManager.instance.EditEnabled) {
+		if (GameManager.instance.State_Play) {
 			if (other.CompareTag("Player")) { //player exits the interact range
 				if (displayedInteractable != null) { //if an interaction is displayed
 					if (displayedInteractable.Equals(this)) { //if this is the interaction currently being displayed

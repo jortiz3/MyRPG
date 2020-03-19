@@ -89,65 +89,77 @@ public class InputManager : MonoBehaviour {
 	}
 
 	private void Update() {
-		moveDirection = Directions.none;
-		sprintEnabled = false;
+		if (GameManager.instance.State_Play) {
+			moveDirection = Directions.none;
+			sprintEnabled = false;
 
-		//movement up & down -- prioritize up
-		if (Input.GetKey(keyBindings["Movement_Up"])) {
-			moveDirection = Directions.up;
-		} else if (Input.GetKey(keyBindings["Movement_Down"])) {
-			moveDirection = Directions.down;
-		}
-
-		//movement left & right -- prioritize left
-		if (Input.GetKey(keyBindings["Movement_Left"])) {
-			if (moveDirection == Directions.up) { //if up key and left are pressed
-				moveDirection = Directions.up_left;
-			} else if (moveDirection == Directions.down) {
-				moveDirection = Directions.down_left;
-			} else {
-				moveDirection = Directions.left;
+			//movement up & down -- prioritize up
+			if (Input.GetKey(keyBindings["Movement_Up"])) {
+				moveDirection = Directions.up;
+			} else if (Input.GetKey(keyBindings["Movement_Down"])) {
+				moveDirection = Directions.down;
 			}
-		} else if (Input.GetKey(keyBindings["Movement_Right"])) {
-			if (moveDirection == Directions.up) {
-				moveDirection = Directions.up_right;
-			} else if (moveDirection == Directions.down) {
-				moveDirection = Directions.down_right;
-			} else {
-				moveDirection = Directions.right;
+
+			//movement left & right -- prioritize left
+			if (Input.GetKey(keyBindings["Movement_Left"])) {
+				if (moveDirection == Directions.up) { //if up key and left are pressed
+					moveDirection = Directions.up_left;
+				} else if (moveDirection == Directions.down) {
+					moveDirection = Directions.down_left;
+				} else {
+					moveDirection = Directions.left;
+				}
+			} else if (Input.GetKey(keyBindings["Movement_Right"])) {
+				if (moveDirection == Directions.up) {
+					moveDirection = Directions.up_right;
+				} else if (moveDirection == Directions.down) {
+					moveDirection = Directions.down_right;
+				} else {
+					moveDirection = Directions.right;
+				}
 			}
-		}
 
-		//movement run/sprint
-		if (Input.GetKey(keyBindings["Movement_Sprint"])) {
-			sprintEnabled = true;
-		}
+			//movement run/sprint
+			if (Input.GetKey(keyBindings["Movement_Sprint"])) {
+				sprintEnabled = true;
+			}
 
-		//send movement info to player
-		if (Player.instance != null) {
-			Player.instance.MoveDirection(moveDirection, sprintEnabled);
+			//send movement info to player
+			if (Player.instance != null) {
+				Player.instance.MoveDirection(moveDirection, sprintEnabled);
+			}
+		} else { //not state_play
+			if (Input.GetKeyDown(keyBindings["Submit"])) {
+				CheckForFinalize();
+			}
+
+			if (Input.GetKeyDown(keyBindings["Cancel"])) {
+				CheckForCancel();
+			}
 		}
 
 		if (Input.GetKeyDown(keyBindings["Interact"])) {
-			Interactable.Interact();
+			if (GameManager.instance.State_Play) {
+				Interactable.Interact();
+			} else {
+				CheckForFinalize();
+			}
 		}
 
 		if (Input.GetKeyDown(keyBindings["Attack_Basic"])) {
-			//if game status != normal
-			CheckForFinalize();
+			if (GameManager.instance.State_Play) {
+				//call player attack
+			} else {
+				CheckForFinalize();
+			}
 		}
 
 		if (Input.GetKeyDown(keyBindings["Attack_Special"])) {
-			//if game status != normal
-			CheckForCancel();
-		}
-
-		if (Input.GetKeyDown(keyBindings["Submit"])) {
-			CheckForFinalize();
-		}
-
-		if (Input.GetKeyDown(keyBindings["Cancel"])) {
-			CheckForCancel();
+			if (GameManager.instance.State_Play) {
+				//call player attack special
+			} else {
+				CheckForCancel();
+			}
 		}
 
 #if UNITY_EDITOR
@@ -164,16 +176,16 @@ public class InputManager : MonoBehaviour {
 			WorldManager.instance.LoadAdjacentArea(Directions.down);
 		}
 
-		if (Input.GetKeyDown(KeyCode.G)) {
-			WorldManager.instance.GenerateWorldAreas("Player1", "Debug World");
+		if (Input.GetKeyDown(KeyCode.N)) {
+			GameManager.instance.StartNewGame();
 		}
 		if (Input.GetKeyDown(KeyCode.L)) {
-			WorldManager.instance.LoadAreaData("Player1", "Debug World");
+			GameManager.instance.LoadGame();
 		}
-		if (Input.GetKeyDown(KeyCode.P)) {
-			StructureGridManager.instance.BeginStructureCreate("City_0");
+		if (Input.GetKeyDown(KeyCode.Comma)) {
+			StructureGridManager.instance.BeginStructureCreate("City_CPR_0");
 		}
-		if (Input.GetKeyDown(KeyCode.N)) {
+		if (Input.GetKeyDown(KeyCode.Period)) {
 			StructureGridManager.instance.BeginStructureEdit(AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
 		}
 		if (Input.GetKeyDown(KeyCode.F)) {
@@ -181,5 +193,10 @@ public class InputManager : MonoBehaviour {
 			//Furniture.Create("Chest_0", AreaManagerNS.AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
 		}
 #endif
+	}//end Update()
+
+	private void Start() { //remove later
+		GameManager.instance.SelectPlayer("Player1");
+		GameManager.instance.SelectWorld("Debug World");
 	}
 }

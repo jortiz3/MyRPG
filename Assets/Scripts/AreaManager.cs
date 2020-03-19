@@ -10,6 +10,8 @@ using internal_Area;
 /// Written by Justin Ortiz
 /// </summary>
 public class AreaManager : MonoBehaviour {
+	public static AreaManager instance;
+
 	private static string currentSaveFolder;
 	private static Transform backgroundParent;
 	private static Transform structureParent;
@@ -25,13 +27,18 @@ public class AreaManager : MonoBehaviour {
 	public static int AreaSize { get { return Area.Size; } }
 
 	private void Awake() {
-		AreaTypeManager.Initialize(); //ensure all area types are loaded before they are needed
-		backgroundParent = transform.Find("Background");
-		structureParent = transform.Find("Structures");
-		sceneryParent = transform.Find("Scenery");
-		characterParent = transform.Find("Characters");
-		furnitureParent = transform.Find("Furniture");
-		navMesh = transform.Find("NavMesh").GetComponent<NavMeshSurface>();
+		if (instance != null) {
+			Destroy(gameObject);
+		} else {
+			instance = this;
+			AreaTypeManager.Initialize(); //ensure all area types are loaded before they are needed
+			backgroundParent = transform.Find("Background");
+			structureParent = transform.Find("Structures");
+			sceneryParent = transform.Find("Scenery");
+			characterParent = transform.Find("Characters");
+			furnitureParent = transform.Find("Furniture");
+			navMesh = transform.Find("NavMesh").GetComponent<NavMeshSurface>();
+		}
 	}
 
 	private Area CreateArea(Vector2Int position, AreaType parentAreaType) {

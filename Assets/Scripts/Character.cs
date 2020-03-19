@@ -189,40 +189,42 @@ public class Character : MonoBehaviour {
 	}
 
 	private void Update() {
-		status_normal = true;
+		if (GameManager.instance.State_Play) { //only update when playing
+			status_normal = true;
 
-		if (flinchTimer > 0) {
-			flinchTimer -= Time.deltaTime;
-			status_normal = false;
-		}
+			if (flinchTimer > 0) {
+				flinchTimer -= Time.deltaTime;
+				status_normal = false;
+			}
 
-		if (status_sprinting) { //if sprinting
-			if (stamina > 0) { //if there is stamina
-				stamina -= Time.deltaTime * 0.5f; //reduce stamina
+			if (status_sprinting) { //if sprinting
+				if (stamina > 0) { //if there is stamina
+					stamina -= Time.deltaTime * 0.5f; //reduce stamina
+				} else {
+					navAgent.speed = walkSpeed; //start walking
+					status_sprinting = false; //update status
+				}
 			} else {
-				navAgent.speed = walkSpeed; //start walking
-				status_sprinting = false; //update status
-			}
-		} else {
-			if (stamina < maxStamina) {
-				stamina += Time.deltaTime * 0.1f;
-			}
+				if (stamina < maxStamina) {
+					stamina += Time.deltaTime * 0.1f;
+				}
 
-			if (stamina > maxStamina) {
-				stamina = maxStamina;
-			}
-		}
-
-		//check animator for states
-
-		if (status_normal) { //if not flinching, not attacking/blocking
-			if (routine != null) { //if list of actions is instantiated
-				if (routine.Count > 0) { //if there is an action left to do
-					if (routine[0].Invoke()) { //call the action; if action is considered complete
-						routine.RemoveAt(0); //remove the action from the list
-					}
+				if (stamina > maxStamina) {
+					stamina = maxStamina;
 				}
 			}
+
+			//check animator for states
+
+			if (status_normal) { //if not flinching, not attacking/blocking
+				if (routine != null) { //if list of actions is instantiated
+					if (routine.Count > 0) { //if there is an action left to do
+						if (routine[0].Invoke()) { //call the action; if action is considered complete
+							routine.RemoveAt(0); //remove the action from the list
+						} //end if invoke
+					} //end if count
+				} //end if null
+			} //end if status
 		}
 	}
 }
