@@ -66,8 +66,8 @@ public class AreaManager : MonoBehaviour {
 	}
 
 	public IEnumerator GenerateAllAreas(string playerName, string worldName, Vector2Int startPos) {
-		GameManager.loadingBar.ResetProgress();
-		GameManager.loadingBar.Show();
+		LoadingScreen.instance.ResetProgress();
+		LoadingScreen.instance.Show();
 
 		currentSaveFolder = Application.persistentDataPath + "/saves" + "/" + playerName + "/" + worldName + "/";
 
@@ -120,16 +120,16 @@ public class AreaManager : MonoBehaviour {
 						}
 					} //found non-null area for parent
 				} //y for loop
-				GameManager.loadingBar.IncreaseProgress((areasCompleted - prevAreasCompleted) / 144f);
+				LoadingScreen.instance.IncreaseProgress((areasCompleted - prevAreasCompleted) / 144f);
 				prevAreasCompleted = areasCompleted;
 				yield return new WaitForEndOfFrame(); //allow for time between each row
 			} //x for loop
 		}
 
-		GameManager.loadingBar.SetProgress(1f);
+		LoadingScreen.instance.SetProgress(1f);
 		LoadArea(startPos, false);
 		yield return new WaitForEndOfFrame();
-		GameManager.loadingBar.Hide();
+		LoadingScreen.instance.Hide();
 	}
 
 	/// <summary>
@@ -223,9 +223,9 @@ public class AreaManager : MonoBehaviour {
 		if (position.x < areas.GetLength(0) && 0 <= position.x) { //if the x is within map bounds
 			if (position.y < areas.GetLength(1) && 0 <= position.y) { //if y is within map bounds
 				if (areas[position.x, position.y] != null) { //if the desired area isn't empty
-					GameManager.loadingBar.ResetProgress();
-					GameManager.loadingBar.SetText("Gathering save data..");
-					GameManager.loadingBar.Show();
+					LoadingScreen.instance.ResetProgress();
+					LoadingScreen.instance.SetText("Gathering save data..");
+					LoadingScreen.instance.Show();
 
 					float loadIncrement = 0.45f / transform.childCount;
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
@@ -241,17 +241,17 @@ public class AreaManager : MonoBehaviour {
 								}
 								Destroy(child.gameObject); //destroy transform from scene
 							}
-							GameManager.loadingBar.IncreaseProgress(loadIncrement / parent.childCount);
+							LoadingScreen.instance.IncreaseProgress(loadIncrement / parent.childCount);
 						}
 					}
 
 					if (saveEntities) {
-						GameManager.loadingBar.SetProgress(0.45f); //update load progress
-						GameManager.loadingBar.SetText("Saving.."); //inform player of process
+						LoadingScreen.instance.SetProgress(0.45f); //update load progress
+						LoadingScreen.instance.SetText("Saving.."); //inform player of process
 						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities); //save to file
 					}
 
-					GameManager.loadingBar.SetProgress(0.5f); //update progress once complete
+					LoadingScreen.instance.SetProgress(0.5f); //update progress once complete
 					StructureGridManager.instance.ResetGridStatus(); //reset grid so any loaded structures can properly snap to it
 					StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh)); //initiate async load area
 					currentAreaPos = position;
@@ -261,9 +261,9 @@ public class AreaManager : MonoBehaviour {
 	}
 
 	public IEnumerator LoadAreasFromSave(string playerName, string worldName, Vector2Int loadedPos) {
-		GameManager.loadingBar.ResetProgress();
-		GameManager.loadingBar.SetText("Loading..");
-		GameManager.loadingBar.Show();
+		LoadingScreen.instance.ResetProgress();
+		LoadingScreen.instance.SetText("Loading..");
+		LoadingScreen.instance.Show();
 
 		currentSaveFolder = Application.persistentDataPath + "/saves" + "/" + playerName + "/" + worldName + "/";
 
@@ -289,11 +289,11 @@ public class AreaManager : MonoBehaviour {
 					reader.Close();
 				}
 			}
-			GameManager.loadingBar.IncreaseProgress((x + 1) * 12 / 144.0f);
+			LoadingScreen.instance.IncreaseProgress((x + 1) * 12 / 144.0f);
 			yield return new WaitForEndOfFrame(); //allow for time between each row
 		}
 		LoadArea(loadedPos, false);
 		yield return new WaitForEndOfFrame();
-		GameManager.loadingBar.Hide();
+		LoadingScreen.instance.Hide();
 	}
 }

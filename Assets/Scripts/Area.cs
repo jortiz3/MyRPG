@@ -72,10 +72,10 @@ namespace internal_Area {
 		}
 
 		public IEnumerator LoadToScene(NavMeshSurface navMesh) {
-			GameManager.loadingBar.SetText("Loading area..");
-			GameManager.loadingBar.Show();
+			LoadingScreen.instance.SetText("Loading area..");
+			LoadingScreen.instance.Show();
 
-			float loadingIncrement = (1f - GameManager.loadingBar.GetProgress()) / 3f; //get remaining progress, divide by how many load sections
+			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 3f; //get remaining progress, divide by how many load sections
 
 			string bgFileName = "Backgrounds/";
 			if (typeName.Contains("City")) {
@@ -95,21 +95,21 @@ namespace internal_Area {
 			//enable/disable area exits -- up, left, right, down
 			yield return new WaitForSeconds(0.3f);
 
-			GameManager.loadingBar.IncreaseProgress(loadingIncrement);
-			GameManager.loadingBar.SetText("Loading entities..");
+			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
+			LoadingScreen.instance.SetText("Loading entities..");
 			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
 			InstantiateEntities(); //begin instantiating entities
 			yield return new WaitForSeconds(0.3f);
 
-			GameManager.loadingBar.IncreaseProgress(loadingIncrement);
-			GameManager.loadingBar.SetText("Positioning player..");
+			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
+			LoadingScreen.instance.SetText("Positioning player..");
 			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
 			//set player position
 			yield return new WaitForSeconds(0.3f);
 
-			GameManager.loadingBar.IncreaseProgress(loadingIncrement);
+			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
 
-			GameManager.loadingBar.Hide();
+			LoadingScreen.instance.Hide();
 		}
 
 		/// <summary>

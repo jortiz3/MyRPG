@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour {
 	public static GameManager instance;
-	public static LoadingBar loadingBar;
 
 	private string playerName;
 	private string worldName;
@@ -39,7 +38,9 @@ public class GameManager : MonoBehaviour {
 	/// Called by button(s) using unity inspector
 	/// </summary>
 	public void LoadGame() {
-		WorldManager.instance.LoadAreaData(playerName, worldName);
+		if (!playerName.Equals("") && !worldName.Equals("")) {
+			WorldManager.instance.LoadAreaData(playerName, worldName);
+		}
 	}
 
 	/// <summary>
@@ -95,7 +96,7 @@ public class GameManager : MonoBehaviour {
 			state_play = false;
 		}
 
-		if (loadingBar.isActive) {
+		if (LoadingScreen.instance.isActive) {
 			state_play = false;
 		}
 	}

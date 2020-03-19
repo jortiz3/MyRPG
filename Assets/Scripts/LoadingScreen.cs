@@ -1,20 +1,26 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
-public class LoadingBar : MonoBehaviour {
+public class LoadingScreen : MonoBehaviour {
+	public static LoadingScreen instance;
+
 	[SerializeField]
 	private Text text;
 	[SerializeField]
 	private Slider slider;
-	private GameObject background; //load background & display simultaneously
+	[SerializeField]
+	private Image image;
+	[SerializeField]
+	private List<Sprite> loadScreenSprites;
 
 	public bool isActive { get { return gameObject.activeSelf; } }
 
 	void Awake() {
-		if (GameManager.loadingBar != null) {
+		if (instance != null) {
 			Destroy(gameObject);
 		} else {
-			GameManager.loadingBar = this;
+			instance = this;
 		}
 
 		if (slider == null) {
@@ -22,6 +28,9 @@ public class LoadingBar : MonoBehaviour {
 		}
 		if (text == null) {
 			text = GetComponent<Text>();
+		}
+		if (image == null) {
+			image = GetComponent<Image>();
 		}
 
 		Hide();
@@ -69,6 +78,14 @@ public class LoadingBar : MonoBehaviour {
 
 	public void Show() {
 		if (!gameObject.activeSelf) {
+			if (image != null) {
+				if (loadScreenSprites != null) {
+					if (loadScreenSprites.Count > 0) {
+						image.sprite = loadScreenSprites[UnityEngine.Random.Range(0, loadScreenSprites.Count)];
+					} //end if sprites count
+				} //end if sprites null
+			} //end if image null
+
 			gameObject.SetActive(true);
 		}
 	}
