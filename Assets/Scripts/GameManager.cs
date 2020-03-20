@@ -50,6 +50,10 @@ public class GameManager : MonoBehaviour {
 		
 	}
 
+	public void SaveSettings() {
+		InputManager.instance.SaveKeyBindings();
+	}
+
 	public void SelectPlayer(string name) {
 		playerName = name;
 	}

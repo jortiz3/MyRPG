@@ -1,14 +1,23 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum Directions { none, up, down, left, right, up_left, up_right, down_left, down_right }
 
 public class InputManager : MonoBehaviour {
 	public static InputManager instance;
 
-	private Dictionary<string, KeyCode> keyBindings;
-	private static string inputFilePath;
+	private static Dictionary<string, KeyCode> keyBindings;
+	private static KeyCode[] keyCodes;
+	private static string keyBindingsFilePath;
+	private static Transform uiParent;
+	private static Transform uiPrefab;
+
+	private string actionToRebind;
 
 	private Directions moveDirection;
 	private bool sprintEnabled;
@@ -18,9 +27,11 @@ public class InputManager : MonoBehaviour {
 			Destroy(gameObject);
 		} else {
 			instance = this;
-			inputFilePath = Application.persistentDataPath + "/data/im.dat";
+			actionToRebind = "";
+			keyCodes = Enum.GetValues(typeof(KeyCode)) as KeyCode[];
+			keyBindingsFilePath = Application.persistentDataPath + "/data/kb.dat";
 
-			bool loadKeybindings = false;//File.Exists(inputFilePath); //if there is file, load it
+			bool loadKeybindings = File.Exists(keyBindingsFilePath); //if there is file, load it
 
 			if (loadKeybindings) {
 				LoadKeyBindings();
@@ -28,6 +39,8 @@ public class InputManager : MonoBehaviour {
 				SetDefaultKeyBindings();
 				SaveKeyBindings();
 			} //end if default keys
+
+			InitializeControlsUI();
 		} //end if singleton
 	} //end Awake()
 
@@ -47,20 +60,53 @@ public class InputManager : MonoBehaviour {
 		}
 	}
 
+	public void EditHotkey(Transform button_ui) {
+		actionToRebind = button_ui.parent.name;
+		button_ui.GetChild(0).GetComponent<Text>().text = "...";
+	}
+
 	public string GetKeyCodeName(string axisName) {
 		return keyBindings[axisName].ToString();
 	}
 
+	private void InitializeControlsUI() {
+		uiParent = GameObject.Find("Settings_Controls_Scrollview").transform;
+		uiPrefab = uiParent.Find("Template_Hotkey");
+
+		float scrollViewHeight = uiParent.GetChild(0).GetComponent<RectTransform>().sizeDelta.y; //start with header height
+		float prefabHeight = uiPrefab.GetComponent<RectTransform>().sizeDelta.y; //get the prefab height 1 time
+
+		Transform temp;
+		foreach (KeyValuePair<string, KeyCode> kvp in keyBindings) { //loop through keybindings
+			temp = Instantiate(uiPrefab, uiParent); //instantiate copy of template
+			temp.name = kvp.Key;
+			temp.GetChild(0).GetComponent<Text>().text = kvp.Key; //set action name
+			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = kvp.Value.ToString(); //set key name -- get button(child), get text(child of button)
+			scrollViewHeight += prefabHeight; //add this height to total
+		}
+
+		uiParent.GetComponent<RectTransform>().sizeDelta = new Vector2(uiParent.GetComponent<RectTransform>().sizeDelta.x, scrollViewHeight); //resize the rect so everything fits
+		uiParent.localPosition = Vector3.zero; //ensure player starts viewing at the top
+
+		uiPrefab.gameObject.SetActive(false); //hide prefab now we are done
+	}
+
 	public void LoadKeyBindings() {
-		/*StreamReader reader = new StreamReader(File.Open(inputFilePath, FileMode.Open));
-		keyBindings = JsonUtility.FromJson<Dictionary<string, KeyCode>>(reader.ReadToEnd());
-		reader.Close();*/
+		FileStream file = File.OpenRead(keyBindingsFilePath);
+		BinaryFormatter bf = new BinaryFormatter();
+		DictionaryS temp = (DictionaryS)bf.Deserialize(file);
+		file.Close();
+
+		if (temp != null) {
+			keyBindings = temp.GetDictionary();
+		}
 	}
 
 	public void SaveKeyBindings() {
-		/*StreamWriter writer = new StreamWriter(File.Create(inputFilePath));
-		writer.Write(JsonUtility.ToJson(keyBindings));
-		writer.Close();*/
+		FileStream file = File.Create(keyBindingsFilePath);
+		BinaryFormatter bf = new BinaryFormatter();
+		bf.Serialize(file, new DictionaryS(keyBindings));
+		file.Close();
 	}
 
 	public void SetDefaultKeyBindings() {
@@ -89,114 +135,141 @@ public class InputManager : MonoBehaviour {
 	}
 
 	private void Update() {
-		if (GameManager.instance.State_Play) {
-			moveDirection = Directions.none;
-			sprintEnabled = false;
+		if (actionToRebind.Equals("")) { //no key rebinds happening
+			if (GameManager.instance.State_Play) {
+				moveDirection = Directions.none;
+				sprintEnabled = false;
 
-			//movement up & down -- prioritize up
-			if (Input.GetKey(keyBindings["Movement_Up"])) {
-				moveDirection = Directions.up;
-			} else if (Input.GetKey(keyBindings["Movement_Down"])) {
-				moveDirection = Directions.down;
-			}
-
-			//movement left & right -- prioritize left
-			if (Input.GetKey(keyBindings["Movement_Left"])) {
-				if (moveDirection == Directions.up) { //if up key and left are pressed
-					moveDirection = Directions.up_left;
-				} else if (moveDirection == Directions.down) {
-					moveDirection = Directions.down_left;
-				} else {
-					moveDirection = Directions.left;
+				//movement up & down -- prioritize up
+				if (Input.GetKey(keyBindings["Movement_Up"])) {
+					moveDirection = Directions.up;
+				} else if (Input.GetKey(keyBindings["Movement_Down"])) {
+					moveDirection = Directions.down;
 				}
-			} else if (Input.GetKey(keyBindings["Movement_Right"])) {
-				if (moveDirection == Directions.up) {
-					moveDirection = Directions.up_right;
-				} else if (moveDirection == Directions.down) {
-					moveDirection = Directions.down_right;
-				} else {
-					moveDirection = Directions.right;
+
+				//movement left & right -- prioritize left
+				if (Input.GetKey(keyBindings["Movement_Left"])) {
+					if (moveDirection == Directions.up) { //if up key and left are pressed
+						moveDirection = Directions.up_left;
+					} else if (moveDirection == Directions.down) {
+						moveDirection = Directions.down_left;
+					} else {
+						moveDirection = Directions.left;
+					}
+				} else if (Input.GetKey(keyBindings["Movement_Right"])) {
+					if (moveDirection == Directions.up) {
+						moveDirection = Directions.up_right;
+					} else if (moveDirection == Directions.down) {
+						moveDirection = Directions.down_right;
+					} else {
+						moveDirection = Directions.right;
+					}
+				}
+
+				//movement run/sprint
+				if (Input.GetKey(keyBindings["Movement_Sprint"])) {
+					sprintEnabled = true;
+				}
+
+				//send movement info to player
+				if (Player.instance != null) {
+					Player.instance.MoveDirection(moveDirection, sprintEnabled);
+				}
+			} else { //not state_play
+				if (Input.GetKeyDown(keyBindings["Submit"])) {
+					CheckForFinalize();
+				}
+
+				if (Input.GetKeyDown(keyBindings["Cancel"])) {
+					CheckForCancel();
 				}
 			}
 
-			//movement run/sprint
-			if (Input.GetKey(keyBindings["Movement_Sprint"])) {
-				sprintEnabled = true;
+			if (Input.GetKeyDown(keyBindings["Interact"])) {
+				if (GameManager.instance.State_Play) {
+					Interactable.Interact();
+				} else {
+					CheckForFinalize();
+				}
 			}
 
-			//send movement info to player
-			if (Player.instance != null) {
-				Player.instance.MoveDirection(moveDirection, sprintEnabled);
-			}
-		} else { //not state_play
-			if (Input.GetKeyDown(keyBindings["Submit"])) {
-				CheckForFinalize();
+			if (Input.GetKeyDown(keyBindings["Attack_Basic"])) {
+				if (GameManager.instance.State_Play) {
+					//call player attack
+				} else {
+					CheckForFinalize();
+				}
 			}
 
-			if (Input.GetKeyDown(keyBindings["Cancel"])) {
-				CheckForCancel();
+			if (Input.GetKeyDown(keyBindings["Attack_Special"])) {
+				if (GameManager.instance.State_Play) {
+					//call player attack special
+				} else {
+					CheckForCancel();
+				}
 			}
-		}
-
-		if (Input.GetKeyDown(keyBindings["Interact"])) {
-			if (GameManager.instance.State_Play) {
-				Interactable.Interact();
-			} else {
-				CheckForFinalize();
-			}
-		}
-
-		if (Input.GetKeyDown(keyBindings["Attack_Basic"])) {
-			if (GameManager.instance.State_Play) {
-				//call player attack
-			} else {
-				CheckForFinalize();
-			}
-		}
-
-		if (Input.GetKeyDown(keyBindings["Attack_Special"])) {
-			if (GameManager.instance.State_Play) {
-				//call player attack special
-			} else {
-				CheckForCancel();
-			}
-		}
 
 #if UNITY_EDITOR
-		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-			WorldManager.instance.LoadAdjacentArea(Directions.left);
-		}
-		if (Input.GetKeyDown(KeyCode.RightArrow)) {
-			WorldManager.instance.LoadAdjacentArea(Directions.right);
-		}
-		if (Input.GetKeyDown(KeyCode.UpArrow)) {
-			WorldManager.instance.LoadAdjacentArea(Directions.up);
-		}
-		if (Input.GetKeyDown(KeyCode.DownArrow)) {
-			WorldManager.instance.LoadAdjacentArea(Directions.down);
-		}
+			if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+				WorldManager.instance.LoadAdjacentArea(Directions.left);
+			}
+			if (Input.GetKeyDown(KeyCode.RightArrow)) {
+				WorldManager.instance.LoadAdjacentArea(Directions.right);
+			}
+			if (Input.GetKeyDown(KeyCode.UpArrow)) {
+				WorldManager.instance.LoadAdjacentArea(Directions.up);
+			}
+			if (Input.GetKeyDown(KeyCode.DownArrow)) {
+				WorldManager.instance.LoadAdjacentArea(Directions.down);
+			}
 
-		if (Input.GetKeyDown(KeyCode.N)) {
-			GameManager.instance.StartNewGame();
-		}
-		if (Input.GetKeyDown(KeyCode.L)) {
-			GameManager.instance.LoadGame();
-		}
-		if (Input.GetKeyDown(KeyCode.Comma)) {
-			StructureGridManager.instance.BeginStructureCreate("City_CPR_0");
-		}
-		if (Input.GetKeyDown(KeyCode.Period)) {
-			StructureGridManager.instance.BeginStructureEdit(AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
-		}
-		if (Input.GetKeyDown(KeyCode.F)) {
-			Furniture.Create("Chest_0", null);
-			//Furniture.Create("Chest_0", AreaManagerNS.AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
-		}
+			if (Input.GetKeyDown(KeyCode.N)) {
+				GameManager.instance.StartNewGame();
+			}
+			if (Input.GetKeyDown(KeyCode.L)) {
+				GameManager.instance.LoadGame();
+			}
+			if (Input.GetKeyDown(KeyCode.Comma)) {
+				StructureGridManager.instance.BeginStructureCreate("City_CPR_0");
+			}
+			if (Input.GetKeyDown(KeyCode.Period)) {
+				StructureGridManager.instance.BeginStructureEdit(AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
+			}
+			if (Input.GetKeyDown(KeyCode.F)) {
+				Furniture.Create("Chest_0", null);
+				//Furniture.Create("Chest_0", AreaManagerNS.AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
+			}
 #endif
+		} else { //player is trying to rebind a key
+			if (Input.anyKeyDown) { //if any key was pressed
+				for (int kc = 0; kc < keyCodes.Length; kc++) { //loop through all keys
+					if (Input.GetKeyDown(keyCodes[kc])) { //determine which key was pressed
+						string actionToSwapKeysWith = keyBindings.FirstOrDefault(x => x.Value == keyCodes[kc]).Key; //check whether key is being used already
+						if (actionToSwapKeysWith != null && !actionToSwapKeysWith.Equals("")) { //if action name was retrieved using the key
+							keyBindings[actionToSwapKeysWith] = keyBindings[actionToRebind]; //assign new keycode
+							UpdateUIForAction(actionToSwapKeysWith); //update the ui
+						}
+
+						keyBindings[actionToRebind] = keyCodes[kc]; //set the hotkey
+						UpdateUIForAction(actionToRebind);
+						actionToRebind = "";
+						break;
+					}
+				}
+			}
+		} //end if editenabled
 	}//end Update()
 
 	private void Start() { //remove later
 		GameManager.instance.SelectPlayer("Player1");
 		GameManager.instance.SelectWorld("Debug World");
+	}
+
+	private void UpdateUIForAction(string actionName) {
+		Transform temp = uiParent.Find(actionName);
+
+		if (temp != null) {
+			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = keyBindings[actionName].ToString();
+		}
 	}
 }
