@@ -1,22 +1,31 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+/// <summary>
+/// Handles transitions between menus and overlays (HUD). Written by Justin Ortiz
+/// </summary>
 public class MenuScript : MonoBehaviour {
+	public static MenuScript instance;
 
-	public string startState = "Main";
-	[HideInInspector]
-	public string currentState = "";
-
+	[SerializeField]
+	private string startState = "Main";
+	private string currentState = "";
 	private string previousState = "";
 
-	[Tooltip ("Only hidden when a focus menu is displayed (i.e. HUD).")]
-	public string[] overlays;
-
-	[Tooltip ("No overlays may be displayed when one of these menus are displayed.")]
-	public string[] focusMenus;
-
+	[SerializeField, Tooltip ("Only hidden when a focus menu is displayed (i.e. HUD).")]
+	private string[] overlays;
+	[SerializeField, Tooltip ("No overlays may be displayed when one of these menus are displayed.")]
+	private string[] focusMenus;
 	private CanvasGroup[] groups;
+
+	public string CurrentState { get { return currentState; } }
+
+	private void Awake() {
+		if (instance != null) {
+			Destroy(gameObject);
+		} else {
+			instance = this;
+		}
+	}
 
 	void Start () {
 		groups = new CanvasGroup[transform.childCount];

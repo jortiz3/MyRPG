@@ -36,7 +36,7 @@ public class InputManager : MonoBehaviour {
 			if (loadKeybindings) {
 				LoadKeyBindings();
 			} else {
-				SetDefaultKeyBindings();
+				InitializeDefaultKeyBindings();
 				SaveKeyBindings();
 			} //end if default keys
 
@@ -87,29 +87,12 @@ public class InputManager : MonoBehaviour {
 
 		uiParent.GetComponent<RectTransform>().sizeDelta = new Vector2(uiParent.GetComponent<RectTransform>().sizeDelta.x, scrollViewHeight); //resize the rect so everything fits
 		uiParent.localPosition = Vector3.zero; //ensure player starts viewing at the top
+		uiParent.parent.gameObject.SetActive(false); //hide from screen
 
 		uiPrefab.gameObject.SetActive(false); //hide prefab now we are done
 	}
 
-	public void LoadKeyBindings() {
-		FileStream file = File.OpenRead(keyBindingsFilePath);
-		BinaryFormatter bf = new BinaryFormatter();
-		DictionaryS temp = (DictionaryS)bf.Deserialize(file);
-		file.Close();
-
-		if (temp != null) {
-			keyBindings = temp.GetDictionary();
-		}
-	}
-
-	public void SaveKeyBindings() {
-		FileStream file = File.Create(keyBindingsFilePath);
-		BinaryFormatter bf = new BinaryFormatter();
-		bf.Serialize(file, new DictionaryS(keyBindings));
-		file.Close();
-	}
-
-	public void SetDefaultKeyBindings() {
+	private void InitializeDefaultKeyBindings() {
 		keyBindings = new Dictionary<string, KeyCode>();
 		keyBindings.Add("Submit", KeyCode.Return);
 		keyBindings.Add("Cancel", KeyCode.Escape);
@@ -132,6 +115,50 @@ public class InputManager : MonoBehaviour {
 		keyBindings.Add("Slot_8", KeyCode.Alpha8);
 		keyBindings.Add("Slot_9", KeyCode.Alpha9);
 		keyBindings.Add("Slot_10", KeyCode.Alpha0);
+		keyBindings.Add("Quicksave", KeyCode.F5);
+		keyBindings.Add("Quickload", KeyCode.F9);
+	}
+
+	public void LoadKeyBindings() {
+		FileStream file = File.OpenRead(keyBindingsFilePath);
+		BinaryFormatter bf = new BinaryFormatter();
+		DictionaryS temp = (DictionaryS)bf.Deserialize(file);
+		file.Close();
+
+		if (temp != null) {
+			keyBindings = temp.GetDictionary();
+		}
+	}
+
+	private void RefreshControlsUI() {
+		Transform temp;
+		foreach (KeyValuePair<string, KeyCode> kvp in keyBindings) { //loop through keybindings
+			temp = uiParent.Find(kvp.Key);
+			if (temp == null) { //ui element not found
+				temp = Instantiate(uiPrefab, uiParent); //instantiate copy of template
+				uiParent.GetComponent<RectTransform>().sizeDelta += new Vector2(0, uiPrefab.GetComponent<RectTransform>().sizeDelta.y);
+			}
+
+			temp.name = kvp.Key;
+			temp.GetChild(0).GetComponent<Text>().text = kvp.Key; //set action name
+			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = kvp.Value.ToString(); //set key name -- get button(child), get text(child of button)
+
+			if (!temp.gameObject.activeSelf) {
+				temp.gameObject.SetActive(true);
+			}
+		}
+	}
+
+	public void SaveKeyBindings() {
+		FileStream file = File.Create(keyBindingsFilePath);
+		BinaryFormatter bf = new BinaryFormatter();
+		bf.Serialize(file, new DictionaryS(keyBindings));
+		file.Close();
+	}
+
+	public void SetDefaultKeyBindings() {
+		InitializeDefaultKeyBindings();
+		RefreshControlsUI();
 	}
 
 	private void Update() {
@@ -174,6 +201,14 @@ public class InputManager : MonoBehaviour {
 				//send movement info to player
 				if (Player.instance != null) {
 					Player.instance.MoveDirection(moveDirection, sprintEnabled);
+				}
+
+				if (Input.GetKeyDown(keyBindings["Quicksave"])) {
+					GameManager.instance.SaveGame();
+				}
+
+				if (Input.GetKeyDown(keyBindings["Quickload"])) {
+					GameManager.instance.LoadGame();
 				}
 			} else { //not state_play
 				if (Input.GetKeyDown(keyBindings["Submit"])) {
@@ -224,7 +259,7 @@ public class InputManager : MonoBehaviour {
 			}
 
 			if (Input.GetKeyDown(KeyCode.N)) {
-				GameManager.instance.StartNewGame();
+				GameManager.instance.StartNewGame(0);
 			}
 			if (Input.GetKeyDown(KeyCode.L)) {
 				GameManager.instance.LoadGame();
@@ -259,11 +294,6 @@ public class InputManager : MonoBehaviour {
 			}
 		} //end if editenabled
 	}//end Update()
-
-	private void Start() { //remove later
-		GameManager.instance.SelectPlayer("Player1");
-		GameManager.instance.SelectWorld("Debug World");
-	}
 
 	private void UpdateUIForAction(string actionName) {
 		Transform temp = uiParent.Find(actionName);
