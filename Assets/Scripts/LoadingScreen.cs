@@ -14,8 +14,6 @@ public class LoadingScreen : MonoBehaviour {
 	[SerializeField]
 	private List<Sprite> loadScreenSprites;
 
-	public bool isActive { get { return gameObject.activeSelf; } }
-
 	void Awake() {
 		if (instance != null) {
 			Destroy(gameObject);
@@ -32,8 +30,6 @@ public class LoadingScreen : MonoBehaviour {
 		if (image == null) {
 			image = GetComponent<Image>();
 		}
-
-		Hide();
 	}
 
 	public float GetProgress() {
@@ -44,8 +40,8 @@ public class LoadingScreen : MonoBehaviour {
 	}
 
 	public void Hide() {
-		if (gameObject.activeSelf) {
-			gameObject.SetActive(false);
+		if (isActive()) {
+			MenuScript.instance.ChangeState("");
 		}
 	}
 
@@ -53,6 +49,13 @@ public class LoadingScreen : MonoBehaviour {
 		if (slider != null) {
 			slider.value += amount;
 		}
+	}
+
+	public bool isActive() {
+		if (MenuScript.instance != null) {
+			return MenuScript.instance.CurrentState.Equals("Loading Screen");
+		}
+		return false;
 	}
 
 	public void ResetProgress() {
@@ -77,7 +80,7 @@ public class LoadingScreen : MonoBehaviour {
 	}
 
 	public void Show() {
-		if (!gameObject.activeSelf) {
+		if (!isActive()) {
 			if (image != null) {
 				if (loadScreenSprites != null) {
 					if (loadScreenSprites.Count > 0) {
@@ -86,7 +89,7 @@ public class LoadingScreen : MonoBehaviour {
 				} //end if sprites null
 			} //end if image null
 
-			gameObject.SetActive(true);
+			MenuScript.instance.ChangeState("Loading Screen");
 		}
 	}
 }

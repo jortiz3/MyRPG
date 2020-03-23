@@ -143,7 +143,7 @@ public class GameManager : MonoBehaviour {
 
 	public void PauseToggle() {
 		state_paused = !state_paused;
-		string menuState = state_paused ? "Paused" : "";
+		string menuState = state_paused ? "Pause" : "";
 		MenuScript.instance.ChangeState(menuState);
 	}
 
@@ -154,6 +154,15 @@ public class GameManager : MonoBehaviour {
 		if (state_play) {
 			LoadGame();
 		}
+	}
+
+	public void QuitToDesktop() {
+		Application.Quit();
+	}
+
+	public void QuitToMainMenu() {
+		state_gameInitialized = false;
+		MenuScript.instance.ChangeState("Main Menu");
 	}
 
 	/// <summary>
@@ -218,7 +227,7 @@ public class GameManager : MonoBehaviour {
 			state_play = false;
 		}
 
-		if (LoadingScreen.instance.isActive) {
+		if (LoadingScreen.instance.isActive()) {
 			state_play = false;
 		}
 	}

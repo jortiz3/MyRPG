@@ -37,7 +37,6 @@ public class MenuScript : MonoBehaviour {
 	}
 
 	public void ChangeState (string state) { //changes which menu is displayed (i.e. Main -> Settings, Main -> About)
-
 		previousState = currentState;
 
 		if (currentState.Equals (state)) //if we are already in this state, then we will exit the state

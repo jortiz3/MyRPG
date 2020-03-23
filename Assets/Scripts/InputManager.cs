@@ -45,12 +45,12 @@ public class InputManager : MonoBehaviour {
 	} //end Awake()
 
 	private void CheckForCancel() {
-		if (StructureGridManager.instance.EditEnabled) {
+		if (GameManager.instance.State_Play || GameManager.instance.State_Paused) {
+			GameManager.instance.PauseToggle();
+		} else if (StructureGridManager.instance.EditEnabled) {
 			StructureGridManager.instance.CancelStructureEdit();
 		} else if (Furniture.EditEnabled) {
 			Furniture.CancelEdit();
-		} else if (GameManager.instance.State_Play || GameManager.instance.State_Paused) {
-			GameManager.instance.PauseToggle();
 		}
 	}
 
@@ -213,14 +213,14 @@ public class InputManager : MonoBehaviour {
 				if (Input.GetKeyDown(keyBindings["Quickload"])) {
 					GameManager.instance.QuickLoadGame();
 				}
-			} else { //not state_play
-				if (Input.GetKeyDown(keyBindings["Submit"])) {
-					CheckForFinalize();
-				}
+			}
 
-				if (Input.GetKeyDown(keyBindings["Cancel"])) {
-					CheckForCancel();
-				}
+			if (Input.GetKeyDown(keyBindings["Submit"])) {
+				CheckForFinalize();
+			}
+
+			if (Input.GetKeyDown(keyBindings["Cancel"])) {
+				CheckForCancel();
 			}
 
 			if (Input.GetKeyDown(keyBindings["Interact"])) {
