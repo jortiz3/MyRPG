@@ -108,7 +108,6 @@ namespace internal_Area {
 			yield return new WaitForSeconds(0.3f);
 
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
-
 			LoadingScreen.instance.Hide();
 		}
 

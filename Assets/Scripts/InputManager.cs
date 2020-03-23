@@ -213,7 +213,13 @@ public class InputManager : MonoBehaviour {
 				if (Input.GetKeyDown(keyBindings["Quickload"])) {
 					GameManager.instance.QuickLoadGame();
 				}
-			}
+
+				for (int slot_index = 0; slot_index < 10; slot_index++) { //check all quick (item/spell) use slots
+					if (Input.GetKeyDown(keyBindings["Slot_" + (slot_index + 1)])) {
+						//use appropriate slot
+					}
+				}
+			} //end if game state play
 
 			if (Input.GetKeyDown(keyBindings["Submit"])) {
 				CheckForFinalize();
