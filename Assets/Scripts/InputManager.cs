@@ -49,6 +49,8 @@ public class InputManager : MonoBehaviour {
 			StructureGridManager.instance.CancelStructureEdit();
 		} else if (Furniture.EditEnabled) {
 			Furniture.CancelEdit();
+		} else if (GameManager.instance.State_Play || GameManager.instance.State_Paused) {
+			GameManager.instance.PauseToggle();
 		}
 	}
 
@@ -70,7 +72,7 @@ public class InputManager : MonoBehaviour {
 	}
 
 	private void InitializeControlsUI() {
-		uiParent = GameObject.Find("Settings_Controls_Scrollview").transform;
+		uiParent = GameObject.Find("Settings_Controls_ScrollContent").transform;
 		uiPrefab = uiParent.Find("Template_Hotkey");
 
 		float scrollViewHeight = uiParent.GetChild(0).GetComponent<RectTransform>().sizeDelta.y; //start with header height
@@ -96,6 +98,7 @@ public class InputManager : MonoBehaviour {
 		keyBindings = new Dictionary<string, KeyCode>();
 		keyBindings.Add("Submit", KeyCode.Return);
 		keyBindings.Add("Cancel", KeyCode.Escape);
+		keyBindings.Add("Inventory", KeyCode.Tab);
 		keyBindings.Add("Interact", KeyCode.E);
 		keyBindings.Add("Attack_Basic", KeyCode.Mouse0);
 		keyBindings.Add("Attack_Special", KeyCode.Mouse1);
@@ -208,7 +211,7 @@ public class InputManager : MonoBehaviour {
 				}
 
 				if (Input.GetKeyDown(keyBindings["Quickload"])) {
-					GameManager.instance.LoadGame();
+					GameManager.instance.QuickLoadGame();
 				}
 			} else { //not state_play
 				if (Input.GetKeyDown(keyBindings["Submit"])) {
@@ -222,7 +225,9 @@ public class InputManager : MonoBehaviour {
 
 			if (Input.GetKeyDown(keyBindings["Interact"])) {
 				if (GameManager.instance.State_Play) {
-					Interactable.Interact();
+					if (!Interactable.Interact()) {
+						//open inventory
+					}
 				} else {
 					CheckForFinalize();
 				}
@@ -260,9 +265,6 @@ public class InputManager : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.N)) {
 				GameManager.instance.StartNewGame(0);
-			}
-			if (Input.GetKeyDown(KeyCode.L)) {
-				GameManager.instance.LoadGame();
 			}
 			if (Input.GetKeyDown(KeyCode.Comma)) {
 				StructureGridManager.instance.BeginStructureCreate("City_CPR_0");

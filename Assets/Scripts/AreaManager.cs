@@ -77,7 +77,7 @@ public class AreaManager : MonoBehaviour {
 
 		areas = new Area[12, 12]; //create array
 
-		int totalNumAreas = areas.GetLength(0) * areas.GetLength(1);
+		float totalNumAreas = areas.GetLength(0) * areas.GetLength(1);
 		int areasCompleted = GenerateUniqueAreaData();
 		int prevAreasCompleted = 0;
 		string typeToSpread; //the type of area that is most likely to spread
@@ -120,7 +120,7 @@ public class AreaManager : MonoBehaviour {
 						}
 					} //found non-null area for parent
 				} //y for loop
-				LoadingScreen.instance.IncreaseProgress((areasCompleted - prevAreasCompleted) / 144f);
+				LoadingScreen.instance.IncreaseProgress((areasCompleted - prevAreasCompleted) / totalNumAreas);
 				prevAreasCompleted = areasCompleted;
 				yield return new WaitForEndOfFrame(); //allow for time between each row
 			} //x for loop

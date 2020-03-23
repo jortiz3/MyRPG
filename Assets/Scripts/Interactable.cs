@@ -23,10 +23,12 @@ public class Interactable : MonoBehaviour {
 		}
 	}
 
-	public static void Interact() {
+	public static bool Interact() {
 		if (displayedInteractable != null) {
 			displayedInteractable.InteractInternal();
+			return true;
 		}
+		return false;
 	}
 
 	private void OnTriggerEnter(Collider other) {
