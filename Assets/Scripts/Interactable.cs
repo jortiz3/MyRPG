@@ -8,6 +8,15 @@ public class Interactable : MonoBehaviour {
 
 	private string interactMessage;
 	private bool interactable;
+	private bool disabled;
+
+	public void Disable() {
+		disabled = true;
+	}
+
+	public void Enable() {
+		disabled = false;
+	}
 
 	protected virtual void Initialize() {
 		if (interactMessage == null || interactMessage.Equals("")) {
@@ -32,14 +41,16 @@ public class Interactable : MonoBehaviour {
 	}
 
 	private void OnTriggerEnter(Collider other) {
-		if (GameManager.instance.State_Play) {
-			if (other.CompareTag("Player")) { //player enters the interact range
-				if (displayedInteractable != null) { //if something is already displayed
-					displayedInteractable.interactable = false; //ensure only 1 interactable is used at a time
+		if (!disabled) { //if enabled
+			if (GameManager.instance.State_Play) { //if the player is playing -- !paused, !editing
+				if (other.CompareTag("Player")) { //player enters the interact range
+					if (displayedInteractable != null) { //if something is already displayed
+						displayedInteractable.interactable = false; //ensure only 1 interactable is used at a time
+					}
+					HUD.instance.ShowInteractionText(interactMessage); //show the interaction text
+					displayedInteractable = this; //flag this as shown
+					interactable = true; //allow player to interact
 				}
-				HUD.instance.ShowInteractionText(interactMessage); //show the interaction text
-				displayedInteractable = this; //flag this as shown
-				interactable = true; //allow player to interact
 			}
 		}
 	}

@@ -227,21 +227,23 @@ public class AreaManager : MonoBehaviour {
 					LoadingScreen.instance.SetText("Gathering save data..");
 					LoadingScreen.instance.Show();
 
-					float loadIncrement = 0.45f / transform.childCount;
+					float loadIncrement = 0.45f / (transform.childCount - 1);
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
 					foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
 						Transform child;
-						for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
-							child = parent.GetChild(index);
-							if (!child.CompareTag("Player")) { //if the object isn't the player
-								if (saveEntities) { //worry about populating entity list only if saving
-									if (!child.CompareTag("background")) { //if it is not a background
-										currEntities.Add(Entity.Parse(child)); //convert child to entity format
+						if (!parent.name.Equals("Area Exits")) {
+							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
+								child = parent.GetChild(index);
+								if (!child.CompareTag("Player")) { //if the object isn't the player
+									if (saveEntities) { //worry about populating entity list only if saving
+										if (!child.CompareTag("background")) { //if it is not a background
+											currEntities.Add(Entity.Parse(child)); //convert child to entity format
+										}
 									}
+									Destroy(child.gameObject); //destroy transform from scene
 								}
-								Destroy(child.gameObject); //destroy transform from scene
+								LoadingScreen.instance.IncreaseProgress(loadIncrement / parent.childCount);
 							}
-							LoadingScreen.instance.IncreaseProgress(loadIncrement / parent.childCount);
 						}
 					}
 
