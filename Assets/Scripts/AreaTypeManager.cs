@@ -22,9 +22,10 @@ namespace internal_Area {
 		}
 
 		private void GenerateDefaultAreaTypes() {
+			areaTypes.Clear();
 			areaTypes.Add(new AreaType("Plains", 0, 0, 4, 200, 0, 0, 5000));
-			areaTypes.Add(new AreaType("Forest", 0, 0, 3, 500, 0, 0, 25000));
-			areaTypes.Add(new AreaType("Mountain", 0, 0, 2, 200, 0, 0, 10000));
+			areaTypes.Add(new AreaType("Forest", 0, 0, 4, 500, 0, 0, 25000));
+			areaTypes.Add(new AreaType("Mountain", 0, 0, 4, 200, 0, 0, 10000));
 			areaTypes.Add(new AreaType("Marsh", 0, 0, 0, 200, 0, 0, 20000));
 			areaTypes.Add(new AreaType("City_RAM", 0, 0, 0, 200, 0, 0, 0));
 			areaTypes.Add(new AreaType("City_CPR", 0, 0, 0, 200, 0, 0, 0));

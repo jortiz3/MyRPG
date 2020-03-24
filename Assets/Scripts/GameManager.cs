@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour {
 
 			string[] secondSplit = firstSplit[1].Split(' ');
 			details += GetDifficultyName(int.Parse(secondSplit[0])) + "\t\t\t\t";
-			details += "Playtime: " + (float.Parse(secondSplit[1]) / 120f) + " hrs";
+			details += "Playtime: " + (Math.Truncate((float.Parse(secondSplit[1]) / 3600f) * 100f) / 100f) + " hrs";
 
 			return details;
 		}
@@ -127,7 +127,6 @@ public class GameManager : MonoBehaviour {
 				} catch { }
 			}
 
-			MenuScript.instance.ChangeState("");
 			state_gameInitialized = true;
 		}
 	}
