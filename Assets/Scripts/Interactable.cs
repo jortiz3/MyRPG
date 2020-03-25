@@ -10,11 +10,11 @@ public class Interactable : MonoBehaviour {
 	private bool interactable;
 	private bool disabled;
 
-	public void Disable() {
+	public virtual void Disable() {
 		disabled = true;
 	}
 
-	public void Enable() {
+	public virtual void Enable() {
 		disabled = false;
 	}
 

@@ -211,10 +211,8 @@ public class AreaManager : MonoBehaviour {
 			case Directions.left:
 				LoadArea(new Vector2Int(currentAreaPos.x - 1, currentAreaPos.y), true);
 				break;
-			case Directions.right:
+			default: //right as default
 				LoadArea(new Vector2Int(currentAreaPos.x + 1, currentAreaPos.y), true);
-				break;
-			default:
 				return;
 		}
 	}
@@ -227,7 +225,7 @@ public class AreaManager : MonoBehaviour {
 					LoadingScreen.instance.SetText("Gathering save data..");
 					LoadingScreen.instance.Show();
 
-					float loadIncrement = 0.45f / (transform.childCount - 1);
+					float loadIncrement = 0.40f / (transform.childCount - 1);
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
 					foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
 						Transform child;
@@ -248,10 +246,13 @@ public class AreaManager : MonoBehaviour {
 					}
 
 					if (saveEntities) {
-						LoadingScreen.instance.SetProgress(0.45f); //update load progress
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
 						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities); //save to file
+						LoadingScreen.instance.SetProgress(0.45f); //update load progress
 					}
+
+					LoadingScreen.instance.SetText("Loading Next Area.."); //inform player of process
+					UpdateAreaExits(position);
 
 					LoadingScreen.instance.SetProgress(0.5f); //update progress once complete
 					StructureGridManager.instance.ResetGridStatus(); //reset grid so any loaded structures can properly snap to it
@@ -297,5 +298,40 @@ public class AreaManager : MonoBehaviour {
 		LoadArea(loadedPos, false);
 		yield return new WaitForEndOfFrame();
 		LoadingScreen.instance.Hide();
+	}
+
+	private void UpdateAreaExits(Vector2Int position) {
+		AreaExit currExit;
+		currExit = transform.Find("Area Exits").Find("Area Exit_Left").GetChild(0).GetComponent<AreaExit>(); //get left exit
+		if (0 < position.x - 1) { //check bounds
+			currExit.Enable(); //enable left exit
+			currExit.SetExitInteractMessage(areas[position.x - 1, position.y].TypeName, position + Vector2Int.left); //pass info to area exit
+		} else { //out of bounds
+			currExit.Disable(); //disable left exit
+		}
+
+		currExit = transform.Find("Area Exits").Find("Area Exit_Right").GetChild(0).GetComponent<AreaExit>(); //get next exit
+		if (position.x + 1 < areas.GetLength(0)) { //check bounds
+			currExit.Enable(); //enable exit
+			currExit.SetExitInteractMessage(areas[position.x + 1, position.y].TypeName, position + Vector2Int.right); //pass info to area exit
+		} else { //out of bounds
+			currExit.Disable(); //disable exit
+		}
+
+		currExit = transform.Find("Area Exits").Find("Area Exit_Up").GetChild(0).GetComponent<AreaExit>(); //get next exit
+		if (0 < position.y - 1) { //check bounds
+			currExit.Enable(); //enable exit
+			currExit.SetExitInteractMessage(areas[position.x, position.y - 1].TypeName, position + Vector2Int.down); //pass info to area exit
+		} else { //out of bounds
+			currExit.Disable(); //disable exit
+		}
+
+		currExit = transform.Find("Area Exits").Find("Area Exit_Down").GetChild(0).GetComponent<AreaExit>(); //get next exit
+		if (position.y + 1 < areas.GetLength(1)) { //check bounds
+			currExit.Enable(); //enable exit
+			currExit.SetExitInteractMessage(areas[position.x, position.y + 1].TypeName, position + Vector2Int.up); //pass info to area exit
+		} else { //out of bounds
+			currExit.Disable(); //disable exit
+		}
 	}
 }
