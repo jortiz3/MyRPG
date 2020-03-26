@@ -75,8 +75,12 @@ public class Interactable : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Updates the message that is displayed once the player enters the interaction range.
+	/// </summary>
+	/// <param name="newMessage">"Press [button]" + newMessage</param>
 	protected void SetInteractMessage(string newMessage) {
-		interactMessage = "Press '" + InputManager.instance.GetKeyCodeName("Interact") + "' " + newMessage;
+		interactMessage = "Press [" + InputManager.instance.GetKeyCodeName("Interact") + "] " + newMessage;
 	}
 
 	private void Start() {

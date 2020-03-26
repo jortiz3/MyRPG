@@ -12,17 +12,19 @@ public class Item : Interactable {
 	[SerializeField, HideInInspector]
 	private string name;
 	[SerializeField, HideInInspector]
-	private string prefix; //convert to class? ItemModifier.cs >> effects stats and/or color
+	private ItemModifier prefix;
 	[SerializeField, HideInInspector]
-	private string suffix;
+	private ItemModifier suffix;
 	private int stat_magic; //either magic damage or resistance
 	private int stat_physical; //either physical damage or resistance
 	private int currency_value;
+	private int quality_value;
 	private float weight;
 	private bool equipable;
 	private bool equipped;
 	private bool slottable;
 	private bool consumable;
+	private bool crafting_material;
 	private bool weapon;
 	private bool armor;
 	private string[] tags; //used for sorting the item in the inventory screen
@@ -31,6 +33,7 @@ public class Item : Interactable {
 
 	public int ID { get { return id; } }
 	public int Value { get { return currency_value; } }
+	public int Quality { get { return quality_value; } }
 	public int Stat_Magic { get { return stat_magic; } }
 	public int Stat_Physical { get { return stat_physical; } }
 	public float Weight { get { return weight; } }
@@ -38,6 +41,7 @@ public class Item : Interactable {
 	public bool Equipped { get { return equipped; } set { equipped = value; } }
 	public bool Slottable { get { return slottable; } }
 	public bool Consumable { get { return consumable; } }
+	public bool isCraftingMaterial { get { return crafting_material; } }
 	public bool isWeapon { get { return weapon; } }
 	public bool isArmor { get { return armor; } }
 
@@ -73,19 +77,23 @@ public class Item : Interactable {
 	/// <summary>
 	/// Load attribute info from database. (only item name, prefix, suffix, & ID are saved)
 	/// </summary>
-	public void LoadItemInfoFromDB() {
-		ItemInfo temp = new ItemInfo(); //get from ItemDatabase.cs instead of new
-		stat_magic = temp.stat_magic;
-		stat_physical = temp.stat_physical;
-		currency_value = temp.currency_value;
-		weight = temp.weight;
-		equipable = temp.equipable;
+	public void LoadItemInfo() {
+		ItemInfo tempInfo = ItemDatabase.GetItemInfo(id); //get from ItemDatabase.cs instead of new
+		stat_magic = tempInfo.stat_magic;
+		stat_physical = tempInfo.stat_physical;
+		currency_value = tempInfo.currency_value;
+		quality_value = tempInfo.quality_value;
+		weight = tempInfo.weight;
+		equipable = tempInfo.equipable;
 		equipped = false;
-		slottable = temp.slottable;
-		consumable = temp.consumable;
-		weapon = temp.weapon;
-		armor = temp.armor;
-		tags = temp.tags;
+		slottable = tempInfo.slottable;
+		consumable = tempInfo.consumable;
+		crafting_material = tempInfo.crafting_material;
+		weapon = tempInfo.weapon;
+		armor = tempInfo.armor;
+		tags = tempInfo.tags;
+
+		prefix = ItemModifierDatabase.GetPrefix(tempInfo.prefix);
 	}
 
 	public void SetSpriteActive(bool active) {
@@ -103,7 +111,7 @@ public class Item : Interactable {
 	}
 
 	public override string ToString() {
-		return prefix + name + suffix;
+		return prefix.Name + " " + name + " " + suffix.Name;
 	}
 
 	public virtual void Use() {
