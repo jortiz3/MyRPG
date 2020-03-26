@@ -10,10 +10,16 @@ public class Interactable : MonoBehaviour {
 	private bool interactable;
 	private bool disabled;
 
+	/// <summary>
+	/// Disables the capability for the player to interact with this object.
+	/// </summary>
 	public virtual void Disable() {
-		disabled = true;
+		disabled = true; //change to enable/disable box collider
 	}
 
+	/// <summary>
+	/// Enables the capability for the player to interact with this object.
+	/// </summary>
 	public virtual void Enable() {
 		disabled = false;
 	}
