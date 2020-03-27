@@ -20,20 +20,20 @@ public class AreaExit : Interactable {
 		UpdateImages("Plains");
 	}
 
-	public override void Disable() {
+	public override void DisableInteraction() {
 		if (background_edge != null)
 			background_edge.color = Color.clear;
 		if (background_exit != null)
 			background_exit.color = Color.clear;
-		base.Disable();
+		base.DisableInteraction();
 	}
 
-	public override void Enable() {
+	public override void EnableInteraction() {
 		if (background_edge != null)
 			background_edge.color = Color.white;
 		if (background_exit != null)
 			background_exit.color = Color.white;
-		base.Enable();
+		base.EnableInteraction();
 	}
 
 	protected override void InteractInternal() {

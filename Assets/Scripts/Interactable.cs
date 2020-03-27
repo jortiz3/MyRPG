@@ -13,14 +13,14 @@ public class Interactable : MonoBehaviour {
 	/// <summary>
 	/// Disables the capability for the player to interact with this object.
 	/// </summary>
-	public virtual void Disable() {
+	public virtual void DisableInteraction() {
 		disabled = true; //change to enable/disable box collider
 	}
 
 	/// <summary>
 	/// Enables the capability for the player to interact with this object.
 	/// </summary>
-	public virtual void Enable() {
+	public virtual void EnableInteraction() {
 		disabled = false;
 	}
 

@@ -27,6 +27,12 @@ public class GameManager : MonoBehaviour {
 	public int Difficulty { get { return currDifficulty; } }
 	public float ElapsedGameTime { get { return elapsedGameTime; } }
 
+	private Transform AddLoadElement(string PlayerName) {
+		Transform temp = Instantiate(loadPrefab, loadParent).transform;
+		temp.name = PlayerName;
+		return temp;
+	}
+
 	private void Awake() {
 		if (instance != null) {
 			Destroy(gameObject);
@@ -101,8 +107,7 @@ public class GameManager : MonoBehaviour {
 			temp = loadParent.Find(f.Name);
 
 			if (temp == null) {
-				temp = Instantiate(loadPrefab, loadParent).transform;
-				temp.name = f.Name;
+				temp = AddLoadElement(f.Name);
 			}
 
 			textComponent = temp.GetChild(0).GetComponent<Text>();
@@ -235,6 +240,10 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private void UpdateCurrLoadElement() {
-
+		Transform temp = loadParent.Find(playerName);
+		if (temp == null) {
+			temp = AddLoadElement(playerName);
+		}
+		temp.GetChild(0).GetComponent<Text>().text = GetSaveDetails(playerName);
 	}
 }

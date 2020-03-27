@@ -8,7 +8,8 @@ namespace Items {
 		private int value;
 		private int quality;
 		private float weight;
-		private string magic_effect;
+		private string effect_status;
+		private string effect_impact;
 		private Color color;
 
 		public string Name { get { return name; } }

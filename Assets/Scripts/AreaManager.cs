@@ -304,34 +304,34 @@ public class AreaManager : MonoBehaviour {
 		AreaExit currExit;
 		currExit = transform.Find("Area Exits").Find("Area Exit_Left").GetChild(0).GetComponent<AreaExit>(); //get left exit
 		if (0 < position.x - 1) { //check bounds
-			currExit.Enable(); //enable left exit
+			currExit.EnableInteraction(); //enable left exit
 			currExit.SetExitInteractMessage(areas[position.x - 1, position.y].TypeName, position + Vector2Int.left); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable left exit
+			currExit.DisableInteraction(); //disable left exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Right").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (position.x + 1 < areas.GetLength(0)) { //check bounds
-			currExit.Enable(); //enable exit
+			currExit.EnableInteraction(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x + 1, position.y].TypeName, position + Vector2Int.right); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable exit
+			currExit.DisableInteraction(); //disable exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Up").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (0 < position.y - 1) { //check bounds
-			currExit.Enable(); //enable exit
+			currExit.EnableInteraction(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x, position.y - 1].TypeName, position + Vector2Int.down); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable exit
+			currExit.DisableInteraction(); //disable exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Down").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (position.y + 1 < areas.GetLength(1)) { //check bounds
-			currExit.Enable(); //enable exit
+			currExit.EnableInteraction(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x, position.y + 1].TypeName, position + Vector2Int.up); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable exit
+			currExit.DisableInteraction(); //disable exit
 		}
 	}
 }

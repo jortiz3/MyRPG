@@ -45,14 +45,14 @@ public class Item : Interactable {
 	public bool isWeapon { get { return weapon; } }
 	public bool isArmor { get { return armor; } }
 
-	public override void Disable() {
+	public override void DisableInteraction() {
 		SetSpriteActive(false); //hide the sprite
-		base.Disable();
+		base.DisableInteraction();
 	}
 
-	public override void Enable() {
+	public override void EnableInteraction() {
 		SetSpriteActive(true); //show the sprite
-		base.Enable();
+		base.EnableInteraction();
 	}
 
 	public bool HasTag(string tag) {
@@ -69,8 +69,8 @@ public class Item : Interactable {
 	}
 
 	protected override void InteractInternal() {
-		this.Disable(); //ensure the player doesn't interact w/ the object more than once
-		//add this item to player's inventory >> ItemContainer.cs?
+		this.DisableInteraction(); //ensure the player doesn't interact w/ the object more than once
+								   //add this item to player's inventory >> ItemContainer.cs?
 		base.InteractInternal();
 	}
 
@@ -94,15 +94,12 @@ public class Item : Interactable {
 		tags = tempInfo.tags;
 
 		prefix = ItemModifierDatabase.GetPrefix(tempInfo.prefix);
+		suffix = ItemModifierDatabase.GetSuffix(tempInfo.suffix);
 	}
 
 	public void SetSpriteActive(bool active) {
 		if (sprite != null) {
-			if (active) {
-				sprite.enabled = true;
-			} else {
-				sprite.enabled = false;
-			}
+			sprite.enabled = active;
 		}
 	}
 
