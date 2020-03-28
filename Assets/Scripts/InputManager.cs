@@ -225,6 +225,10 @@ public class InputManager : MonoBehaviour {
 						HUD.instance.UseHotbarSlot(slot_index);
 					}
 				}
+
+				if (Input.GetKeyDown(keyBindings["Inventory"])) {
+					MenuScript.instance.ChangeState("Inventory");
+				}
 			} //end if game state play
 
 			if (Input.GetKeyDown(keyBindings["Submit"])) {
@@ -238,7 +242,7 @@ public class InputManager : MonoBehaviour {
 			if (Input.GetKeyDown(keyBindings["Interact"])) {
 				if (GameManager.instance.State_Play) {
 					if (!Interactable.Interact()) {
-						//open inventory
+						MenuScript.instance.ChangeState("Inventory");
 					}
 				} else {
 					CheckForFinalize();

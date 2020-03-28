@@ -10,8 +10,6 @@ public class Item : Interactable {
 	[SerializeField, HideInInspector]
 	private int id;
 	[SerializeField, HideInInspector]
-	private string name;
-	[SerializeField, HideInInspector]
 	private ItemModifier prefix;
 	[SerializeField, HideInInspector]
 	private ItemModifier suffix;
@@ -69,7 +67,7 @@ public class Item : Interactable {
 	}
 
 	protected override void InteractInternal() {
-		this.DisableInteraction(); //ensure the player doesn't interact w/ the object more than once
+		DisableInteraction(); //ensure the player doesn't interact w/ the object more than once
 								   //add this item to player's inventory >> ItemContainer.cs?
 		base.InteractInternal();
 	}
@@ -95,6 +93,7 @@ public class Item : Interactable {
 
 		prefix = ItemModifierDatabase.GetPrefix(tempInfo.prefix);
 		suffix = ItemModifierDatabase.GetSuffix(tempInfo.suffix);
+		gameObject.name = ToString();
 	}
 
 	public void SetSpriteActive(bool active) {
@@ -104,11 +103,11 @@ public class Item : Interactable {
 	}
 
 	private void Start() {
-		SetInteractMessage("to pick up " + this.ToString() + ".");
+		SetInteractMessage("to pick up " + ToString() + ".");
 	}
 
 	public override string ToString() {
-		return prefix.Name + " " + name + " " + suffix.Name;
+		return prefix.Name + " " + gameObject.name + " " + suffix.Name;
 	}
 
 	public virtual void Use() {
