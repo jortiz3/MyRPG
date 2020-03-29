@@ -9,6 +9,7 @@ using Items;
 public class Item : Interactable {
 	[SerializeField, HideInInspector]
 	private int id;
+	private string baseName;
 	[SerializeField, HideInInspector]
 	private ItemModifier prefix;
 	[SerializeField, HideInInspector]
@@ -17,6 +18,7 @@ public class Item : Interactable {
 	private int stat_physical; //either physical damage or resistance
 	private int currency_value;
 	private int quality_value;
+	private int quantity;
 	private float weight;
 	private bool equipable;
 	private bool equipped;
@@ -30,11 +32,15 @@ public class Item : Interactable {
 	private SpriteRenderer sprite;
 
 	public int ID { get { return id; } }
-	public int Value { get { return currency_value; } }
+	public string BaseName { get { return baseName; } }
+	public string Prefix { get { return prefix.Name; } }
+	public string Suffix { get { return suffix.Name; } }
+	public int BaseMagicStat { get { return stat_magic; } }
+	public int BasePhysicalStat { get { return stat_physical; } }
+	public int BaseValue { get { return currency_value; } }
 	public int Quality { get { return quality_value; } }
-	public int Stat_Magic { get { return stat_magic; } }
-	public int Stat_Physical { get { return stat_physical; } }
-	public float Weight { get { return weight; } }
+	public int Quantity { get { return quantity; } set { quantity = value; } }
+	public float BaseWeight { get { return weight; } }
 	public bool Equipable { get { return equipable; } }
 	public bool Equipped { get { return equipped; } set { equipped = value; } }
 	public bool Slottable { get { return slottable; } }
@@ -53,6 +59,79 @@ public class Item : Interactable {
 		base.EnableInteraction();
 	}
 
+	public override bool Equals(object other) {
+		if (other.GetType() == typeof(Item)) {
+			Item temp = (Item)other;
+			if (baseName.Equals(temp.baseName)) {
+				if (id == temp.id) {
+					return true;
+				}
+			}
+		}
+		return base.Equals(other); //returns whether it's the same object in memory
+	}
+
+	public string GetItemType() {
+		string temp = "";
+		if (weapon) {
+			temp = "W";
+		} else if (armor) {
+			temp = "A";
+		} else if (consumable) {
+			temp = "C";
+		} else if (crafting_material) {
+			temp = "M";
+		}
+		return temp;
+	}
+
+	public Color GetQualityColor() {
+		int currQuality = quality_value + prefix.Quality_Modifier + suffix.Quality_Modifier;
+		if (currQuality < 0) {
+			return new Color(139, 69, 19); //brown >> doo doo
+		} else if(currQuality <= 0) {
+			return Color.white;
+		} else if (currQuality <= 1) {
+			return Color.yellow;
+		} else if (currQuality <= 2) {
+			return new Color(255, 192, 203); //pink
+		} else if (currQuality <= 3) {
+			return Color.green;
+		} else if (currQuality <= 4) {
+			return Color.blue;
+		} else if (currQuality <= 5) {
+			return new Color(142, 68, 173); //purple
+		} else {
+			return new Color(235, 149, 50); //orange
+		}
+	}
+
+	public int GetMagicStat() {
+		return stat_magic + prefix.Magic_Modifier + suffix.Physical_Modifier;
+	}
+
+	public int GetPhysicalStat() {
+		return stat_physical + prefix.Physical_Modifier + suffix.Physical_Modifier;
+	}
+
+	public string[] GetTags() {
+		string[] tempTags = new string[tags.Length];
+		for (int i = 0; i < tempTags.Length; i++) {
+			tempTags[i] = tags[i];
+		}
+		return tempTags;
+	}
+
+	public int GetValue() {
+		return currency_value + prefix.Value_Modifier + suffix.Value_Modifier;
+	}
+
+	public float GetWeight() {
+		float currWeight = weight * quantity;
+		currWeight = (float)Math.Truncate(currWeight * 100f) / 100f;
+		return currWeight;
+	}
+
 	public bool HasTag(string tag) {
 		if (tags != null) {
 			if (tags.Length > 0) {
@@ -66,9 +145,14 @@ public class Item : Interactable {
 		return false;
 	}
 
+	protected override void Initialize() {
+		SetInteractMessage("to pick up " + ToString() + ".");
+		base.Initialize();
+	}
+
 	protected override void InteractInternal() {
 		DisableInteraction(); //ensure the player doesn't interact w/ the object more than once
-								   //add this item to player's inventory >> ItemContainer.cs?
+		Inventory.instance.Add(this); //add this item to player's inventory >>
 		base.InteractInternal();
 	}
 
@@ -76,7 +160,8 @@ public class Item : Interactable {
 	/// Load attribute info from database. (only item name, prefix, suffix, & ID are saved)
 	/// </summary>
 	public void LoadItemInfo() {
-		ItemInfo tempInfo = ItemDatabase.GetItemInfo(id); //get from ItemDatabase.cs instead of new
+		ItemInfo tempInfo = ItemDatabase.GetItemInfo(id);
+		baseName = tempInfo.name;
 		stat_magic = tempInfo.stat_magic;
 		stat_physical = tempInfo.stat_physical;
 		currency_value = tempInfo.currency_value;
@@ -96,18 +181,25 @@ public class Item : Interactable {
 		gameObject.name = ToString();
 	}
 
+	/// <summary>
+	/// Assigns a prefix item modifier. (To be called during crafting)
+	/// </summary>
+	public void SetPrefix(string prefixName) {
+		prefix = ItemModifierDatabase.GetPrefix(prefixName);
+	}
+
 	public void SetSpriteActive(bool active) {
 		if (sprite != null) {
 			sprite.enabled = active;
 		}
 	}
 
-	private void Start() {
-		SetInteractMessage("to pick up " + ToString() + ".");
+	public void SetSuffix(string suffixName) {
+		suffix = ItemModifierDatabase.GetSuffix(suffixName);
 	}
 
 	public override string ToString() {
-		return prefix.Name + " " + gameObject.name + " " + suffix.Name;
+		return prefix.Name + " " + baseName + " " + suffix.Name;
 	}
 
 	public virtual void Use() {

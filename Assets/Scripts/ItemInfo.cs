@@ -58,6 +58,25 @@
 			tags = copy.tags;
 		}
 
+		public ItemInfo(Item item) {
+			id = item.ID;
+			name = item.BaseName;
+			prefix = item.Prefix;
+			suffix = item.Suffix;
+			stat_magic = item.BaseMagicStat;
+			stat_physical = item.BasePhysicalStat;
+			currency_value = item.BaseValue;
+			quality_value = item.Quality;
+			weight = item.BaseWeight;
+			equipable = item.Equipable;
+			slottable = item.Slottable;
+			consumable = item.Consumable;
+			crafting_material = item.isCraftingMaterial;
+			weapon = item.isWeapon;
+			armor = item.isArmor;
+			tags = item.GetTags();
+		}
+
 		public ItemInfo(int ID, string Prefix, string Name, string Suffix, int Stat_Magic, int Stat_Physical, int Currency_Value,
 			int Quality_Value, float Weight, bool Equipable, bool Slottable, bool Consumable, bool isCraftingMaterial, bool isWeapon,
 			bool isArmor, string[] Tags) {

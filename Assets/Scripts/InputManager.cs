@@ -227,7 +227,7 @@ public class InputManager : MonoBehaviour {
 				}
 
 				if (Input.GetKeyDown(keyBindings["Inventory"])) {
-					MenuScript.instance.ChangeState("Inventory");
+					Inventory.instance.Display();
 				}
 			} //end if game state play
 
@@ -242,7 +242,7 @@ public class InputManager : MonoBehaviour {
 			if (Input.GetKeyDown(keyBindings["Interact"])) {
 				if (GameManager.instance.State_Play) {
 					if (!Interactable.Interact()) {
-						MenuScript.instance.ChangeState("Inventory");
+						Inventory.instance.Display();
 					}
 				} else {
 					CheckForFinalize();

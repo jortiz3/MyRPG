@@ -103,7 +103,7 @@ Animator:
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
@@ -117,8 +117,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b99ed2e099b086408141ee84ebb1a4e, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   dynamicSprite: 1
 --- !u!1 &4575533960218823033
 GameObject:
@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 1215490803325413766}
   - component: {fileID: 3762937661954871573}
   - component: {fileID: 6567615492916584032}
+  - component: {fileID: 935375974}
   m_Layer: 8
   m_Name: Base Player
   m_TagString: Player
@@ -149,7 +150,7 @@ RectTransform:
   m_GameObject: {fileID: 4575533960218823033}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 4, y: 4, z: 4}
+  m_LocalScale: {x: 5, y: 5, z: 5}
   m_Children:
   - {fileID: 1215490803673850585}
   m_Father: {fileID: 0}
@@ -170,8 +171,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2493df174949c2f4f88466bbcf0a7de4, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   maxHp: 10
   maxStamina: 10
   walkSpeed: 4
@@ -228,3 +229,16 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.1, y: 0.05, z: 0.05}
   m_Center: {x: 0, y: -0.1, z: 0}
+--- !u!114 &935375974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4575533960218823033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefb0a5dc0fe2424a91eff6fb5c90346, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  items: []

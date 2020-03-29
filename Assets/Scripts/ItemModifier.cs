@@ -10,6 +10,7 @@ namespace Items {
 		private float weight;
 		private string effect_status;
 		private string effect_impact;
+		private string[] crafting_materials_detail; //possible detail material to use to craft this
 		private Color color;
 
 		public string Name { get { return name; } }
