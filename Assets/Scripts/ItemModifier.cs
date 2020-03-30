@@ -1,8 +1,13 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Items {
+	[Serializable]
 	public class ItemModifier {
+		[SerializeField]
 		private string name;
+		[SerializeField, HideInInspector]
+		private int id;
 		private int magic;
 		private int physical;
 		private int value;
@@ -20,5 +25,7 @@ namespace Items {
 		public int Quality_Modifier { get { return quality; } }
 		public float Weight_Modifier { get { return weight; } }
 		public Color Color_Modifier { get { return color; } }
+
+		//add constructors
 	}
 }

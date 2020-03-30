@@ -21,7 +21,7 @@ namespace Items {
 					return db[i];
 				}
 			}
-			return new ItemInfo();
+			return null;
 		}
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace Items {
 		/// </summary>
 		public static void Initialize() {
 			db = new List<ItemInfo>();
-			//db.Add(new ItemInfo());
+			db.Add(new ItemInfo(25, "", "Log", "", 0, 0, 5, -1, 50, false, false, false, true, false, false, new string[] { "material" }));
 			initialized = true;
 		}
 	}

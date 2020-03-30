@@ -29,6 +29,22 @@ public class Container : Interactable {
 		}
 	}
 
+	//removes all attached items from the scene
+	public void Clear() {
+		for (int i = items.Count - 1; i >=0; i--) {
+			Destroy(items[i].gameObject);
+		}
+	}
+
+	public bool Contains(string fullItemName) {
+		for (int i = 0; i < items.Count; i++) {
+			if (items[i].ToString().Equals(fullItemName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private Transform CreateContainerElement(Item i) {
 		Transform temp = currParent.Find(i.ToString());
 		if (temp == null) {
@@ -72,6 +88,7 @@ public class Container : Interactable {
 			containerTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
 		}
 		currParent = containerParent;
+		gameObject.tag = "container";
 		items = new List<Item>();
 		totalWeight = 0;
 		base.Initialize();

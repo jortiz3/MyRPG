@@ -18,6 +18,7 @@ public class AreaManager : MonoBehaviour {
 	private static Transform characterParent;
 	private static Transform sceneryParent;
 	private static Transform furnitureParent;
+	private static Transform itemParent;
 	private static NavMeshSurface navMesh;
 
 	private Area[,] areas;
@@ -37,6 +38,7 @@ public class AreaManager : MonoBehaviour {
 			sceneryParent = transform.Find("Scenery");
 			characterParent = transform.Find("Characters");
 			furnitureParent = transform.Find("Furniture");
+			itemParent = transform.Find("Items");
 			navMesh = transform.Find("NavMesh").GetComponent<NavMeshSurface>();
 		}
 	}
@@ -195,6 +197,8 @@ public class AreaManager : MonoBehaviour {
 				return backgroundParent;
 			case "Furniture":
 				return furnitureParent;
+			case "Item":
+				return itemParent;
 			default:
 				return characterParent;
 		}
@@ -227,19 +231,43 @@ public class AreaManager : MonoBehaviour {
 
 					float loadIncrement = 0.40f / (transform.childCount - 1);
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
+					List<Container> currContainers = new List<Container>();
+					Transform child;
+					bool destroyChild = false;
 					foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
-						Transform child;
-						if (!parent.name.Equals("Area Exits")) {
+						if (!parent.name.Equals("Area Exits")) { //do not process items(yet) or area exits
 							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
 								child = parent.GetChild(index);
 								if (!child.CompareTag("Player")) { //if the object isn't the player
 									if (saveEntities) { //worry about populating entity list only if saving
 										if (!child.CompareTag("background")) { //if it is not a background
-											currEntities.Add(Entity.Parse(child)); //convert child to entity format
-										}
+											destroyChild = false;
+
+											if (child.CompareTag("container")) {
+												currContainers.Add(child.GetComponent<Container>());
+											} else if (child.CompareTag("item")) { //if it's an item, then we need to make sure it's not in a container
+												bool accountedFor = false;
+												for (int containerIndex = 0; containerIndex < currContainers.Count; containerIndex++) { //loop through all containers
+													if (currContainers[containerIndex].Contains(child.name)) { //see if the container contains this item
+														accountedFor = true; //flag true
+														break; //stop looping
+													} //end if contains
+												} //end for
+
+												if (!accountedFor) {
+													currEntities.Add(Entity.Parse(child)); //convert child to entity format
+													destroyChild = true;
+												}
+											} else {
+												currEntities.Add(Entity.Parse(child)); //convert child to entity format
+												destroyChild = true;
+											} //end if child.comparetag
+										} //end if background
+									} //end if saveEntitites
+									if (destroyChild) {
+										Destroy(child.gameObject); //destroy transform from scene
 									}
-									Destroy(child.gameObject); //destroy transform from scene
-								}
+								} //end if player
 								LoadingScreen.instance.IncreaseProgress(loadIncrement / parent.childCount);
 							}
 						}
@@ -247,7 +275,7 @@ public class AreaManager : MonoBehaviour {
 
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
-						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities); //save to file
+						areas[currentAreaPos.x, currentAreaPos.y].Save(currContainers, currEntities);
 						LoadingScreen.instance.SetProgress(0.45f); //update load progress
 					}
 

@@ -23,6 +23,8 @@ namespace internal_Area {
 		[SerializeField]
 		private List<Entity> entities;
 		[SerializeField]
+		private List<Container> containers;
+		[SerializeField]
 		private Vector2IntS position;
 		[SerializeField]
 		private bool discovered;
@@ -41,6 +43,7 @@ namespace internal_Area {
 			position = Vector2IntS.zero;
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			entities = new List<Entity>();
+			containers = new List<Container>();
 		}
 
 		public Area(Vector2Int Position) {
@@ -48,6 +51,7 @@ namespace internal_Area {
 			position = new Vector2IntS(Position);
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			entities = new List<Entity>();
+			containers = new List<Container>();
 		}
 
 		public Area(Vector2Int Position, string areaTypeName) {
@@ -55,6 +59,7 @@ namespace internal_Area {
 			position = new Vector2IntS(Position);
 			typeName = areaTypeName;
 			entities = new List<Entity>();
+			containers = new List<Container>();
 		}
 
 		public void AssignType(string TypeName) {
@@ -216,10 +221,13 @@ namespace internal_Area {
 				yield return new WaitForEndOfFrame(); //add time between iterations
 			}
 
-			Save();
+			Save(containers, entities);
 		}
 
-		private void Save() {
+		public void Save(List<Container> Containers, List<Entity> Entities) {
+			UpdateContainers(Containers);
+			UpdateEntities(Entities);
+
 			string pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json";
 			StreamWriter writer = new StreamWriter(File.Create(pathToSaveTo));//initialize writer with creating/opening filepath
 			string json = JsonUtility.ToJson(this, true);
@@ -227,16 +235,22 @@ namespace internal_Area {
 			writer.Close(); //close the file
 		}
 
-		public void SaveEntities(List<Entity> Entities) {
+		public void SetPosition(Vector2Int newPosition) {
+			position = new Vector2IntS(newPosition);
+		}
+
+		private void UpdateContainers(List<Container> Containers) {
+			containers.Clear();
+			if (Containers.Count > 0) {
+				containers.AddRange(Containers);
+			}
+		}
+
+		private void UpdateEntities(List<Entity> Entities) {
 			entities.Clear();
 			if (Entities.Count > 0) {
 				entities.AddRange(Entities);
 			}
-			Save();
-		}
-
-		public void SetPosition(Vector2Int newPosition) {
-			position = new Vector2IntS(newPosition);
 		}
 	}
 }

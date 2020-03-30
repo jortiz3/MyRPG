@@ -7,12 +7,13 @@ using Items;
 /// </summary>
 [Serializable]
 public class Item : Interactable {
-	[SerializeField, HideInInspector]
+	[SerializeField]
 	private int id;
+	[SerializeField]
 	private string baseName;
-	[SerializeField, HideInInspector]
+	[SerializeField]
 	private ItemModifier prefix;
-	[SerializeField, HideInInspector]
+	[SerializeField]
 	private ItemModifier suffix;
 	private int stat_magic; //either magic damage or resistance
 	private int stat_physical; //either physical damage or resistance
@@ -69,6 +70,10 @@ public class Item : Interactable {
 			}
 		}
 		return base.Equals(other); //returns whether it's the same object in memory
+	}
+
+	public override int GetHashCode() {
+		return base.GetHashCode();
 	}
 
 	public string GetItemType() {
@@ -147,6 +152,9 @@ public class Item : Interactable {
 
 	protected override void Initialize() {
 		SetInteractMessage("to pick up " + ToString() + ".");
+		transform.parent = AreaManager.GetEntityParent("Item");
+		gameObject.tag = "item";
+		LoadItemInfo();
 		base.Initialize();
 	}
 
@@ -161,6 +169,14 @@ public class Item : Interactable {
 	/// </summary>
 	public void LoadItemInfo() {
 		ItemInfo tempInfo = ItemDatabase.GetItemInfo(id);
+		if (tempInfo == null) {
+			tempInfo = ItemDatabase.GetItemInfo(baseName);
+
+			if (tempInfo == null) {
+				return;
+			}
+		}
+		id = tempInfo.id;
 		baseName = tempInfo.name;
 		stat_magic = tempInfo.stat_magic;
 		stat_physical = tempInfo.stat_physical;
@@ -198,8 +214,18 @@ public class Item : Interactable {
 		suffix = ItemModifierDatabase.GetSuffix(suffixName);
 	}
 
-	public override string ToString() {
-		return prefix.Name + " " + baseName + " " + suffix.Name;
+	public override string ToString() { //returns the items full name: prefix + baseName + suffix
+		string temp = "";
+		if (prefix != null) { //if there is a prefix modifier
+			temp += prefix.Name + " ";
+		}
+
+		temp += baseName; //add the base name
+
+		if (suffix != null) { //if there is a suffix modifier
+			temp += " " + suffix.Name;
+		}
+		return temp; //return the result
 	}
 
 	public virtual void Use() {
