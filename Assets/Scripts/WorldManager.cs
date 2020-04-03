@@ -26,7 +26,7 @@ public class WorldManager : MonoBehaviour {
 		AreaManager.instance.LoadArea(direction);
 	}
 
-	public void LoadAreaData(string playerName, string worldName) {
-		StartCoroutine(AreaManager.instance.LoadAreasFromSave(playerName, worldName, Vector2Int.zero));
+	public void LoadAreaData(string playerName, string worldName, Vector2Int currentPosition) {
+		StartCoroutine(AreaManager.instance.LoadAreasFromSave(playerName, worldName, currentPosition));
 	}
 }

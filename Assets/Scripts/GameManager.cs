@@ -120,8 +120,6 @@ public class GameManager : MonoBehaviour {
 
 	private void LoadGame() {
 		if (!playerName.Equals("") && !worldName.Equals("")) {
-			WorldManager.instance.LoadAreaData(playerName, worldName);
-
 			if (File.Exists(filePath + playerName + fileName)) {
 				FileStream file = File.OpenRead(filePath + playerName + fileName);
 				BinaryFormatter bf = new BinaryFormatter();
@@ -131,6 +129,8 @@ public class GameManager : MonoBehaviour {
 				currDifficulty = saveData.Difficulty;
 				elapsedGameTime = saveData.ElapsedGameTime;
 
+				WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
+				Player.instance.transform.position = saveData.GetPlayerPosition(); //move the player to last saved position
 			}
 
 			state_gameInitialized = true;

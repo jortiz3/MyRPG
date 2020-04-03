@@ -18,8 +18,8 @@ public class Inventory : Container {
 	}
 
 	public override void Display() {
-		SetContainerActive(false);
-		base.Display();
+		SetContainerActive(false); //since this container will not be opened via interacting, we must hide the other container on display
+		base.Display(); //otherwise, display like normal container
 	}
 
 	protected override void Initialize() {

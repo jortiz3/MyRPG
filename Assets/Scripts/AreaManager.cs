@@ -26,6 +26,8 @@ public class AreaManager : MonoBehaviour {
 
 	public static string CurrentSaveFolder { get { return currentSaveFolder; } }
 	public static int AreaSize { get { return Area.Size; } }
+	
+	public Vector2Int Position { get { return currentAreaPos; } }
 
 	private void Awake() {
 		if (instance != null) {
@@ -262,6 +264,8 @@ public class AreaManager : MonoBehaviour {
 												currEntities.Add(Entity.Parse(child)); //convert child to entity format
 												destroyChild = true;
 											} //end if child.comparetag
+										} else {
+											destroyChild = true;
 										} //end if background
 									} //end if saveEntitites
 									if (destroyChild) { //if the child needs to be destroyed -- not player or inventory

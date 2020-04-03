@@ -6,6 +6,8 @@ using Items;
 /// Written by Justin Ortiz.
 /// </summary>
 public class Item : Interactable {
+	private static GameObject itemPrefab;
+
 	private int id;
 	private string baseName;
 	private ItemModifier prefix;
@@ -45,9 +47,15 @@ public class Item : Interactable {
 	public bool isWeapon { get { return weapon; } }
 	public bool isArmor { get { return armor; } }
 
+	private void Awake() {
+		if (itemPrefab == null) {
+			itemPrefab = Resources.Load<GameObject>("item");
+		}
+	}
+
 	public static Item Create(ItemSaveData info) {
-		Item temp = new Item(); //change to instantiate
-		temp.LoadItemInfo(info);
+		Item temp = GameObject.Instantiate(itemPrefab).GetComponent<Item>();
+		temp.Load(info);
 		return temp;
 	}
 
@@ -155,7 +163,7 @@ public class Item : Interactable {
 		SetInteractMessage("to pick up " + ToString() + ".");
 		transform.parent = AreaManager.GetEntityParent("Item");
 		gameObject.tag = "item";
-		LoadItemInfo(null);
+		Load(null);
 		base.Initialize();
 	}
 
@@ -168,26 +176,27 @@ public class Item : Interactable {
 	/// <summary>
 	/// Load attribute info from database. (only item name, prefix, suffix, & ID are saved)
 	/// </summary>
-	public void LoadItemInfo(ItemSaveData providedInfo) {
+	public void Load(ItemSaveData providedInfo) {
 		ItemInfo retrievedInfo;
 
-		if (providedInfo != null) {
-			id = providedInfo.id;
-			baseName = providedInfo.name;
+		if (providedInfo != null) { //if given info
+			id = providedInfo.id; //use id
+			baseName = providedInfo.name; //use base name
 		}
 
-		retrievedInfo = ItemDatabase.GetItemInfo(id);
+		retrievedInfo = ItemDatabase.GetItemInfo(id); //check database for info using id
 
-		if (retrievedInfo == null) {
-			retrievedInfo = ItemDatabase.GetItemInfo(baseName);
+		if (retrievedInfo == null) { //if not found
+			retrievedInfo = ItemDatabase.GetItemInfo(baseName); //check database for info using base name
 		}
 
-		if (retrievedInfo == null) {
-			return;
+		if (retrievedInfo == null) { // if still not found
+			Destroy(gameObject); //remove from scene
+			return; //quit
 		}
 
-		id = retrievedInfo.id;
-		baseName = retrievedInfo.name;
+		id = retrievedInfo.id; //ensure id matches database
+		baseName = retrievedInfo.name; //ensure base name matches database
 		stat_magic = retrievedInfo.stat_magic;
 		stat_physical = retrievedInfo.stat_physical;
 		currency_value = retrievedInfo.currency_value;

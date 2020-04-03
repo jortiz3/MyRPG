@@ -45,29 +45,8 @@ public class Container : Interactable {
 	}
 
 	public virtual void Display() {
-		StartCoroutine(Display(currParent));
+		RefreshDisplay();
 		MenuScript.instance.ChangeState("Inventory");
-	}
-
-	/// <summary>
-	/// Iterates through all elements available for containers in the scene and only shows the elements for this container.
-	/// </summary>
-	protected virtual IEnumerator Display(Transform parent) {
-		//resize the parent transform to perfectly fit the currently displayed items.
-		parent.GetComponent<RectTransform>().sizeDelta = new Vector2(parent.GetComponent<RectTransform>().sizeDelta.x, items.Count * containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y);
-
-		foreach(Transform child in parent) {
-			child.gameObject.SetActive(false);
-		}
-		yield return new WaitForEndOfFrame();
-
-		totalWeight = 0;
-		for (int i = 0; i < items.Count; i++) { //loop through all items
-			RefreshUIElement(items[i]); //refresh the ui element for the item
-			totalWeight += items[i].GetWeight(); //increase total weight
-			yield return new WaitForEndOfFrame(); //wait a frame
-		}
-		RefreshWeightElement(); //display the total weight
 	}
 
 	protected override void Initialize() {
@@ -89,14 +68,40 @@ public class Container : Interactable {
 		base.Initialize();
 	}
 
-	protected override void InteractInternal() {
-		SetContainerActive(true);
-		Display();
-		base.InteractInternal();
+	protected override void InteractInternal() { //player walks up to interact
+		SetContainerActive(true); //display the other container(this)
+		Inventory.instance.RefreshDisplay(); //refresh player's inventory
+		Display(); //display this
+		base.InteractInternal(); //finish interaction
 	}
 
 	public void Load(ContainerSaveData data) {
 		items = data.GetItems();
+	}
+
+	protected void RefreshDisplay() {
+		StartCoroutine(RefreshDisplay(currParent));
+	}
+
+	/// <summary>
+	/// Iterates through all elements available for containers in the scene and only shows the elements for this container.
+	/// </summary>
+	private IEnumerator RefreshDisplay(Transform parent) {
+		//resize the parent transform to perfectly fit the currently displayed items.
+		parent.GetComponent<RectTransform>().sizeDelta = new Vector2(parent.GetComponent<RectTransform>().sizeDelta.x, items.Count * containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y);
+
+		foreach (Transform child in parent) {
+			child.gameObject.SetActive(false);
+		}
+		yield return new WaitForEndOfFrame();
+
+		totalWeight = 0;
+		for (int i = 0; i < items.Count; i++) { //loop through all items
+			RefreshUIElement(items[i]); //refresh the ui element for the item
+			totalWeight += items[i].GetWeight(); //increase total weight
+			yield return new WaitForEndOfFrame(); //wait a frame
+		}
+		RefreshWeightElement(); //display the total weight
 	}
 
 	private void RefreshUIElement(Item item) {
