@@ -1,7 +1,10 @@
-﻿namespace Items {
+﻿using System;
+
+namespace Items {
 	/// <summary>
 	/// Written by Justin Ortiz
 	/// </summary>
+	[Serializable]
 	public class ItemInfo {
 		public int id;
 		public string name;
@@ -96,6 +99,18 @@
 			weapon = isWeapon;
 			armor = isArmor;
 			tags = Tags;
+		}
+
+		public override bool Equals(object obj) {
+			return base.Equals(obj);
+		}
+
+		public override int GetHashCode() {
+			return base.GetHashCode();
+		}
+
+		public override string ToString() {
+			return prefix + " " + name + " " + suffix;
 		}
 	}
 }

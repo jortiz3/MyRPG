@@ -238,9 +238,9 @@ public class AreaManager : MonoBehaviour {
 						if (!parent.name.Equals("Area Exits")) { //do not process items(yet) or area exits
 							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
 								child = parent.GetChild(index);
-								if (!child.CompareTag("Player")) { //if the object isn't the player
+								if (!child.CompareTag("Player") && !child.CompareTag("inventory")) { //if the object isn't the player or inventory; ensure not destroyed
 									if (saveEntities) { //worry about populating entity list only if saving
-										if (!child.CompareTag("background")) { //if it is not a background
+										if (!child.CompareTag("background")) { //if it is not a background, then continue check for save
 											destroyChild = false;
 
 											if (child.CompareTag("container")) {
@@ -264,19 +264,23 @@ public class AreaManager : MonoBehaviour {
 											} //end if child.comparetag
 										} //end if background
 									} //end if saveEntitites
-									if (destroyChild) {
-										Destroy(child.gameObject); //destroy transform from scene
+									if (destroyChild) { //if the child needs to be destroyed -- not player or inventory
+										Destroy(child.gameObject); //destroy gameobject from scene
 									}
 								} //end if player
 								LoadingScreen.instance.IncreaseProgress(loadIncrement / parent.childCount);
-							}
-						}
-					}
+							} //end for
+						} //end if area exit
+					} //end foreach
 
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
 						areas[currentAreaPos.x, currentAreaPos.y].Save(currContainers, currEntities);
 						LoadingScreen.instance.SetProgress(0.45f); //update load progress
+
+						for (int i = currContainers.Count - 1; i >=0; i--) { //go through all containers once saved
+							currContainers[i].SelfDestruct(); //remove containers and corresponding items from scene
+						}
 					}
 
 					LoadingScreen.instance.SetText("Loading Next Area.."); //inform player of process

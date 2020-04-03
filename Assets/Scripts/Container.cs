@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,17 +6,16 @@ using UnityEngine.UI;
 /// <summary>
 /// Stores a list of items and displays them to the screen.
 /// </summary>
-[Serializable]
 public class Container : Interactable {
 	private static Toggle containerTab;
 	private static Transform containerParent;
 	private static Transform containerElementPrefab;
 
-	[SerializeField, HideInInspector]
 	protected List<Item> items;
 	protected Transform currParent;
 	private float totalWeight;
 
+	public List<Item> Items { get { return items; } }
 	public float TotalWeight { get { return totalWeight; } }
 
 	public void Add(Item item) {
@@ -26,13 +24,6 @@ public class Container : Interactable {
 		} else {
 			items.Add(item);
 			CreateContainerElement(item); //ensure there's a ui element for the item
-		}
-	}
-
-	//removes all attached items from the scene
-	public void Clear() {
-		for (int i = items.Count - 1; i >=0; i--) {
-			Destroy(items[i].gameObject);
 		}
 	}
 
@@ -71,11 +62,12 @@ public class Container : Interactable {
 		yield return new WaitForEndOfFrame();
 
 		totalWeight = 0;
-		for (int i = 0; i < items.Count; i++) { //check each child to see if
-			RefreshUIElement(items[i]);
-			totalWeight += items[i].GetWeight();
-			yield return new WaitForEndOfFrame();
+		for (int i = 0; i < items.Count; i++) { //loop through all items
+			RefreshUIElement(items[i]); //refresh the ui element for the item
+			totalWeight += items[i].GetWeight(); //increase total weight
+			yield return new WaitForEndOfFrame(); //wait a frame
 		}
+		RefreshWeightElement(); //display the total weight
 	}
 
 	protected override void Initialize() {
@@ -89,8 +81,11 @@ public class Container : Interactable {
 		}
 		currParent = containerParent;
 		gameObject.tag = "container";
-		items = new List<Item>();
-		totalWeight = 0;
+
+		if (items == null) {
+			items = new List<Item>();
+			totalWeight = 0;
+		}
 		base.Initialize();
 	}
 
@@ -100,7 +95,11 @@ public class Container : Interactable {
 		base.InteractInternal();
 	}
 
-	public void RefreshUIElement(Item item) {
+	public void Load(ContainerSaveData data) {
+		items = data.GetItems();
+	}
+
+	private void RefreshUIElement(Item item) {
 		Transform element = CreateContainerElement(item);
 		element.name = item.ToString();
 		foreach(Text child in element) {
@@ -128,12 +127,29 @@ public class Container : Interactable {
 		}
 	}
 
+	protected virtual void RefreshWeightElement() {
+		//normal containers do not display their weight, but the player's inventory will.
+	}
+
 	/// <summary>
 	/// This container will no longer track this item.
 	/// </summary>
 	/// <param name="item"></param>
 	public void Remove(Item item) {
-		items.Remove(item);
+		if (items.Remove(item)) { //if the item is removed
+			totalWeight -= item.GetWeight();
+			RefreshWeightElement();
+		}
+	}
+
+	/// <summary>
+	/// Removes all contained items from the scene, then destroys itself.
+	/// </summary>
+	public void SelfDestruct() {
+		for (int i = items.Count - 1; i >= 0; i--) {
+			Destroy(items[i].gameObject);
+		}
+		Destroy(gameObject);
 	}
 
 	protected void SetContainerActive(bool active) {

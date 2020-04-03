@@ -4,6 +4,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.UI;
 
+[Serializable]
 public class GameManager : MonoBehaviour {
 	public static GameManager instance;
 
@@ -16,7 +17,6 @@ public class GameManager : MonoBehaviour {
 	private bool state_play;
 	private bool state_paused;
 	private int currDifficulty;
-	[SerializeField, HideInInspector]
 	private float elapsedGameTime;
 
 	private Transform loadParent;
@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour {
 
 	public bool State_Play { get { return state_play; } }
 	public bool State_Paused { get { return state_paused; } }
+	public string PlayerName { get { return playerName; } }
+	public string WorldName { get { return worldName; } }
 	public int Difficulty { get { return currDifficulty; } }
 	public float ElapsedGameTime { get { return elapsedGameTime; } }
 
@@ -75,17 +77,13 @@ public class GameManager : MonoBehaviour {
 		if (File.Exists(filePath + PlayerName + fileName)) {
 			string details = PlayerName + "\t\t\t\t";
 
-			FileStream file = File.OpenRead(filePath + PlayerName + fileName);
-			BinaryFormatter bf = new BinaryFormatter();
-			string loadedData = bf.Deserialize(file) as string;
+			FileStream file = File.OpenRead(filePath + PlayerName + fileName); //open file
+			BinaryFormatter bf = new BinaryFormatter(); //create formatter
+			GameSave loadedData = bf.Deserialize(file) as GameSave; //deserialize
+			file.Close(); //ensure the file is closed asap
 
-			string[] firstSplit = loadedData.Split(("\n").ToCharArray());
-			details += firstSplit[0] + "\n";
-
-			string[] secondSplit = firstSplit[1].Split(' ');
-			details += GetDifficultyName(int.Parse(secondSplit[0])) + "\t\t\t\t";
-			details += "Playtime: " + (Math.Truncate((float.Parse(secondSplit[1]) / 3600f) * 100f) / 100f) + " hrs";
-
+			details += loadedData.Date + "\n" + GetDifficultyName(loadedData.Difficulty) + "\t\t\t\t"; //add the date and difficulty to the details
+			details += "Playtime: " + (Math.Truncate((loadedData.ElapsedGameTime / 3600f) * 100f) / 100f) + " hrs"; //add the play time to the details
 			return details;
 		}
 		return "Save Data Error: Unable to load save details for '" + PlayerName + "'.";
@@ -127,12 +125,12 @@ public class GameManager : MonoBehaviour {
 			if (File.Exists(filePath + playerName + fileName)) {
 				FileStream file = File.OpenRead(filePath + playerName + fileName);
 				BinaryFormatter bf = new BinaryFormatter();
-				string saveData = bf.Deserialize(file) as string;
-				try {
-					string[] splitSaveData = saveData.Split(("\n").ToCharArray())[1].Split(' ');
-					currDifficulty = int.Parse(splitSaveData[0]);
-					elapsedGameTime = float.Parse(splitSaveData[1]);
-				} catch { }
+				GameSave saveData = bf.Deserialize(file) as GameSave;
+				file.Close();
+
+				currDifficulty = saveData.Difficulty;
+				elapsedGameTime = saveData.ElapsedGameTime;
+
 			}
 
 			state_gameInitialized = true;
@@ -176,13 +174,9 @@ public class GameManager : MonoBehaviour {
 	/// Called by button(s) using unity inspector & certain in-game events
 	/// </summary>
 	public void SaveGame() {
-		string saveData = DateTime.Now.ToString() + "\n"; //add time
-		saveData += currDifficulty + " ";
-		saveData += elapsedGameTime;
-
 		FileStream file = File.Create(filePath + playerName + fileName);
 		BinaryFormatter bf = new BinaryFormatter();
-		bf.Serialize(file, saveData);
+		bf.Serialize(file, new GameSave());
 		file.Close();
 
 		UpdateCurrLoadElement();

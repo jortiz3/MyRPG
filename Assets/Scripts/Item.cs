@@ -5,15 +5,10 @@ using Items;
 /// <summary>
 /// Written by Justin Ortiz.
 /// </summary>
-[Serializable]
 public class Item : Interactable {
-	[SerializeField]
 	private int id;
-	[SerializeField]
 	private string baseName;
-	[SerializeField]
 	private ItemModifier prefix;
-	[SerializeField]
 	private ItemModifier suffix;
 	private int stat_magic; //either magic damage or resistance
 	private int stat_physical; //either physical damage or resistance
@@ -34,8 +29,8 @@ public class Item : Interactable {
 
 	public int ID { get { return id; } }
 	public string BaseName { get { return baseName; } }
-	public string Prefix { get { return prefix.Name; } }
-	public string Suffix { get { return suffix.Name; } }
+	public string Prefix { get { return prefix != null ? prefix.Name : ""; } }
+	public string Suffix { get { return suffix != null ? suffix.Name : ""; } }
 	public int BaseMagicStat { get { return stat_magic; } }
 	public int BasePhysicalStat { get { return stat_physical; } }
 	public int BaseValue { get { return currency_value; } }
@@ -49,6 +44,12 @@ public class Item : Interactable {
 	public bool isCraftingMaterial { get { return crafting_material; } }
 	public bool isWeapon { get { return weapon; } }
 	public bool isArmor { get { return armor; } }
+
+	public static Item Create(ItemSaveData info) {
+		Item temp = new Item(); //change to instantiate
+		temp.LoadItemInfo(info);
+		return temp;
+	}
 
 	public override void DisableInteraction() {
 		SetSpriteActive(false); //hide the sprite
@@ -94,7 +95,7 @@ public class Item : Interactable {
 		int currQuality = quality_value + prefix.Quality_Modifier + suffix.Quality_Modifier;
 		if (currQuality < 0) {
 			return new Color(139, 69, 19); //brown >> doo doo
-		} else if(currQuality <= 0) {
+		} else if (currQuality <= 0) {
 			return Color.white;
 		} else if (currQuality <= 1) {
 			return Color.yellow;
@@ -154,7 +155,7 @@ public class Item : Interactable {
 		SetInteractMessage("to pick up " + ToString() + ".");
 		transform.parent = AreaManager.GetEntityParent("Item");
 		gameObject.tag = "item";
-		LoadItemInfo();
+		LoadItemInfo(null);
 		base.Initialize();
 	}
 
@@ -167,33 +168,48 @@ public class Item : Interactable {
 	/// <summary>
 	/// Load attribute info from database. (only item name, prefix, suffix, & ID are saved)
 	/// </summary>
-	public void LoadItemInfo() {
-		ItemInfo tempInfo = ItemDatabase.GetItemInfo(id);
-		if (tempInfo == null) {
-			tempInfo = ItemDatabase.GetItemInfo(baseName);
+	public void LoadItemInfo(ItemSaveData providedInfo) {
+		ItemInfo retrievedInfo;
 
-			if (tempInfo == null) {
-				return;
-			}
+		if (providedInfo != null) {
+			id = providedInfo.id;
+			baseName = providedInfo.name;
 		}
-		id = tempInfo.id;
-		baseName = tempInfo.name;
-		stat_magic = tempInfo.stat_magic;
-		stat_physical = tempInfo.stat_physical;
-		currency_value = tempInfo.currency_value;
-		quality_value = tempInfo.quality_value;
-		weight = tempInfo.weight;
-		equipable = tempInfo.equipable;
-		equipped = false;
-		slottable = tempInfo.slottable;
-		consumable = tempInfo.consumable;
-		crafting_material = tempInfo.crafting_material;
-		weapon = tempInfo.weapon;
-		armor = tempInfo.armor;
-		tags = tempInfo.tags;
 
-		prefix = ItemModifierDatabase.GetPrefix(tempInfo.prefix);
-		suffix = ItemModifierDatabase.GetSuffix(tempInfo.suffix);
+		retrievedInfo = ItemDatabase.GetItemInfo(id);
+
+		if (retrievedInfo == null) {
+			retrievedInfo = ItemDatabase.GetItemInfo(baseName);
+		}
+
+		if (retrievedInfo == null) {
+			return;
+		}
+
+		id = retrievedInfo.id;
+		baseName = retrievedInfo.name;
+		stat_magic = retrievedInfo.stat_magic;
+		stat_physical = retrievedInfo.stat_physical;
+		currency_value = retrievedInfo.currency_value;
+		quality_value = retrievedInfo.quality_value;
+		weight = retrievedInfo.weight;
+		equipable = retrievedInfo.equipable;
+		equipped = false;
+		slottable = retrievedInfo.slottable;
+		consumable = retrievedInfo.consumable;
+		crafting_material = retrievedInfo.crafting_material;
+		weapon = retrievedInfo.weapon;
+		armor = retrievedInfo.armor;
+		tags = retrievedInfo.tags;
+
+		if (providedInfo != null) {
+			prefix = ItemModifierDatabase.GetPrefix(providedInfo.prefix);
+			suffix = ItemModifierDatabase.GetSuffix(providedInfo.suffix);
+		} else {
+			prefix = ItemModifierDatabase.GetPrefix(retrievedInfo.prefix);
+			suffix = ItemModifierDatabase.GetSuffix(retrievedInfo.suffix);
+		}
+
 		gameObject.name = ToString();
 	}
 
@@ -212,6 +228,16 @@ public class Item : Interactable {
 
 	public void SetSuffix(string suffixName) {
 		suffix = ItemModifierDatabase.GetSuffix(suffixName);
+	}
+
+	public ItemInfo ToItemInfo() {
+		ItemInfo temp = new ItemInfo(this);
+		return temp;
+	}
+
+	public ItemSaveData ToItemSaveData() {
+		ItemSaveData temp = new ItemSaveData(this);
+		return temp;
 	}
 
 	public override string ToString() { //returns the items full name: prefix + baseName + suffix
