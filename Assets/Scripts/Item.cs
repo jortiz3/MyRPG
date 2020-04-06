@@ -8,7 +8,9 @@ using Items;
 public class Item : Interactable {
 	private static GameObject itemPrefab;
 
+	[SerializeField]
 	private int id;
+	[SerializeField]
 	private string baseName;
 	private ItemModifier prefix;
 	private ItemModifier suffix;
@@ -100,7 +102,16 @@ public class Item : Interactable {
 	}
 
 	public Color GetQualityColor() {
-		int currQuality = quality_value + prefix.Quality_Modifier + suffix.Quality_Modifier;
+		int currQuality = quality_value;
+
+		if (prefix != null) {
+			currQuality += prefix.Quality_Modifier;
+		}
+
+		if (suffix != null) {
+			currQuality += suffix.Quality_Modifier;
+		}
+
 		if (currQuality < 0) {
 			return new Color(139, 69, 19); //brown >> doo doo
 		} else if (currQuality <= 0) {
@@ -121,11 +132,31 @@ public class Item : Interactable {
 	}
 
 	public int GetMagicStat() {
-		return stat_magic + prefix.Magic_Modifier + suffix.Physical_Modifier;
+		int currStat = stat_magic;
+
+		if (prefix != null) {
+			currStat += prefix.Magic_Modifier;
+		}
+
+		if (suffix != null) {
+			currStat += suffix.Magic_Modifier;
+		}
+
+		return currStat;
 	}
 
 	public int GetPhysicalStat() {
-		return stat_physical + prefix.Physical_Modifier + suffix.Physical_Modifier;
+		int currStat = stat_physical;
+
+		if (prefix != null) {
+			currStat += prefix.Physical_Modifier;
+		}
+
+		if (suffix != null) {
+			currStat += suffix.Physical_Modifier;
+		}
+
+		return currStat;
 	}
 
 	public string[] GetTags() {
@@ -203,7 +234,6 @@ public class Item : Interactable {
 		quality_value = retrievedInfo.quality_value;
 		weight = retrievedInfo.weight;
 		equipable = retrievedInfo.equipable;
-		equipped = false;
 		slottable = retrievedInfo.slottable;
 		consumable = retrievedInfo.consumable;
 		crafting_material = retrievedInfo.crafting_material;
@@ -212,9 +242,13 @@ public class Item : Interactable {
 		tags = retrievedInfo.tags;
 
 		if (providedInfo != null) {
+			quantity = providedInfo.quantity;
+			equipped = providedInfo.equipped; //convert to Player.instance.Equip(this);
 			prefix = ItemModifierDatabase.GetPrefix(providedInfo.prefix);
 			suffix = ItemModifierDatabase.GetSuffix(providedInfo.suffix);
 		} else {
+			quantity = 1;
+			equipped = false;
 			prefix = ItemModifierDatabase.GetPrefix(retrievedInfo.prefix);
 			suffix = ItemModifierDatabase.GetSuffix(retrievedInfo.suffix);
 		}

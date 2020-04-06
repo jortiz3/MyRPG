@@ -48,8 +48,8 @@ public class GameSave {
 		area_position_y = AreaManager.instance.Position.y;
 
 		//save player position
-		player_position_x = Player.instance.transform.position.x;
-		player_position_y = Player.instance.transform.position.y;
+		player_position_x = Player.instance.transform.localPosition.x;
+		player_position_y = Player.instance.transform.localPosition.y;
 	}
 
 	public Vector2Int GetAreaPosition() {

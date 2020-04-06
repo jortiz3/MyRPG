@@ -11,6 +11,7 @@ public class Container : Interactable {
 	private static Transform containerParent;
 	private static Transform containerElementPrefab;
 
+	[SerializeField] //remove later
 	protected List<Item> items;
 	protected Transform currParent;
 	private float totalWeight;
@@ -36,10 +37,16 @@ public class Container : Interactable {
 		return false;
 	}
 
+	/// <summary>
+	/// Creates a UI element or finds an existing element for an item.
+	/// </summary>
+	/// <param name="i">The item to be added to or found in the UI.</param>
+	/// <returns>Reference to the created or found transform.</returns>
 	private Transform CreateContainerElement(Item i) {
 		Transform temp = currParent.Find(i.ToString());
 		if (temp == null) {
 			temp = Instantiate(containerElementPrefab, currParent).transform;
+			temp.name = i.ToString();
 		}
 		return temp;
 	}
@@ -87,9 +94,6 @@ public class Container : Interactable {
 	/// Iterates through all elements available for containers in the scene and only shows the elements for this container.
 	/// </summary>
 	private IEnumerator RefreshDisplay(Transform parent) {
-		//resize the parent transform to perfectly fit the currently displayed items.
-		parent.GetComponent<RectTransform>().sizeDelta = new Vector2(parent.GetComponent<RectTransform>().sizeDelta.x, items.Count * containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y);
-
 		foreach (Transform child in parent) {
 			child.gameObject.SetActive(false);
 		}
@@ -102,28 +106,37 @@ public class Container : Interactable {
 			yield return new WaitForEndOfFrame(); //wait a frame
 		}
 		RefreshWeightElement(); //display the total weight
+
+		//resize the container slide area
+		float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
+		RectTransform currParentRect = currParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
+		currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
 	}
 
 	private void RefreshUIElement(Item item) {
 		Transform element = CreateContainerElement(item);
-		element.name = item.ToString();
-		foreach(Text child in element) {
-			if (child.name.Contains("Name")) {
-				child.text = item.ToString(); //display item name with prefix/suffix
-				if (item.Quantity > 1) { //if there is more than 1 of this item
-					child.text += "(" + item.Quantity + ")"; //add the quantity in parenthesis >> (2)
+		Text text;
+		foreach(Transform child in element) {
+			text = child.GetComponent<Text>();
+
+			if (text != null) {
+				if (text.name.Contains("Name")) {
+					text.text = item.ToString(); //display item name with prefix/suffix
+					if (item.Quantity > 1) { //if there is more than 1 of this item
+						text.text += "(" + item.Quantity + ")"; //add the quantity in parenthesis >> (2)
+					}
+					text.color = item.GetQualityColor(); //change the color of the text so the player knows how epic the item is
+				} else if (child.name.Contains("Magic")) {
+					text.text = item.GetMagicStat().ToString(); //display magic stat
+				} else if (child.name.Contains("Physical")) {
+					text.text = item.GetPhysicalStat().ToString(); //display physical stat
+				} else if (child.name.Contains("Weight")) {
+					text.text = item.GetWeight().ToString(); //display weight
+				} else if (child.name.Contains("Currency")) {
+					text.text = item.BaseValue.ToString(); //display currency value
+				} else if (child.name.Contains("ItemType")) {
+					text.text = item.GetItemType(); //display the item type
 				}
-				child.color = item.GetQualityColor(); //change the color of the text so the player knows how epic the item is
-			} else if (child.name.Contains("Magic")) {
-				child.text = item.GetMagicStat().ToString(); //display magic stat
-			} else if (child.name.Contains("Physical")) {
-				child.text = item.GetPhysicalStat().ToString(); //display physical stat
-			} else if (child.name.Contains("Weight")) {
-				child.text = item.GetWeight().ToString(); //display weight
-			} else if (child.name.Contains("Currency")) {
-				child.text = item.BaseValue.ToString(); //display currency value
-			} else if (child.name.Contains("ItemType")) {
-				child.text = item.GetItemType(); //display the item type
 			}
 		}
 
@@ -145,13 +158,19 @@ public class Container : Interactable {
 			totalWeight -= item.GetWeight();
 			RefreshWeightElement();
 		}
+		RemoveUIElement(item);
+	}
+
+	private void RemoveUIElement(Item item) {
+		Destroy(currParent.Find(item.ToString()).gameObject);
 	}
 
 	/// <summary>
 	/// Removes all contained items from the scene, then destroys itself.
 	/// </summary>
-	public void SelfDestruct() {
+	public virtual void SelfDestruct() {
 		for (int i = items.Count - 1; i >= 0; i--) {
+			RemoveUIElement(items[i]);
 			Destroy(items[i].gameObject);
 		}
 		Destroy(gameObject);

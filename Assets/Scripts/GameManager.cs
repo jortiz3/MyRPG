@@ -131,6 +131,7 @@ public class GameManager : MonoBehaviour {
 
 				WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
 				Player.instance.transform.position = saveData.GetPlayerPosition(); //move the player to last saved position
+				//create method for vcam to snap to player -- unfollow then follow IEnumerator?
 			}
 
 			state_gameInitialized = true;
@@ -167,6 +168,8 @@ public class GameManager : MonoBehaviour {
 
 	public void QuitToMainMenu() {
 		state_gameInitialized = false;
+		state_play = false;
+		state_paused = false;
 		MenuScript.instance.ChangeState("Main Menu");
 	}
 

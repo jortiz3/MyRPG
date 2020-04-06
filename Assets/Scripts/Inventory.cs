@@ -32,4 +32,10 @@ public class Inventory : Container {
 	protected override void RefreshWeightElement() {
 		playerInfo.Find("Inventory_Player_TotalWeight").GetComponent<Text>().text = "Weight: " + TotalWeight + "/100 kg"; //display the total weight
 	}
+
+	public override void SelfDestruct() {
+		if (!GameManager.instance.State_Play) { //if the call to self destruct isn't during gameplay (i.e. loading areas)
+			base.SelfDestruct();
+		}
+	}
 }
