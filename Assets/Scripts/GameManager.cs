@@ -130,8 +130,8 @@ public class GameManager : MonoBehaviour {
 				elapsedGameTime = saveData.ElapsedGameTime;
 
 				WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
-				Player.instance.transform.position = saveData.GetPlayerPosition(); //move the player to last saved position
-				//create method for vcam to snap to player -- unfollow then follow IEnumerator?
+				Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
+				CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
 			}
 
 			state_gameInitialized = true;

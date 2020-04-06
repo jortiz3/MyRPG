@@ -176,6 +176,17 @@ public class Character : MonoBehaviour {
 		transform.SetParent(AreaManager.GetEntityParent("Character"));
 	}
 
+	private IEnumerator Teleport(Vector3 position) {
+		navAgent.enabled = false;
+		transform.position = position;
+		yield return new WaitForEndOfFrame();
+		navAgent.enabled = true;
+	}
+
+	public void TeleportToPos(Vector3 position) {
+		StartCoroutine(Teleport(position));
+	}
+
 	private void ToggleSprint() {
 		if (status_sprinting) {
 			navAgent.speed = walkSpeed;
