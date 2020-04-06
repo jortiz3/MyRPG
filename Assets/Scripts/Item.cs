@@ -20,7 +20,7 @@ public class Item : Interactable {
 	private int quality_value;
 	private int quantity;
 	private float weight;
-	private bool equipable;
+	private bool equippable;
 	private bool equipped;
 	private bool slottable;
 	private bool consumable;
@@ -41,7 +41,7 @@ public class Item : Interactable {
 	public int Quality { get { return quality_value; } }
 	public int Quantity { get { return quantity; } set { quantity = value; } }
 	public float BaseWeight { get { return weight; } }
-	public bool Equipable { get { return equipable; } }
+	public bool Equipable { get { return equippable; } }
 	public bool Equipped { get { return equipped; } set { equipped = value; } }
 	public bool Slottable { get { return slottable; } }
 	public bool Consumable { get { return consumable; } }
@@ -113,21 +113,21 @@ public class Item : Interactable {
 		}
 
 		if (currQuality < 0) {
-			return new Color(139, 69, 19); //brown >> doo doo
+			return new Color(139f / 255f, 69f / 255f, 19f / 255f); //brown >> doo doo
 		} else if (currQuality <= 0) {
 			return Color.white;
 		} else if (currQuality <= 1) {
-			return Color.yellow;
+			return new Color(255f / 255f, 192f / 255f, 203f / 255f); //pink
 		} else if (currQuality <= 2) {
-			return new Color(255, 192, 203); //pink
+			return Color.yellow;
 		} else if (currQuality <= 3) {
 			return Color.green;
 		} else if (currQuality <= 4) {
 			return Color.blue;
 		} else if (currQuality <= 5) {
-			return new Color(142, 68, 173); //purple
+			return new Color(150f / 255f, 70f / 255f, 170f / 255f); //purple
 		} else {
-			return new Color(235, 149, 50); //orange
+			return new Color(235f / 255f, 149f / 255f, 50f / 255f); //orange
 		}
 	}
 
@@ -233,7 +233,7 @@ public class Item : Interactable {
 		currency_value = retrievedInfo.currency_value;
 		quality_value = retrievedInfo.quality_value;
 		weight = retrievedInfo.weight;
-		equipable = retrievedInfo.equipable;
+		equippable = retrievedInfo.equipable;
 		slottable = retrievedInfo.slottable;
 		consumable = retrievedInfo.consumable;
 		crafting_material = retrievedInfo.crafting_material;
@@ -298,7 +298,7 @@ public class Item : Interactable {
 	}
 
 	public virtual void Use() {
-		if (equipable) {
+		if (equippable) {
 			//Player.instance.Equip(this);
 		} else if (consumable) {
 			//Player.instance.Consume(this);

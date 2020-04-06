@@ -62,6 +62,29 @@ public class InputManager : MonoBehaviour {
 		}
 	}
 
+	public static Vector3 ConvertDirectionToVector3(Directions direction) {
+		switch (direction) {
+			case Directions.down:
+				return Vector3.down;
+			case Directions.down_left:
+				return Vector3.down + Vector3.left;
+			case Directions.down_right:
+				return Vector3.down + Vector3.right;
+			case Directions.left:
+				return Vector3.left;
+			case Directions.right:
+				return Vector3.right;
+			case Directions.up:
+				return Vector3.up;
+			case Directions.up_left:
+				return Vector3.up + Vector3.left;
+			case Directions.up_right:
+				return Vector3.up + Vector3.right;
+			default: //default is none
+				return Vector3.zero;
+		}
+	}
+
 	public void EditHotkey(Transform button_ui) {
 		actionToRebind = button_ui.parent.name;
 		button_ui.GetChild(0).GetComponent<Text>().text = "...";

@@ -4,9 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Stores a list of items and displays them to the screen.
+/// Stores a list of items and displays them to the screen. Written by Justin Ortiz
 /// </summary>
 public class Container : Interactable {
+	protected static Container nonplayerContainer; //non-player-inventory container
+	protected static Container displayedContainer;
+
 	private static Toggle containerTab;
 	private static Transform containerParent;
 	private static Transform containerElementPrefab;
@@ -15,17 +18,23 @@ public class Container : Interactable {
 	protected List<Item> items;
 	protected Transform currParent;
 	private float totalWeight;
+	protected float maxWeight;
 
 	public List<Item> Items { get { return items; } }
 	public float TotalWeight { get { return totalWeight; } }
+	public float MaxWeight { get { return maxWeight; } }
 
-	public void Add(Item item) {
-		if (items.Contains(item)) { //container has some of this item already
-			items[items.IndexOf(item)].Quantity += item.Quantity;
-		} else {
-			items.Add(item);
-			CreateContainerElement(item); //ensure there's a ui element for the item
+	public bool Add(Item item) {
+		if (totalWeight + item.GetWeight() <= maxWeight) {
+			if (items.Contains(item)) { //container has some of this item already
+				items[items.IndexOf(item)].Quantity += item.Quantity;
+			} else {
+				items.Add(item);
+				CreateContainerElement(item); //ensure there's a ui element for the item
+			}
+			return true;
 		}
+		return false;
 	}
 
 	public bool Contains(string fullItemName) {
@@ -56,6 +65,15 @@ public class Container : Interactable {
 		MenuScript.instance.ChangeState("Inventory");
 	}
 
+	protected Item GetItem(string fullItemName) {
+		for (int i = 0; i < items.Count; i++) {
+			if (items[i].ToString().Equals(fullItemName)) {
+				return items[i];
+			}
+		}
+		return null;
+	}
+
 	protected override void Initialize() {
 		if (containerParent == null) {
 			containerParent = GameObject.Find("Inventory_Container_Other_Content").transform; //update object name
@@ -72,6 +90,7 @@ public class Container : Interactable {
 			items = new List<Item>();
 			totalWeight = 0;
 		}
+		maxWeight = 1000.0f;
 		base.Initialize();
 	}
 
@@ -111,6 +130,8 @@ public class Container : Interactable {
 		float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
 		RectTransform currParentRect = currParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
 		currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
+
+		displayedContainer = this;
 	}
 
 	private void RefreshUIElement(Item item) {
@@ -180,5 +201,27 @@ public class Container : Interactable {
 		containerParent.gameObject.SetActive(active); //show/hide the container scroll rect
 		containerTab.gameObject.SetActive(active); //show/hide tab
 		containerTab.isOn = active; //ensures the container is shown if enabled
+		nonplayerContainer = active ? this : null; //if the container is active, then we need to assign this container to static reference
+	}
+
+	protected void Transfer(Item item, Container other) {
+		if (other.Add(item)) { //try to move item to other container
+			Remove(item); //if the item was added, remove from the container
+		}
+	}
+
+	protected virtual void UseItem(Item item) { //if an item is used in any other container
+		Transfer(item, Inventory.instance); //transfer this item to player's inventory if possible
+	}
+
+	/// <summary>
+	/// Tells displayed container to use this item. Called by button via inspector.
+	/// </summary>
+	/// <param name="element">The button being pressed.</param>
+	public void UseUIElement(Transform element) {
+		if (displayedContainer != null) {
+			Item currentItem = displayedContainer.GetItem(element.name);
+			displayedContainer.UseItem(currentItem);
+		}
 	}
 }

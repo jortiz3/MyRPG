@@ -41,6 +41,7 @@ public class Character : MonoBehaviour {
 
 	public int HP { get { return hp; } set { hp = value; } }
 	public int MaxHP { get { return maxHp; } set { maxHp = value; } }
+	public Directions LookDirection { get { return lookDirection; } }
 
 	public virtual bool Attack() {
 		return true;
@@ -122,35 +123,7 @@ public class Character : MonoBehaviour {
 			ToggleSprint(); //toggle sprint when necessary/possible
 		}
 
-		moveDestination = transform.position; //set initial destination
-		switch (direction) { //update move destination based on desired direction
-			case Directions.down:
-				moveDestination += Vector3.down;
-				break;
-			case Directions.down_left:
-				moveDestination += Vector3.down + Vector3.left;
-				break;
-			case Directions.down_right:
-				moveDestination += Vector3.down + Vector3.right;
-				break;
-			case Directions.left:
-				moveDestination += Vector3.left;
-				break;
-			case Directions.right:
-				moveDestination += Vector3.right;
-				break;
-			case Directions.up:
-				moveDestination += Vector3.up;
-				break;
-			case Directions.up_left:
-				moveDestination += Vector3.up + Vector3.left;
-				break;
-			case Directions.up_right:
-				moveDestination += Vector3.up + Vector3.right;
-				break;
-			default: //default is none -- do nothing to moveDestination
-				break;
-		}
+		moveDestination = transform.position + InputManager.ConvertDirectionToVector3(direction); //set the destination
 
 		if (direction != Directions.none) {
 			if (lookDirection != direction) {
