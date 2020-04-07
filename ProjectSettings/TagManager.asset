@@ -6,6 +6,9 @@ TagManager:
   tags:
   - structure
   - background
+  - container
+  - inventory
+  - item
   layers:
   - Default
   - TransparentFX

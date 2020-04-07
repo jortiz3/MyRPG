@@ -10,11 +10,17 @@ public class Interactable : MonoBehaviour {
 	private bool interactable;
 	private bool disabled;
 
-	public virtual void Disable() {
-		disabled = true;
+	/// <summary>
+	/// Disables the capability for the player to interact with this object.
+	/// </summary>
+	public virtual void DisableInteraction() {
+		disabled = true; //change to enable/disable box collider
 	}
 
-	public virtual void Enable() {
+	/// <summary>
+	/// Enables the capability for the player to interact with this object.
+	/// </summary>
+	public virtual void EnableInteraction() {
 		disabled = false;
 	}
 
@@ -69,8 +75,12 @@ public class Interactable : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Updates the message that is displayed once the player enters the interaction range.
+	/// </summary>
+	/// <param name="newMessage">"Press [button]" + newMessage</param>
 	protected void SetInteractMessage(string newMessage) {
-		interactMessage = "Press '" + InputManager.instance.GetKeyCodeName("Interact") + "' " + newMessage;
+		interactMessage = "Press [" + InputManager.instance.GetKeyCodeName("Interact") + "] " + newMessage;
 	}
 
 	private void Start() {

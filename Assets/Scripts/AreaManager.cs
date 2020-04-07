@@ -18,6 +18,7 @@ public class AreaManager : MonoBehaviour {
 	private static Transform characterParent;
 	private static Transform sceneryParent;
 	private static Transform furnitureParent;
+	private static Transform itemParent;
 	private static NavMeshSurface navMesh;
 
 	private Area[,] areas;
@@ -25,6 +26,8 @@ public class AreaManager : MonoBehaviour {
 
 	public static string CurrentSaveFolder { get { return currentSaveFolder; } }
 	public static int AreaSize { get { return Area.Size; } }
+	
+	public Vector2Int Position { get { return currentAreaPos; } }
 
 	private void Awake() {
 		if (instance != null) {
@@ -37,6 +40,7 @@ public class AreaManager : MonoBehaviour {
 			sceneryParent = transform.Find("Scenery");
 			characterParent = transform.Find("Characters");
 			furnitureParent = transform.Find("Furniture");
+			itemParent = transform.Find("Items");
 			navMesh = transform.Find("NavMesh").GetComponent<NavMeshSurface>();
 		}
 	}
@@ -195,6 +199,8 @@ public class AreaManager : MonoBehaviour {
 				return backgroundParent;
 			case "Furniture":
 				return furnitureParent;
+			case "Item":
+				return itemParent;
 			default:
 				return characterParent;
 		}
@@ -227,28 +233,58 @@ public class AreaManager : MonoBehaviour {
 
 					float loadIncrement = 0.40f / (transform.childCount - 1);
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
+					List<Container> currContainers = new List<Container>();
+					Transform child;
+					bool destroyChild = false;
 					foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
-						Transform child;
-						if (!parent.name.Equals("Area Exits")) {
+						if (!parent.name.Equals("Area Exits")) { //do not process items(yet) or area exits
 							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
 								child = parent.GetChild(index);
-								if (!child.CompareTag("Player")) { //if the object isn't the player
+								if (!child.CompareTag("Player") && !child.CompareTag("inventory")) { //if the object isn't the player or inventory; ensure not destroyed
 									if (saveEntities) { //worry about populating entity list only if saving
-										if (!child.CompareTag("background")) { //if it is not a background
-											currEntities.Add(Entity.Parse(child)); //convert child to entity format
-										}
+										if (!child.CompareTag("background")) { //if it is not a background, then continue check for save
+											destroyChild = false;
+
+											if (child.CompareTag("container")) {
+												currContainers.Add(child.GetComponent<Container>());
+											} else if (child.CompareTag("item")) { //if it's an item, then we need to make sure it's not in a container
+												bool accountedFor = false;
+												for (int containerIndex = 0; containerIndex < currContainers.Count; containerIndex++) { //loop through all containers
+													if (currContainers[containerIndex].Contains(child.name)) { //see if the container contains this item
+														accountedFor = true; //flag true
+														break; //stop looping
+													} //end if contains
+												} //end for
+
+												if (!accountedFor) {
+													currEntities.Add(Entity.Parse(child)); //convert child to entity format
+													destroyChild = true;
+												}
+											} else {
+												currEntities.Add(Entity.Parse(child)); //convert child to entity format
+												destroyChild = true;
+											} //end if child.comparetag
+										} else {
+											destroyChild = true;
+										} //end if background
+									} //end if saveEntitites
+									if (destroyChild) { //if the child needs to be destroyed -- not player or inventory
+										Destroy(child.gameObject); //destroy gameobject from scene
 									}
-									Destroy(child.gameObject); //destroy transform from scene
-								}
+								} //end if player
 								LoadingScreen.instance.IncreaseProgress(loadIncrement / parent.childCount);
-							}
-						}
-					}
+							} //end for
+						} //end if area exit
+					} //end foreach
 
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
-						areas[currentAreaPos.x, currentAreaPos.y].SaveEntities(currEntities); //save to file
+						areas[currentAreaPos.x, currentAreaPos.y].Save(currContainers, currEntities);
 						LoadingScreen.instance.SetProgress(0.45f); //update load progress
+
+						for (int i = currContainers.Count - 1; i >=0; i--) { //go through all containers once saved
+							currContainers[i].SelfDestruct(); //remove containers and corresponding items from scene
+						}
 					}
 
 					LoadingScreen.instance.SetText("Loading Next Area.."); //inform player of process
@@ -304,34 +340,34 @@ public class AreaManager : MonoBehaviour {
 		AreaExit currExit;
 		currExit = transform.Find("Area Exits").Find("Area Exit_Left").GetChild(0).GetComponent<AreaExit>(); //get left exit
 		if (0 < position.x - 1) { //check bounds
-			currExit.Enable(); //enable left exit
+			currExit.EnableInteraction(); //enable left exit
 			currExit.SetExitInteractMessage(areas[position.x - 1, position.y].TypeName, position + Vector2Int.left); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable left exit
+			currExit.DisableInteraction(); //disable left exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Right").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (position.x + 1 < areas.GetLength(0)) { //check bounds
-			currExit.Enable(); //enable exit
+			currExit.EnableInteraction(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x + 1, position.y].TypeName, position + Vector2Int.right); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable exit
+			currExit.DisableInteraction(); //disable exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Up").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (0 < position.y - 1) { //check bounds
-			currExit.Enable(); //enable exit
+			currExit.EnableInteraction(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x, position.y - 1].TypeName, position + Vector2Int.down); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable exit
+			currExit.DisableInteraction(); //disable exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Down").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (position.y + 1 < areas.GetLength(1)) { //check bounds
-			currExit.Enable(); //enable exit
+			currExit.EnableInteraction(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x, position.y + 1].TypeName, position + Vector2Int.up); //pass info to area exit
 		} else { //out of bounds
-			currExit.Disable(); //disable exit
+			currExit.DisableInteraction(); //disable exit
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class InputManager : MonoBehaviour {
 
 			bool loadKeybindings = File.Exists(keyBindingsFilePath); //if there is file, load it
 
-			if (loadKeybindings) {
+			if (false) {//loadKeybindings) {
 				LoadKeyBindings();
 			} else {
 				InitializeDefaultKeyBindings();
@@ -62,13 +62,42 @@ public class InputManager : MonoBehaviour {
 		}
 	}
 
+	public static Vector3 ConvertDirectionToVector3(Directions direction) {
+		switch (direction) {
+			case Directions.down:
+				return Vector3.down;
+			case Directions.down_left:
+				return Vector3.down + Vector3.left;
+			case Directions.down_right:
+				return Vector3.down + Vector3.right;
+			case Directions.left:
+				return Vector3.left;
+			case Directions.right:
+				return Vector3.right;
+			case Directions.up:
+				return Vector3.up;
+			case Directions.up_left:
+				return Vector3.up + Vector3.left;
+			case Directions.up_right:
+				return Vector3.up + Vector3.right;
+			default: //default is none
+				return Vector3.zero;
+		}
+	}
+
 	public void EditHotkey(Transform button_ui) {
 		actionToRebind = button_ui.parent.name;
 		button_ui.GetChild(0).GetComponent<Text>().text = "...";
 	}
 
 	public string GetKeyCodeName(string axisName) {
-		return keyBindings[axisName].ToString();
+		string keyCodeName = keyBindings[axisName].ToString();
+		keyCodeName = keyCodeName.Replace("Escape", "Esc");
+		keyCodeName = keyCodeName.Replace("Alpha", "");
+		keyCodeName = keyCodeName.Replace("Mouse0", "LMB");
+		keyCodeName = keyCodeName.Replace("Mouse1", "RMB");
+		keyCodeName = keyCodeName.Replace("Mouse2", "MMB");
+		return keyCodeName;
 	}
 
 	private void InitializeControlsUI() {
@@ -83,7 +112,7 @@ public class InputManager : MonoBehaviour {
 			temp = Instantiate(uiPrefab, uiParent); //instantiate copy of template
 			temp.name = kvp.Key;
 			temp.GetChild(0).GetComponent<Text>().text = kvp.Key; //set action name
-			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = kvp.Value.ToString(); //set key name -- get button(child), get text(child of button)
+			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = GetKeyCodeName(kvp.Key); //set key name -- get button(child), get text(child of button)
 			scrollViewHeight += prefabHeight; //add this height to total
 		}
 
@@ -144,7 +173,7 @@ public class InputManager : MonoBehaviour {
 
 			temp.name = kvp.Key;
 			temp.GetChild(0).GetComponent<Text>().text = kvp.Key; //set action name
-			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = kvp.Value.ToString(); //set key name -- get button(child), get text(child of button)
+			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = GetKeyCodeName(kvp.Key); //set key name -- get button(child), get text(child of button)
 
 			if (!temp.gameObject.activeSelf) {
 				temp.gameObject.SetActive(true);
@@ -216,8 +245,12 @@ public class InputManager : MonoBehaviour {
 
 				for (int slot_index = 0; slot_index < 10; slot_index++) { //check all quick (item/spell) use slots
 					if (Input.GetKeyDown(keyBindings["Slot_" + (slot_index + 1)])) {
-						//use appropriate slot
+						HUD.instance.UseHotbarSlot(slot_index);
 					}
+				}
+
+				if (Input.GetKeyDown(keyBindings["Inventory"])) {
+					Inventory.instance.Display();
 				}
 			} //end if game state play
 
@@ -232,7 +265,7 @@ public class InputManager : MonoBehaviour {
 			if (Input.GetKeyDown(keyBindings["Interact"])) {
 				if (GameManager.instance.State_Play) {
 					if (!Interactable.Interact()) {
-						//open inventory
+						Inventory.instance.Display();
 					}
 				} else {
 					CheckForFinalize();
@@ -307,7 +340,7 @@ public class InputManager : MonoBehaviour {
 		Transform temp = uiParent.Find(actionName);
 
 		if (temp != null) {
-			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = keyBindings[actionName].ToString();
+			temp.GetChild(1).GetChild(0).GetComponent<Text>().text = GetKeyCodeName(actionName);
 		}
 	}
 }

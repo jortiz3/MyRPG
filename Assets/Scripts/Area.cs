@@ -23,13 +23,15 @@ namespace internal_Area {
 		[SerializeField]
 		private List<Entity> entities;
 		[SerializeField]
+		private List<ContainerSaveData> containers;
+		[SerializeField]
 		private Vector2IntS position;
 		[SerializeField]
 		private bool discovered;
 		[SerializeField]
 		private int lastUpdated;
 
-		
+
 		public Vector2IntS MapPosition { get { return position; } }
 		public bool Discovered { get { return discovered; } }
 		public int LastUpdated { get { return lastUpdated; } }
@@ -41,6 +43,7 @@ namespace internal_Area {
 			position = Vector2IntS.zero;
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			entities = new List<Entity>();
+			containers = new List<ContainerSaveData>();
 		}
 
 		public Area(Vector2Int Position) {
@@ -48,6 +51,7 @@ namespace internal_Area {
 			position = new Vector2IntS(Position);
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			entities = new List<Entity>();
+			containers = new List<ContainerSaveData>();
 		}
 
 		public Area(Vector2Int Position, string areaTypeName) {
@@ -55,6 +59,7 @@ namespace internal_Area {
 			position = new Vector2IntS(Position);
 			typeName = areaTypeName;
 			entities = new List<Entity>();
+			containers = new List<ContainerSaveData>();
 		}
 
 		public void AssignType(string TypeName) {
@@ -104,7 +109,7 @@ namespace internal_Area {
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
 			LoadingScreen.instance.SetText("Positioning player..");
 			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
-			//set player position
+												  //set player position
 			yield return new WaitForSeconds(0.3f);
 
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
@@ -216,7 +221,7 @@ namespace internal_Area {
 				yield return new WaitForEndOfFrame(); //add time between iterations
 			}
 
-			Save();
+			Save(entities);
 		}
 
 		private void Save() {
@@ -227,16 +232,40 @@ namespace internal_Area {
 			writer.Close(); //close the file
 		}
 
-		public void SaveEntities(List<Entity> Entities) {
-			entities.Clear();
-			if (Entities.Count > 0) {
-				entities.AddRange(Entities);
-			}
+		private void Save(List<Entity> Entities) {
+			UpdateEntities(Entities);
+			Save();
+		}
+
+		public void Save(List<Container> Containers, List<Entity> Entities) {
+			UpdateContainers(Containers);
+			UpdateEntities(Entities);
 			Save();
 		}
 
 		public void SetPosition(Vector2Int newPosition) {
 			position = new Vector2IntS(newPosition);
+		}
+
+		private void UpdateContainers(List<Container> Containers) {
+			containers.Clear();
+			foreach(Container c in Containers) {
+				containers.Add(new ContainerSaveData(c));
+			}
+		}
+
+		private void UpdateContainers(List<ContainerSaveData> Containers) {
+			containers.Clear();
+			if (Containers.Count > 0) {
+				containers.AddRange(Containers);
+			}
+		}
+
+		private void UpdateEntities(List<Entity> Entities) {
+			entities.Clear();
+			if (Entities.Count > 0) {
+				entities.AddRange(Entities);
+			}
 		}
 	}
 }
