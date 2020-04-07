@@ -263,6 +263,10 @@ public class Item : Interactable {
 		prefix = ItemModifierDatabase.GetPrefix(prefixName);
 	}
 
+	public void SetSprite(Texture2D texture) {
+		sprite.sprite = Sprite.Create(texture, new Rect(0,0,texture.width, texture.height), new Vector2(0.5f, 0.5f));
+	}
+
 	public void SetSpriteActive(bool active) {
 		if (sprite != null) {
 			sprite.enabled = active;

@@ -188,18 +188,18 @@ public class AreaManager : MonoBehaviour {
 	}
 
 	public static Transform GetEntityParent(string entityTypeName) {
-		switch (entityTypeName) {
-			case "Scenery":
+		switch (entityTypeName.ToLower()) {
+			case "scenery":
 				return sceneryParent;
-			case "Structure":
+			case "structure":
 				return structureParent;
-			case "Character":
+			case "character":
 				return characterParent;
-			case "Background":
+			case "background":
 				return backgroundParent;
-			case "Furniture":
+			case "furniture":
 				return furnitureParent;
-			case "Item":
+			case "item":
 				return itemParent;
 			default:
 				return characterParent;
