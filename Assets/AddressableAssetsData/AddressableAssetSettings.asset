@@ -24,12 +24,13 @@ MonoBehaviour:
   m_GroupAssets:
   - {fileID: 11400000, guid: 9357306a84550134c956ad1cd2127e02, type: 2}
   - {fileID: 11400000, guid: 6b09e032e11759d4da224fbfef4b97db, type: 2}
-  - {fileID: 11400000, guid: 83d57c49b23beb94baccfc7e611dc4a6, type: 2}
-  - {fileID: 11400000, guid: cb51772f05a104b4f91f7482e50a0d72, type: 2}
-  - {fileID: 11400000, guid: 69014ea409be7e147a0c02cebdef2f0e, type: 2}
-  - {fileID: 11400000, guid: 0bcdecbc8d16bc54bb653e5b5004cbcf, type: 2}
-  - {fileID: 11400000, guid: 0e32977a824093948873fb5b41020663, type: 2}
-  - {fileID: 11400000, guid: e201f1249479472418800ca429fcac5a, type: 2}
+  - {fileID: 11400000, guid: 565fe525040576a4b83df8905e1304b3, type: 2}
+  - {fileID: 11400000, guid: e68b0084790c4d2489fab00f854e26aa, type: 2}
+  - {fileID: 11400000, guid: e82e85ff7dc32a645b0c1672f41a57e8, type: 2}
+  - {fileID: 11400000, guid: 852afba9ca7e33541a83786e8522d273, type: 2}
+  - {fileID: 11400000, guid: 42e10871950c7454ea5417eaac9672f5, type: 2}
+  - {fileID: 11400000, guid: 37c868c203bc8cb49ab9abc1565d77d3, type: 2}
+  - {fileID: 11400000, guid: bc964ce18584ad946891d7c85d2ee191, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -70,7 +71,12 @@ MonoBehaviour:
     m_ProfileVersion: 1
   m_LabelTable:
     m_LabelNames:
-    - default
+    - Prefabs
+    - Items
+    - Scenery
+    - Structures
+    - Characters
+    - Furniture
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 201e5b8141f86f948951f4a9973de7a9, type: 2}

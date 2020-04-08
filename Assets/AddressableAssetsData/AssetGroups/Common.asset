@@ -20,8 +20,19 @@ MonoBehaviour:
   - m_GUID: 578562fb1a22e104aa03fc3450a6ea08
     m_Address: prefab_item
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - default
+    - Default
+    - Prefabs
     m_mainAssetType: UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  - m_GUID: 7c2f46a6c01686946891a3b27aef6494
+    m_Address: texture_Log
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+    - Items
+    m_mainAssetType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 18c507c874153ae4eba3c65b9e3d999e, type: 2}
