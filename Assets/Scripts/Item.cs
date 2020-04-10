@@ -194,7 +194,6 @@ public class Item : Interactable {
 		SetInteractMessage("to pick up " + ToString() + ".");
 		transform.parent = AreaManager.GetEntityParent("Item");
 		gameObject.tag = "item";
-		Load(null);
 		base.Initialize();
 	}
 
@@ -256,11 +255,24 @@ public class Item : Interactable {
 		gameObject.name = ToString();
 	}
 
+	public void Load(int ID = -1, string ItemBaseName = "", Texture2D Texture = null) {
+		id = ID;
+		baseName = ItemBaseName;
+		Load(null);
+		SetSprite(Texture);
+	}
+
 	/// <summary>
 	/// Assigns a prefix item modifier. (To be called during crafting)
 	/// </summary>
 	public void SetPrefix(string prefixName) {
 		prefix = ItemModifierDatabase.GetPrefix(prefixName);
+	}
+
+	private void SetSprite(Texture2D texture) {
+		if (texture != null) {
+			sprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+		}
 	}
 
 	public void SetSpriteActive(bool active) {

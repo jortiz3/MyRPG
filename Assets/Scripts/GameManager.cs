@@ -199,7 +199,6 @@ public class GameManager : MonoBehaviour {
 
 	private void Start() {
 		InitializeLoadGameUI();
-
 		state_paused = false;
 	}
 
