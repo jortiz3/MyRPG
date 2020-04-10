@@ -199,8 +199,6 @@ public class GameManager : MonoBehaviour {
 
 	private void Start() {
 		InitializeLoadGameUI();
-		StartCoroutine(AddressablesManager.instance.InstantiateItem("Log", itemBaseName: "Log")); //remove later
-
 		state_paused = false;
 	}
 
