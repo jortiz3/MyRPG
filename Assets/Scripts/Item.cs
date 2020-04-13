@@ -29,8 +29,6 @@ public class Item : Interactable {
 	private bool armor;
 	private string[] tags; //used for sorting the item in the inventory screen
 
-	private SpriteRenderer sprite;
-
 	public int ID { get { return id; } }
 	public string BaseName { get { return baseName; } }
 	public string Prefix { get { return prefix != null ? prefix.Name : ""; } }
@@ -246,7 +244,7 @@ public class Item : Interactable {
 			prefix = ItemModifierDatabase.GetPrefix(providedInfo.prefix);
 			suffix = ItemModifierDatabase.GetSuffix(providedInfo.suffix);
 		} else {
-			quantity = 1;
+			quantity = quantity <= 0 ? 1 : quantity;
 			equipped = false;
 			prefix = ItemModifierDatabase.GetPrefix(retrievedInfo.prefix);
 			suffix = ItemModifierDatabase.GetSuffix(retrievedInfo.suffix);
@@ -255,9 +253,10 @@ public class Item : Interactable {
 		gameObject.name = ToString();
 	}
 
-	public void Load(int ID = -1, string ItemBaseName = "", Texture2D Texture = null) {
+	public void Load(int ID = -1, string ItemBaseName = "", int Quantity = 1, Texture2D Texture = null) {
 		id = ID;
 		baseName = ItemBaseName;
+		quantity = Quantity;
 		Load(null);
 		SetSprite(Texture);
 	}
@@ -267,18 +266,6 @@ public class Item : Interactable {
 	/// </summary>
 	public void SetPrefix(string prefixName) {
 		prefix = ItemModifierDatabase.GetPrefix(prefixName);
-	}
-
-	private void SetSprite(Texture2D texture) {
-		if (texture != null) {
-			if (sprite == null) { //if this is the first time the sprite is changed
-				sprite = gameObject.GetComponent<SpriteRenderer>(); //get the sprite component
-			} //no else bc we still want to try to set sprite
-
-			if (sprite != null) { //if sprite component exists
-				sprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
-			}
-		}
 	}
 
 	public void SetSpriteActive(bool active) {

@@ -10,6 +10,8 @@ public class Interactable : MonoBehaviour {
 	private bool interactable;
 	private bool disabled;
 
+	protected SpriteRenderer sprite;
+
 	/// <summary>
 	/// Disables the capability for the player to interact with this object.
 	/// </summary>
@@ -81,6 +83,18 @@ public class Interactable : MonoBehaviour {
 	/// <param name="newMessage">"Press [button]" + newMessage</param>
 	protected void SetInteractMessage(string newMessage) {
 		interactMessage = "Press [" + InputManager.instance.GetKeyCodeName("Interact") + "] " + newMessage;
+	}
+
+	protected void SetSprite(Texture2D texture) {
+		if (texture != null) {
+			if (sprite == null) { //if this is the first time the sprite is changed
+				sprite = gameObject.GetComponent<SpriteRenderer>(); //get the sprite component
+			} //no else bc we still want to try to set sprite
+
+			if (sprite != null) { //if sprite component exists
+				sprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
+			}
+		}
 	}
 
 	private void Start() {

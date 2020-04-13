@@ -3,13 +3,41 @@
 /// <summary>
 /// Written by Justin Ortiz
 /// </summary>
-public class SceneryObject : MonoBehaviour {
-
-	[SerializeField]
+public class SceneryObject : Interactable { //convert to Interactable; store item id; if no item id or no quantity left, disable interaction
+	private int harvestCount;
+	private int harvestedItemID;
 	private bool allowStructureCollision;
+	private bool loaded;
 
-	private void Start() {
+	protected override void Initialize() { //called in Start()
 		transform.SetParent(AreaManager.GetEntityParent("Scenery"));
+		if (!loaded) {
+			harvestCount = 0;
+			harvestedItemID = -1;
+			allowStructureCollision = false;
+			DisableInteraction();
+		}
+		base.Initialize();
+	}
+
+	protected override void InteractInternal() {
+		if (harvestCount > 0) {
+			Inventory.instance.Add(AssetManager.instance.InstantiateItem(quantity:5, itemBaseName:"Log"));
+			harvestCount--;
+		}
+
+		if (harvestCount <= 0) {
+			DisableInteraction();
+		}
+		base.InteractInternal();
+	}
+
+	public void Load(int HarvestCount, int HarvestedItemID, Texture2D Texture, bool AllowCollisionWithStructures = false) {
+		harvestCount = HarvestCount;
+		harvestedItemID = HarvestedItemID;
+		allowStructureCollision = AllowCollisionWithStructures;
+		SetSprite(Texture);
+		loaded = true;
 	}
 
 	private void OnTriggerStay(Collider other) {
