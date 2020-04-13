@@ -20,13 +20,12 @@ public class AssetManager : MonoBehaviour {
 	}
 
 	private IEnumerator Initialize() {
-		LoadPrefabs(out prefabs, "Prefabs/");
+		LoadAssets<GameObject>(out prefabs, "Prefabs/");
 		yield return new WaitForEndOfFrame();
-
-		//LoadTextures(out items, "Textures/Items/");
+		LoadAssets<Texture2D>(out items, "Textures/");
 	}
 
-	public IEnumerator InstantiateItem(string textureName = "default", int quantity = 1, int itemID = -1, string itemBaseName = "") {
+	public IEnumerator InstantiateItem(string textureName = "log", int quantity = 1, int itemID = 0, string itemBaseName = "") {
 		GameObject curr_prefab_reference = prefabs["item"]; //get the prefab from dictionary
 		
 
@@ -46,19 +45,12 @@ public class AssetManager : MonoBehaviour {
 		}
 	}
 
-	private void LoadPrefabs(out Dictionary<string, GameObject> dictionary, string folderPath) {
-		dictionary = new Dictionary<string, GameObject>();
-		GameObject[] objs = Resources.LoadAll<GameObject>(folderPath);
-		foreach(GameObject g in objs) {
-			dictionary.Add(g.name, g);
-		}
-	}
-
-	private void LoadTextures(out Dictionary<string, Texture2D> dictionary, string folderPath) {
-		dictionary = new Dictionary<string, Texture2D>();
-		Texture2D[] textures = Resources.LoadAll<Texture2D>(folderPath);
-		foreach(Texture2D t in textures) {
-			dictionary.Add(t.name, t);
+	private void LoadAssets<T>(out Dictionary<string, T> dictionary, string folderPath)
+		where T : Object {
+		dictionary = new Dictionary<string, T>();
+		T[] assets = Resources.LoadAll<T>(folderPath);
+		foreach(T asset in assets) {
+			dictionary.Add(asset.name, asset);
 		}
 	}
 }
