@@ -33,24 +33,14 @@ public class Structure : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Adds a custom structure to the scene.
+	/// Passes required information to an already-instantiated structure.
 	/// </summary>
 	/// <param name="dimensions">The extra grid cells required by the structure. Default: Size of 1 cell = (0, 0)</param>
 	/// <param name="worldPosition">Where the structure should be placed in the world prior to snapping to grid.</param>
-	public static void LoadCustomStructure(Sprite sprite_base, Sprite sprite_roof, Sprite sprite_door, Vector2Int dimensions, Vector3 worldPosition) {
-		Structure s = Resources.Load<Structure>("Structures/template_structure");
-		if (s != null) { //if the template was loaded
-			s = Instantiate(s.gameObject).GetComponent<Structure>(); //add to the scene, store reference to script in scene
-
-			s.sprites[0].sprite = sprite_base; //update the sprites
-			s.sprites[1].sprite = sprite_roof;
-			s.sprites[2].sprite = sprite_door;
-			
-			s.transform.localScale = new Vector3(5 + (5 * dimensions.x), 5 + (5 * dimensions.y), 1); //adjust the size of the building to conform to the grid
-			s.transform.position = worldPosition; //set the position
-
-			s.Initialize();
-		}
+	public void Load(Vector2Int Dimensions, string Owner = "Player", Texture2D[] textures = null) {
+		dimensions = Dimensions;
+		owner = Owner;
+		SetSprites(textures);
 	}
 
 	public void RegisterFurniture(Furniture f) {
@@ -102,6 +92,18 @@ public class Structure : MonoBehaviour {
 
 	public void SetOwner(string name) {
 		owner = name;
+	}
+
+	private void SetSprites(Texture2D[] textures) {
+		if (textures != null) { //if the array isn't null
+			if (textures.Length == sprites.Length) { //if the array has the same amount of textures as structure manages sprites
+				for (int i = 0; i < sprites.Length; i++) { //go through all textures/sprites
+					if (sprites[i] != null && textures[i] != null) { //ensure corresponding texture-sprite pair exists
+						sprites[i].sprite = Sprite.Create(textures[i], new Rect(0, 0, textures[i].width, textures[i].height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
+					}
+				}
+			}
+		}
 	}
 
 	private void Start() {

@@ -22,8 +22,10 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 
 	protected override void InteractInternal() {
 		if (harvestCount > 0) {
-			Inventory.instance.Add(AssetManager.instance.InstantiateItem(quantity:5, itemBaseName:"Log"));
+			Inventory.instance.Add(AssetManager.instance.InstantiateItem(itemID:harvestedItemID, quantity:5, itemBaseName:"Log"));
 			harvestCount--;
+		} else {
+			//inform player that nothing happens
 		}
 
 		if (harvestCount <= 0) {
@@ -32,7 +34,7 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 		base.InteractInternal();
 	}
 
-	public void Load(int HarvestCount, int HarvestedItemID, Texture2D Texture, bool AllowCollisionWithStructures = false) {
+	public void Load(int HarvestedItemID, int HarvestCount, Texture2D Texture, bool AllowCollisionWithStructures = false) {
 		harvestCount = HarvestCount;
 		harvestedItemID = HarvestedItemID;
 		allowStructureCollision = AllowCollisionWithStructures;

@@ -134,6 +134,8 @@ public class GameManager : MonoBehaviour {
 				CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
 			}
 
+			AssetManager.instance.InstantiateStructure(Vector3.zero, textureNames:new string[] {"floor_default", "roof_default", "door_default" }); //remove later
+
 			state_gameInitialized = true;
 		}
 	}
