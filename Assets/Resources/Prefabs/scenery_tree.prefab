@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 5827867620732452548}
   - component: {fileID: 1635083875964605459}
   - component: {fileID: 1594333455}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: scenery_tree
   m_TagString: Untagged
   m_Icon: {fileID: 0}

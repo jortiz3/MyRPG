@@ -97,9 +97,17 @@ public class Structure : MonoBehaviour {
 	private void SetSprites(Texture2D[] textures) {
 		if (textures != null) { //if the array isn't null
 			if (textures.Length == sprites.Length) { //if the array has the same amount of textures as structure manages sprites
+				Vector2 defaultSpriteSize = new Vector2((dimensions.x + 1) * 5, (dimensions.y + 1) * 5); //get sizes for roof and floor
+				Vector2 doorSpriteSize = defaultSpriteSize / 3f;
 				for (int i = 0; i < sprites.Length; i++) { //go through all textures/sprites
 					if (sprites[i] != null && textures[i] != null) { //ensure corresponding texture-sprite pair exists
 						sprites[i].sprite = Sprite.Create(textures[i], new Rect(0, 0, textures[i].width, textures[i].height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
+
+						if (sprites[i].gameObject.name.ToLower().Contains("door")) {
+							sprites[i].size = doorSpriteSize;
+						} else {
+							sprites[i].size = defaultSpriteSize;
+						}
 					}
 				}
 			}
