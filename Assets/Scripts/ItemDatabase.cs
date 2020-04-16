@@ -31,7 +31,7 @@ namespace Items {
 		/// <returns>Returns base ItemInfo constructor if not found.</returns>
 		public static ItemInfo GetItemInfo(string name) {
 			for (int i = 0; i < db.Count; i++) {
-				if (db[i].name.Equals(name)) {
+				if (db[i].baseName.Equals(name)) {
 					return db[i];
 				}
 			}

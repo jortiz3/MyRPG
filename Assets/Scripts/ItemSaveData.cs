@@ -3,7 +3,7 @@
 [Serializable]
 public class ItemSaveData {
 	public int id;
-	public string name;
+	public string baseName;
 	public string prefix;
 	public string suffix;
 	public int quantity;
@@ -11,7 +11,7 @@ public class ItemSaveData {
 
 	public ItemSaveData() {
 		id = 0;
-		name = "Null";
+		baseName = "Null";
 		prefix = "";
 		suffix = "";
 		quantity = 0;
@@ -20,7 +20,7 @@ public class ItemSaveData {
 
 	public ItemSaveData(Item i) {
 		id = i.ID;
-		name = i.BaseName;
+		baseName = i.BaseName;
 		prefix = i.Prefix;
 		suffix = i.Suffix;
 		quantity = i.Quantity;

@@ -29,7 +29,7 @@ public class AssetManager : MonoBehaviour {
 		LoadAssets<Texture2D>(out structures, "Textures/Structures");
 	}
 
-	public Item InstantiateItem(int itemID = 0, string itemBaseName = "", int quantity = 1, string textureName = "log") {
+	public Item InstantiateItem(Vector3 position, int itemID = 0, string itemBaseName = "", int quantity = 1, string textureName = "log") {
 		GameObject curr_prefab_reference = prefabs["item"]; //get the prefab from dictionary
 
 		if (curr_prefab_reference != null) { //should exist, but just in case
@@ -40,6 +40,7 @@ public class AssetManager : MonoBehaviour {
 					Item currItem = Instantiate(curr_prefab_reference).GetComponent<Item>(); //instantiate copy of prefab
 
 					if (currItem != null) { //if instantiated properly
+						currItem.transform.position = position;
 						currItem.Load(itemID, itemBaseName, quantity, curr_texture_reference); //pass item info and texture
 						return currItem;
 					}
@@ -75,7 +76,8 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public Structure InstantiateStructure(Vector3 position, string structureSize = "small", string owner = "Player", string[] textureNames = null) {
+	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string[] textureNames = null) {
+		string structureSize = Structure.GetDimensionSize(dimensions);
 		string prefabKey = "structure_" + structureSize;
 
 		if (prefabs.ContainsKey(prefabKey)) {
@@ -85,24 +87,9 @@ public class AssetManager : MonoBehaviour {
 				GameObject spawnedPrefab = Instantiate(curr_prefab_reference);
 				Structure spawnedStructure = spawnedPrefab.GetComponent<Structure>(); //instantiate copy of prefab
 				if (spawnedStructure != null) { //if prefab has required component
-					Vector2Int dimensions = Vector2Int.zero; //set dimensions default size of 1
-					switch (structureSize) { //change dimensions based on method parameter
-						case "small":
-							dimensions = Vector2Int.one;
-							break;
-						case "medium":
-							dimensions = Vector2Int.one * 2;
-							break;
-						case "large":
-							dimensions = Vector2Int.one * 3;
-							break;
-						case "huge":
-							dimensions = Vector2Int.one * 4;
-							break;
-						case "massive":
-							dimensions = Vector2Int.one * 5;
-							break;
-					}//end switch
+					if (textureNames == null) { //if optional parameter not used
+						textureNames = new string[] { "floor_default", "roof_default", "door_default"}; //set to defaults
+					}
 
 					Texture2D[] curr_texture_references = new Texture2D[textureNames.Length]; //create references for the textures
 					for (int iteration = 0; iteration < curr_texture_references.Length; iteration++) { //go through all texture names

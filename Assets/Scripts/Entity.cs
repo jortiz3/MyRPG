@@ -9,62 +9,96 @@ namespace internal_Area {
 	/// </summary>
 	[Serializable]
 	public class Entity {
-		public string name;
-		public string uniqueData;
+		public ItemSaveData itemData;
+		public StructureSaveData structureData;
+		public string name_prefab;
 		public float positionX;
 		public float positionY;
 		public int lastUpdated; // time since last update (seconds)
 
 		public Entity() {
-			name = "";
-			uniqueData = "";
+			itemData = null;
+			structureData = null;
+			name_prefab = "";
 			positionX = 0;
 			positionY = 0;
 			lastUpdated = 0;
 		}
 
-		public Entity(string Name, float PositionX, float PositionY) {
-			name = Name;
-			uniqueData = "";
-			positionX = PositionX;
-			positionY = PositionY;
+		public Entity(Item i) {
+			itemData = i.ToItemSaveData();
+			structureData = null;
+			positionX = i.transform.position.x;
+			positionY = i.transform.position.y;
 			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
-		public Entity(string Name, string UniqueData, float PositionX, float PositionY) {
-			name = Name;
-			uniqueData = UniqueData;
-			positionX = PositionX;
-			positionY = PositionY;
+		public Entity(Structure s) {
+			itemData = null;
+			structureData = s.ToStructureSaveData();
+			positionX = s.transform.position.x;
+			positionY = s.transform.position.y;
 			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
-		private void GetUniqueData(GameObject g) {
-			//search components; call methods
+		public Entity(SceneryObject s) {
+			itemData = null;
+			structureData = null;
+			positionX = s.transform.position.x;
+			positionY = s.transform.position.y;
+			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
+		}
+
+		public Entity(Character c) {
+			itemData = null;
+			structureData = null;
+			positionX = c.transform.position.x;
+			positionY = c.transform.position.y;
+			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
+		}
+
+		public Entity(string prefabName, float PositionX, float PositionY) {
+			itemData = null;
+			structureData = null;
+			name_prefab = prefabName;
+			positionX = PositionX;
+			positionY = PositionY;
+			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
 		public bool Instantiate() {
-			GameObject temp = Resources.Load<GameObject>(name);
-			if (temp != null) {
-				temp = GameObject.Instantiate(temp, new Vector3(positionX, positionY, 0), Quaternion.identity);
-				PassUniqueData(temp);
+			Vector3 position = new Vector3(positionX, positionY);
+			if (itemData != null) {
+				AssetManager.instance.InstantiateItem(position, itemData.id, itemData.baseName, itemData.quantity, itemData.baseName);
 				return true;
+			} else if (structureData != null) {
+				AssetManager.instance.InstantiateStructure(position, structureData.dimensions.ToVector2Int(), structureData.owner, structureData.textures);
+				return true;
+			} else if (name_prefab != null && !name_prefab.Equals("")) {
+				GameObject temp = Resources.Load<GameObject>("Prefabs/" + name_prefab);
+				if (temp != null) {
+					temp = GameObject.Instantiate(temp);
+					temp.transform.position = position;
+					return true;
+				}
 			}
 			return false;
 		}
 
 		public static Entity Parse(Transform transform) {
-			Entity temp = new Entity();
-			temp.name = transform.parent.name + "/" + transform.name.Replace("(Clone)", "");
-			temp.positionX = transform.position.x;
-			temp.positionY = transform.position.y;
-			temp.lastUpdated = (int)GameManager.instance.ElapsedGameTime;
-			temp.GetUniqueData(transform.gameObject);
+			Entity temp;
+			switch (transform.tag) {
+				case "item":
+					temp = new Entity(transform.GetComponent<Item>());
+					break;
+				case "structure":
+					temp = new Entity(transform.GetComponent<Structure>());
+					break;
+				default:
+					temp = new Entity(transform.name, transform.position.x, transform.position.y);
+					break;
+			}
 			return temp;
-		}
-
-		private void PassUniqueData(GameObject g) {
-
 		}
 	}
 }

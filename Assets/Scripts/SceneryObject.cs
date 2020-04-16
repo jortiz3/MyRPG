@@ -22,7 +22,7 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 
 	protected override void InteractInternal() {
 		if (harvestCount > 0) {
-			Inventory.instance.Add(AssetManager.instance.InstantiateItem(itemID:harvestedItemID, quantity:5, itemBaseName:"Log"));
+			Inventory.instance.Add(AssetManager.instance.InstantiateItem(transform.position, itemID:harvestedItemID, quantity:5, itemBaseName:"Log"));
 			harvestCount--;
 		} else {
 			//inform player that nothing happens

@@ -203,7 +203,7 @@ namespace internal_Area {
 				if (currAssetCount > 0) { //if asset type has assets to offer
 					for (i = 0; i < numEntities; i++) {
 						tempEntity = new Entity(); //instantiate new entity
-						tempEntity.name = currEntityFilename + (UnityEngine.Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)
+						tempEntity.name_prefab = currEntityFilename + (UnityEngine.Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)
 
 						//generate position for the entity
 						tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);

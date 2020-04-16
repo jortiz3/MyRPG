@@ -7,7 +7,6 @@ using UnityEngine;
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
 public class Structure : MonoBehaviour {
-
 	private Color[] defaultColors;
 	[SerializeField, Tooltip("All of the sprites that make up the structure.")]
 	private SpriteRenderer[] sprites;
@@ -21,6 +20,34 @@ public class Structure : MonoBehaviour {
 
 	private void Awake() {
 		Initialize();
+	}
+
+	public static string GetDimensionSize(Vector2Int dimensions) {
+		if (dimensions.x == dimensions.y) {
+			if (dimensions.x <= 0) {
+				return "tiny";
+			} else if (dimensions.x <= 1) {
+				return "small";
+			} else if (dimensions.x <= 2) {
+				return "medium";
+			} else {
+				return "large";
+			}
+		}
+		return "unique";
+	}
+
+	public string[] GetTextures() {
+		if (sprites != null && sprites.Length > 0) {
+			string[] textureNames = new string[sprites.Length];
+			for (int i = 0; i < textureNames.Length; i++) {
+				if (sprites[i] != null) {
+					textureNames[i] = sprites[i].sprite.texture.name;
+				}
+			}
+			return textureNames;
+		}
+		return null;
 	}
 
 	public void Initialize() {
@@ -119,5 +146,9 @@ public class Structure : MonoBehaviour {
 		if (!StructureGridManager.instance.EditEnabled) { //if this structure was instantiated via loading, edit will not be enabled
 			StructureGridManager.instance.RegisterExistingStructure(this); //register cells as occupied
 		}
+	}
+
+	public StructureSaveData ToStructureSaveData() {
+		return new StructureSaveData(this);
 	}
 }
