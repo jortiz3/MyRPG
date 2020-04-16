@@ -9,9 +9,9 @@ public class StructureSaveData {
 	public Vector2IntS dimensions;
 
 	public StructureSaveData() {
-		owner = "";
-		textures = null;
-		dimensions = new Vector2IntS(Vector2Int.zero);
+		owner = "NPC";
+		textures = new string[] { "floor_default", "roof_default", "door_default" };
+		dimensions = new Vector2IntS(Vector2Int.one);
 	}
 
 	public StructureSaveData(Structure s) {

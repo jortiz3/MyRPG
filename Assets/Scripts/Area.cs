@@ -145,7 +145,6 @@ namespace internal_Area {
 			Entity tempEntity; //current entity to add
 			int i; //index for all 3 iterations
 			int numEntities = 0; //num of entites for this area
-			int currAssetCount = 0; // num of assets available for areatype
 			int minAssetSpawnCount = 20;
 			int assetTypeLimit = charactersOnly ? 1 : 3; //limits the loop to only do characters if true
 			int currRadius;
@@ -155,16 +154,14 @@ namespace internal_Area {
 			for (int assetType = 0; assetType < assetTypeLimit; assetType++) { //loop through each asset type and do (mostly) the same thing
 				switch (assetType) { //establish the only differences
 					case 1:
-						currAssetCount = type.sceneryAssetCount; //set the count
 						currEntityFilename = "Scenery/" + entityAreaPrefix; //set folder path
-						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
+						numEntities = UnityEngine.Random.Range(type.scenerySpawnRange.x, type.scenerySpawnRange.y); //set random quantity for scenery objs in this area
 						currRadius = boundaryRadius;
 						break;
 					case 2:
-						currAssetCount = type.structureAssetCount; //set the count
 						currEntityFilename = "Structures/" + entityAreaPrefix; //set folder path
 						minAssetSpawnCount = isInhabited ? 20 : 1;
-						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
+						numEntities = UnityEngine.Random.Range(type.structureSpawnRange.x, type.structureSpawnRange.y); //set random quantity for scenery objs in this area
 
 						string tempAssetPrefix = currEntityFilename.Split('_')[0]; //i.e. "Structures/City" || "Structures/Camp" || "Structures/Dungeon"
 						if (isInhabited) {
@@ -193,9 +190,8 @@ namespace internal_Area {
 						numOfRowsForRadius = currRadius / heightSpacing; //get num of rows depending on spacing
 						break;
 					default: //aka 0
-						currAssetCount = type.characterAssetCount; //set the count
 						currEntityFilename = "Characters/" + entityAreaPrefix; //set folder path
-						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.characterMaxSpawnCount); //set random quantity for character objs in this area
+						numEntities = UnityEngine.Random.Range(type.characterSpawnRange.x, type.characterSpawnRange.y); //set random quantity for character objs in this area
 						currRadius = boundaryRadius;
 						break;
 				}
