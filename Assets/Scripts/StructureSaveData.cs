@@ -19,4 +19,10 @@ public class StructureSaveData {
 		textures = s.GetTextures();
 		dimensions = new Vector2IntS(s.Dimensions);
 	}
+
+	public StructureSaveData(string Owner, string[] Textures, Vector2IntS Dimensions) {
+		owner = Owner;
+		textures = Textures;
+		dimensions = Dimensions;
+	}
 }

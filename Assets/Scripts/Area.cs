@@ -168,19 +168,19 @@ namespace internal_Area {
 							currRadius = cityRadius - 5; //1 cell margin for sides
 
 							//add the walls surrounding the city/camp
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", -60, 60); //top
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", new Vector3(-60, 60)); //top
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", -60, -50); //bottom
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", new Vector3(-60, -50)); //bottom
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", -60, 50); //left
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", new Vector3(-60, 50)); //left
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", 55, 50); //right
+							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", new Vector3(55, 50)); //right
 							entities.Add(tempEntity);
 						} else if (isDungeon) {
 							currRadius = boundaryRadius;
 
 							//add the dungeon entrance
-							tempEntity = new Entity(tempAssetPrefix + "_Entrance", 0, 0);
+							tempEntity = new Entity(tempAssetPrefix + "_Entrance", new Vector3(0, 0));
 							entities.Add(tempEntity);
 						} else {
 							currRadius = boundaryRadius;
@@ -196,7 +196,7 @@ namespace internal_Area {
 						break;
 				}
 
-				if (currAssetCount > 0) { //if asset type has assets to offer
+				if (currAssetCount > 0) { //use assetmanager
 					for (i = 0; i < numEntities; i++) {
 						tempEntity = new Entity(); //instantiate new entity
 						tempEntity.name_prefab = currEntityFilename + (UnityEngine.Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)

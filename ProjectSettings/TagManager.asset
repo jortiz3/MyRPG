@@ -9,6 +9,7 @@ TagManager:
   - container
   - inventory
   - item
+  - scenery
   layers:
   - Default
   - TransparentFX

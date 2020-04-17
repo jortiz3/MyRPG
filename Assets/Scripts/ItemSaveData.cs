@@ -1,4 +1,5 @@
 ﻿using System;
+using Items;
 
 [Serializable]
 public class ItemSaveData {
@@ -25,5 +26,25 @@ public class ItemSaveData {
 		suffix = i.Suffix;
 		quantity = i.Quantity;
 		equipped = i.Equipped;
+	}
+
+	public ItemSaveData(int ID, int Quantity) {
+		id = ID;
+		ItemInfo i = ItemDatabase.GetItemInfo(id);
+		baseName = i.baseName;
+		prefix = i.prefix;
+		suffix = i.suffix;
+		quantity = Quantity;
+		equipped = false;
+	}
+
+	public ItemSaveData(int ID, string Prefix, string Suffix, int Quantity, bool Equipped) {
+		id = ID;
+		ItemInfo i = ItemDatabase.GetItemInfo(id);
+		baseName = i.baseName;
+		prefix = Prefix;
+		suffix = Suffix;
+		quantity = Quantity;
+		equipped = Equipped;
 	}
 }

@@ -9,6 +9,10 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 	private bool allowStructureCollision;
 	private bool loaded;
 
+	public int HarvestCount { get { return harvestCount; } }
+	public int HarvestedItemID { get { return harvestedItemID; } }
+	public bool AllowStructureCollision { get { return allowStructureCollision; } }
+
 	protected override void Initialize() { //called in Start()
 		transform.SetParent(AreaManager.GetEntityParent("Scenery"));
 		if (!loaded) {

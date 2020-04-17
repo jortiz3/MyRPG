@@ -11,6 +11,7 @@ namespace internal_Area {
 	public class Entity {
 		public ItemSaveData itemData;
 		public StructureSaveData structureData;
+		public SceneryObjectSaveData sceneryData;
 		public string name_prefab;
 		public float positionX;
 		public float positionY;
@@ -19,50 +20,51 @@ namespace internal_Area {
 		public Entity() {
 			itemData = null;
 			structureData = null;
+			sceneryData = null;
 			name_prefab = "";
 			positionX = 0;
 			positionY = 0;
 			lastUpdated = 0;
 		}
 
-		public Entity(Item i) {
-			itemData = i.ToItemSaveData();
+		//for items
+		public Entity(int itemID, string prefix, string suffix, int quantity, bool equipped, Vector3 position) {
+			itemData = new ItemSaveData(itemID, prefix, suffix, quantity, equipped);
 			structureData = null;
-			positionX = i.transform.position.x;
-			positionY = i.transform.position.y;
+			sceneryData = null;
+			positionX = position.x;
+			positionY = position.y;
 			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
-		public Entity(Structure s) {
+		//for structures
+		public Entity(string structureOwner, string[] textures, Vector2IntS dimensions, Vector3 position) {
 			itemData = null;
-			structureData = s.ToStructureSaveData();
-			positionX = s.transform.position.x;
-			positionY = s.transform.position.y;
+			structureData = new StructureSaveData(structureOwner, textures, dimensions);
+			sceneryData = null;
+			positionX = position.x;
+			positionY = position.y;
 			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
-		public Entity(SceneryObject s) {
+		//for scenery data
+		public Entity(int HarvestCount, int HarvestedItemID, bool AllowStructureCollision, Vector3 position) {
 			itemData = null;
 			structureData = null;
-			positionX = s.transform.position.x;
-			positionY = s.transform.position.y;
+			sceneryData = new SceneryObjectSaveData(HarvestCount, HarvestedItemID, AllowStructureCollision);
+			positionX = position.x;
+			positionY = position.y;
 			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
-		public Entity(Character c) {
+		//for default prefabs
+		public Entity(string prefabName, Vector3 position) {
 			itemData = null;
 			structureData = null;
-			positionX = c.transform.position.x;
-			positionY = c.transform.position.y;
-			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
-		}
-
-		public Entity(string prefabName, float PositionX, float PositionY) {
-			itemData = null;
-			structureData = null;
+			sceneryData = null;
 			name_prefab = prefabName;
-			positionX = PositionX;
-			positionY = PositionY;
+			positionX = position.x;
+			positionY = position.y;
 			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
@@ -73,6 +75,10 @@ namespace internal_Area {
 				return true;
 			} else if (structureData != null) {
 				AssetManager.instance.InstantiateStructure(position, structureData.dimensions.ToVector2Int(), structureData.owner, structureData.textures);
+				return true;
+			} else if (sceneryData != null) {
+				AssetManager.instance.InstantiateSceneryObject(position, sceneryData.GetSceneryType(), sceneryData.name, sceneryData.harvestedItemID,
+					sceneryData.harvestCount, sceneryData.allowStructureCollision);
 				return true;
 			} else if (name_prefab != null && !name_prefab.Equals("")) {
 				GameObject temp = Resources.Load<GameObject>("Prefabs/" + name_prefab);
@@ -86,16 +92,22 @@ namespace internal_Area {
 		}
 
 		public static Entity Parse(Transform transform) {
-			Entity temp;
+			Entity temp = null;
 			switch (transform.tag) {
 				case "item":
-					temp = new Entity(transform.GetComponent<Item>());
+					Item i = transform.GetComponent<Item>();
+					temp = new Entity(i.ID, i.Prefix, i.Suffix, i.Quantity, i.Equipped, transform.position);
 					break;
 				case "structure":
-					temp = new Entity(transform.GetComponent<Structure>());
+					Structure s = transform.GetComponent<Structure>();
+					temp = new Entity(s.Owner, s.GetTextures(), new Vector2IntS(s.Dimensions), transform.position);
+					break;
+				case "scenery":
+					SceneryObject scenery = transform.GetComponent<SceneryObject>();
+					temp = new Entity(scenery.HarvestCount, scenery.HarvestedItemID, scenery.AllowStructureCollision, transform.position);
 					break;
 				default:
-					temp = new Entity(transform.name, transform.position.x, transform.position.y);
+					temp = new Entity(transform.name, transform.position);
 					break;
 			}
 			return temp;

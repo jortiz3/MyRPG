@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using internal_Area;
@@ -21,6 +22,30 @@ public class AssetManager : MonoBehaviour {
 		}
 	}
 
+	public int GetAssetCount(string assetType, string areaTypeName) {
+		string[] keys = null;
+		assetType = assetType.ToLower();
+		if (assetType.Contains("item")) {
+			keys = items.Keys.ToArray();
+		} else if (assetType.Contains("scene")) {
+			keys = scenery.Keys.ToArray();
+		} else if (assetType.Contains("struct")) {
+			keys = structures.Keys.ToArray();
+		} else {
+			return 0;
+		}
+
+		int total = 0;
+		for (int i = 0; i < keys.Length; i++) {
+			if (keys[i].Contains(areaTypeName)) {
+				total++;
+			} else if (areaTypeName.Length - areaTypeName.Replace("_","").Length < 2) { //typical asset name will be: areatype_assettype_index -- items will just have item name
+				total++;
+			}
+		}
+		return total;
+	}
+
 	private IEnumerator Initialize() {
 		LoadAssets<GameObject>(out prefabs, "Prefabs/");
 		LoadAssets<Texture2D>(out items, "Textures/Items/");
@@ -41,6 +66,7 @@ public class AssetManager : MonoBehaviour {
 					Item currItem = Instantiate(curr_prefab_reference).GetComponent<Item>(); //instantiate copy of prefab
 
 					if (currItem != null) { //if instantiated properly
+						TrimGameObjectName(currItem.gameObject);
 						currItem.transform.position = position;
 						currItem.Load(itemID, itemBaseName, quantity, curr_texture_reference); //pass item info and texture
 						return currItem;
@@ -66,6 +92,7 @@ public class AssetManager : MonoBehaviour {
 						currObject = Instantiate(curr_prefab_reference).GetComponent<SceneryObject>(); //instantiate copy of prefab
 
 						if (currObject != null) { //if successfully instantiated
+							TrimGameObjectName(currObject.gameObject);
 							currObject.transform.position = position; //set the position
 							currObject.Load(harvestedItemID, sceneryObjectHP, curr_texture_reference, allowStructureCollision); //pass info to scenery object script
 							return currObject;
@@ -88,6 +115,7 @@ public class AssetManager : MonoBehaviour {
 				GameObject spawnedPrefab = Instantiate(curr_prefab_reference);
 				Structure spawnedStructure = spawnedPrefab.GetComponent<Structure>(); //instantiate copy of prefab
 				if (spawnedStructure != null) { //if prefab has required component
+					TrimGameObjectName(spawnedPrefab);
 					if (textureNames == null) { //if optional parameter not used
 						textureNames = new string[] { "floor_default", "roof_default", "door_default"}; //set to defaults
 					}
@@ -119,5 +147,9 @@ public class AssetManager : MonoBehaviour {
 		foreach (T asset in assets) {
 			dictionary.Add(asset.name, asset);
 		}
+	}
+
+	private void TrimGameObjectName(GameObject g) {
+		g.name = g.name.Replace("(Clone)", "");
 	}
 }
