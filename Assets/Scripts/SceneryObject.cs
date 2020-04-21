@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using internal_Area;
+using internal_Items;
 
 /// <summary>
 /// Written by Justin Ortiz
@@ -6,8 +8,8 @@
 public class SceneryObject : Interactable { //convert to Interactable; store item id; if no item id or no quantity left, disable interaction
 	private static string[] types = new string[] { "bush", "tree", "rock" };
 
-	private int harvestCount;
 	private int harvestedItemID;
+	private int harvestCount;
 	private bool allowStructureCollision;
 	private bool loaded;
 
@@ -15,6 +17,17 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 	public int HarvestedItemID { get { return harvestedItemID; } }
 	public bool AllowStructureCollision { get { return allowStructureCollision; } }
 
+	private int GetHarvestedItemID(string textureName) {
+		switch (GetSceneryType(textureName)) { //add check for areatype?
+			case "bush":
+				return ItemDatabase.GetItemID("Berry");
+			case "rock":
+				return ItemDatabase.GetItemID("Rock");
+			default: //trees
+				return ItemDatabase.GetItemID("Log");
+		}
+	}
+	
 	public static string GetSceneryType(string textureName) {
 		for (int i = 0; i < types.Length; i++) { //loop through types
 			if (textureName.Contains(types[i])) { //if the texture contains the type
@@ -31,14 +44,22 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 			harvestedItemID = -1;
 			allowStructureCollision = false;
 			DisableInteraction();
+		} else {
+			if (harvestCount < 1 || harvestedItemID < 0) {
+				DisableInteraction();
+			}
 		}
 		base.Initialize();
 	}
 
 	protected override void InteractInternal() {
 		if (harvestCount > 0) {
-			Inventory.instance.Add(AssetManager.instance.InstantiateItem(transform.position, itemID:harvestedItemID, quantity:5));
-			harvestCount--;
+			if (harvestedItemID > 0) {
+				Inventory.instance.Add(AssetManager.instance.InstantiateItem(transform.position, itemID: harvestedItemID, quantity: 5));
+				harvestCount--;
+			} else {
+				harvestCount = 0;
+			}
 		} else {
 			//inform player that nothing happens
 		}
@@ -49,9 +70,9 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 		base.InteractInternal();
 	}
 
-	public void Load(int HarvestedItemID, int HarvestCount, Texture2D Texture, bool AllowCollisionWithStructures = false) {
-		harvestCount = HarvestCount;
-		harvestedItemID = HarvestedItemID;
+	public void Load(Texture2D Texture, int HarvestedItemID = -int.MaxValue, int HarvestCount = 0, bool AllowCollisionWithStructures = false) {
+		harvestedItemID = HarvestedItemID == -int.MaxValue ? GetHarvestedItemID(Texture.name) : HarvestedItemID;
+		harvestCount = HarvestCount; //ensure not to display interaction
 		allowStructureCollision = AllowCollisionWithStructures;
 		SetSprite(Texture);
 		loaded = true;

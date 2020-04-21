@@ -79,7 +79,7 @@ public class AssetManager : MonoBehaviour {
 	}
 
 	public SceneryObject InstantiateSceneryObject(Vector3 position, string textureName = "bush_0",
-		int harvestedItemID = 0, int sceneryObjectHP = 3, bool allowStructureCollision = false) {
+		int harvestedItemID = -int.MaxValue, int sceneryObjectHP = 3, bool allowStructureCollision = false) {
 
 		string prefabKey = "scenery_" + SceneryObject.GetSceneryType(textureName);
 		if (prefabs.ContainsKey(prefabKey)) {
@@ -95,7 +95,7 @@ public class AssetManager : MonoBehaviour {
 						if (currObject != null) { //if successfully instantiated
 							TrimGameObjectName(currObject.gameObject);
 							currObject.transform.position = position; //set the position
-							currObject.Load(harvestedItemID, sceneryObjectHP, curr_texture_reference, allowStructureCollision); //pass info to scenery object script
+							currObject.Load(curr_texture_reference, harvestedItemID, sceneryObjectHP, allowStructureCollision); //pass info to scenery object script
 							return currObject;
 						}
 					}

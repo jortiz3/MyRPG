@@ -2,7 +2,8 @@
 using UnityEngine;
 
 //To do: add character ownership
-//To do: add LoadCustomStructure(string baseFileName, string roofFileName, string doorFileName) { load template structure, apply filenames>sprite to sprites[] }
+//to do: add structure preset name (i.e. "default", "CPR_blacksmith")
+//to do: change structure walls texture based on based on city owner; change roof and floor based on structure preset
 /// <summary>
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
@@ -12,7 +13,7 @@ public class Structure : MonoBehaviour {
 	private SpriteRenderer[] sprites;
 	[SerializeField, Tooltip("The structure's additional cell size (x,y); Default size of 1 == (0,0)")]
 	private Vector2Int dimensions;
-	private string owner;
+	private string owner; //convert to character? load character in load() using string?
 	private List<Furniture> furniture;
 
 	public Vector2Int Dimensions { get { return dimensions; } }
@@ -20,6 +21,10 @@ public class Structure : MonoBehaviour {
 
 	private void Awake() {
 		Initialize();
+	}
+
+	private void GenerateFurniture() {
+		//use presets to generate -- i.e. blacksmith -- take into consideration current area owner; i.e. CPR, HoZ, Player, etc
 	}
 
 	public static string GetDimensionSize(Vector2Int dimensions) {
@@ -57,6 +62,9 @@ public class Structure : MonoBehaviour {
 				defaultColors[i] = sprites[i].color;
 			}
 		}
+
+		//if not loaded or loaded without furniture
+		//GenerateFurniture() based off of preset
 	}
 
 	/// <summary>

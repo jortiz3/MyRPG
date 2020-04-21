@@ -197,13 +197,13 @@ namespace internal_Area {
 							currRadius = cityRadius - 5; //1 cell margin for sides
 
 							//add the walls surrounding the city/camp
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", new Vector3(-60, 60)); //top
+							tempEntity = new Entity("City_Wall_Horizontal", new Vector3(-60, 60)); //top
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", new Vector3(-60, -50)); //bottom
+							tempEntity = new Entity("City_Wall_Horizontal", new Vector3(-60, -50)); //bottom
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", new Vector3(-60, 50)); //left
+							tempEntity = new Entity("City_Wall_Vertical", new Vector3(-60, 50)); //left
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", new Vector3(55, 50)); //right
+							tempEntity = new Entity("City_Wall_Vertical", new Vector3(55, 50)); //right
 							entities.Add(tempEntity);
 						} else if (isDungeon) {
 							currRadius = boundaryRadius;
@@ -219,7 +219,8 @@ namespace internal_Area {
 						float numOfRowsForRadius = currRadius / heightSpacing; //get num of rows depending on spacing
 
 						for (i = 0; i < numEntities; i++) {
-							tempEntity = new Entity("", Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" });
+							//to do: get owner from type name
+							tempEntity = new Entity(type.name, Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" });
 
 							//generate position for the entity
 							tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);

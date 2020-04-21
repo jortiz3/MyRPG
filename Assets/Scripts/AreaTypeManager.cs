@@ -23,10 +23,10 @@ namespace internal_Area {
 
 		private void GenerateDefaultAreaTypes() {
 			areaTypes.Clear();
-			areaTypes.Add(new AreaType("Plains", new Vector2IntS(0, 0), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 5000));
-			areaTypes.Add(new AreaType("Forest", new Vector2IntS(0, 0), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 25000));
-			areaTypes.Add(new AreaType("Mountain", new Vector2IntS(0, 0), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 10000));
-			areaTypes.Add(new AreaType("Marsh", new Vector2IntS(0, 0), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 20000));
+			areaTypes.Add(new AreaType("Plains", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 5000));
+			areaTypes.Add(new AreaType("Forest", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 25000));
+			areaTypes.Add(new AreaType("Mountain", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 10000));
+			areaTypes.Add(new AreaType("Marsh", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 20000));
 			areaTypes.Add(new AreaType("City_RAM", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));
 			areaTypes.Add(new AreaType("City_CPR", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));
 			areaTypes.Add(new AreaType("City_HoZ", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));

@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine;
-using Items;
+using internal_Items;
 
 /// <summary>
 /// Written by Justin Ortiz.

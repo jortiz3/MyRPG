@@ -1,5 +1,5 @@
 ﻿using System;
-using Items;
+using internal_Items;
 
 [Serializable]
 public class ItemSaveData {
