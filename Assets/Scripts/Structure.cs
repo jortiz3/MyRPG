@@ -147,8 +147,4 @@ public class Structure : MonoBehaviour {
 			StructureGridManager.instance.RegisterExistingStructure(this); //register cells as occupied
 		}
 	}
-
-	public StructureSaveData ToStructureSaveData() {
-		return new StructureSaveData(this);
-	}
 }

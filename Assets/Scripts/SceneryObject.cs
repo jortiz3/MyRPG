@@ -4,6 +4,8 @@
 /// Written by Justin Ortiz
 /// </summary>
 public class SceneryObject : Interactable { //convert to Interactable; store item id; if no item id or no quantity left, disable interaction
+	private static string[] types = new string[] { "bush", "tree", "rock" };
+
 	private int harvestCount;
 	private int harvestedItemID;
 	private bool allowStructureCollision;
@@ -12,6 +14,15 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 	public int HarvestCount { get { return harvestCount; } }
 	public int HarvestedItemID { get { return harvestedItemID; } }
 	public bool AllowStructureCollision { get { return allowStructureCollision; } }
+
+	public static string GetSceneryType(string textureName) {
+		for (int i = 0; i < types.Length; i++) { //loop through types
+			if (textureName.Contains(types[i])) { //if the texture contains the type
+				return types[i]; //return the type
+			}
+		}
+		return types[0]; //if not found, return base type
+	}
 
 	protected override void Initialize() { //called in Start()
 		transform.SetParent(AreaManager.GetEntityParent("Scenery"));
@@ -26,7 +37,7 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 
 	protected override void InteractInternal() {
 		if (harvestCount > 0) {
-			Inventory.instance.Add(AssetManager.instance.InstantiateItem(transform.position, itemID:harvestedItemID, quantity:5, itemBaseName:"Log"));
+			Inventory.instance.Add(AssetManager.instance.InstantiateItem(transform.position, itemID:harvestedItemID, quantity:5));
 			harvestCount--;
 		} else {
 			//inform player that nothing happens

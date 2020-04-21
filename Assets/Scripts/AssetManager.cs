@@ -22,24 +22,25 @@ public class AssetManager : MonoBehaviour {
 		}
 	}
 
-	public int GetAssetCount(string assetType, string areaTypeName) {
+	/// <summary>
+	/// Gets the count of specific assets.
+	/// </summary>
+	public int GetAssetCount(string assetType, string assetPrefix = "") {
 		string[] keys = null;
-		assetType = assetType.ToLower();
-		if (assetType.Contains("item")) {
-			keys = items.Keys.ToArray();
+		assetType = assetType.ToLower(); //standardize asset type
+		if (assetType.Contains("item")) { //if type is item
+			keys = items.Keys.ToArray(); //get item dictionary keys
 		} else if (assetType.Contains("scene")) {
 			keys = scenery.Keys.ToArray();
 		} else if (assetType.Contains("struct")) {
 			keys = structures.Keys.ToArray();
 		} else {
-			return 0;
+			return 0; //not an established type
 		}
 
 		int total = 0;
 		for (int i = 0; i < keys.Length; i++) {
-			if (keys[i].Contains(areaTypeName)) {
-				total++;
-			} else if (areaTypeName.Length - areaTypeName.Replace("_","").Length < 2) { //typical asset name will be: areatype_assettype_index -- items will just have item name
+			if (keys[i].Contains(assetPrefix)) { //key must have the given prefix
 				total++;
 			}
 		}
@@ -77,10 +78,10 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public SceneryObject InstantiateSceneryObject(Vector3 position, string sceneryType = "bush", string textureName = "bush_0",
+	public SceneryObject InstantiateSceneryObject(Vector3 position, string textureName = "bush_0",
 		int harvestedItemID = 0, int sceneryObjectHP = 3, bool allowStructureCollision = false) {
 
-		string prefabKey = "scenery_" + sceneryType;
+		string prefabKey = "scenery_" + SceneryObject.GetSceneryType(textureName);
 		if (prefabs.ContainsKey(prefabKey)) {
 			GameObject curr_prefab_reference = prefabs[prefabKey]; //get the prefab from dictionary
 			if (curr_prefab_reference != null) { //if prefab retrieved

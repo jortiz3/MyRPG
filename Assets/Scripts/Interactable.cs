@@ -26,6 +26,15 @@ public class Interactable : MonoBehaviour {
 		disabled = false;
 	}
 
+	public string GetTextureName() {
+		if (sprite != null) {
+			if (sprite.sprite != null) {
+				return sprite.sprite.texture.name;
+			}
+		}
+		return "";
+	}
+
 	protected virtual void Initialize() {
 		if (interactMessage == null || interactMessage.Equals("")) {
 			SetInteractMessage("to interact.");
@@ -93,6 +102,7 @@ public class Interactable : MonoBehaviour {
 
 			if (sprite != null) { //if sprite component exists
 				sprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
+				gameObject.name = texture.name;
 			}
 		}
 	}
