@@ -21,6 +21,8 @@ namespace internal_Area {
 		[SerializeField]
 		private string typeName;
 		[SerializeField]
+		private string owner;
+		[SerializeField]
 		private List<Entity> entities;
 		[SerializeField]
 		private List<ContainerSaveData> containers;
@@ -42,6 +44,7 @@ namespace internal_Area {
 			discovered = false;
 			position = Vector2IntS.zero;
 			typeName = AreaTypeManager.GetAreaType(0).name;
+			owner = "none";
 			entities = new List<Entity>();
 			containers = new List<ContainerSaveData>();
 		}
@@ -50,14 +53,16 @@ namespace internal_Area {
 			discovered = false;
 			position = new Vector2IntS(Position);
 			typeName = AreaTypeManager.GetAreaType(0).name;
+			owner = "none";
 			entities = new List<Entity>();
 			containers = new List<ContainerSaveData>();
 		}
 
-		public Area(Vector2Int Position, string areaTypeName) {
+		public Area(Vector2Int Position, string AreaTypeName, string Owner = "none") {
 			discovered = false;
 			position = new Vector2IntS(Position);
-			typeName = areaTypeName;
+			typeName = AreaTypeName;
+			owner = Owner;
 			entities = new List<Entity>();
 			containers = new List<ContainerSaveData>();
 		}
@@ -126,7 +131,6 @@ namespace internal_Area {
 			bool isDungeon = false;
 
 			AreaType type = AreaTypeManager.GetAreaType(typeName);
-			type.name = type.name.ToLower();
 
 			if (type.name.Contains("city") || type.name.Contains("camp")) {
 				isInhabited = true;
@@ -170,20 +174,22 @@ namespace internal_Area {
 							}
 						}
 
-						numEntities = UnityEngine.Random.Range(type.scenerySpawnRange.x, type.scenerySpawnRange.y); //set random quantity for scenery objs in this area
-						currRadius = boundaryRadius;
+						if (assetPrefixes.Count > 0 && assetCounts.Count == assetPrefixes.Count) { //if there were assets
+							numEntities = UnityEngine.Random.Range(type.scenerySpawnRange.x, type.scenerySpawnRange.y); //set random quantity for scenery objs in this area
+							currRadius = boundaryRadius;
 
-						for (i = 0; i < numEntities; i++) {
-							currAsset = UnityEngine.Random.Range(0, assetPrefixes.Count);
-							tempEntity = new Entity(0, 1, false, Vector3.zero,
-								assetPrefixes[currAsset] + UnityEngine.Random.Range(0, assetCounts[currAsset]).ToString());
+							for (i = 0; i < numEntities; i++) {
+								currAsset = UnityEngine.Random.Range(0, assetPrefixes.Count);
+								tempEntity = new Entity(0, 1, false, Vector3.zero,
+									assetPrefixes[currAsset] + UnityEngine.Random.Range(0, assetCounts[currAsset]).ToString());
 
-							//generate position for the entity
-							tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
-							tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
+								//generate position for the entity
+								tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
+								tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
 
-							entities.Add(tempEntity); //add entity to the list
-							yield return new WaitForEndOfFrame(); //add time between iterations
+								entities.Add(tempEntity); //add entity to the list
+								yield return new WaitForEndOfFrame(); //add time between iterations
+							}
 						}
 						break;
 					case 2:
@@ -219,8 +225,7 @@ namespace internal_Area {
 						float numOfRowsForRadius = currRadius / heightSpacing; //get num of rows depending on spacing
 
 						for (i = 0; i < numEntities; i++) {
-							//to do: get owner from type name
-							tempEntity = new Entity(type.name, Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" });
+							tempEntity = new Entity(owner, "default", Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" }, true);
 
 							//generate position for the entity
 							tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);

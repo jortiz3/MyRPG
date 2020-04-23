@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Furniture : MonoBehaviour {
+public class Furniture : Interactable {
 	private static bool editEnabled;
 	private static bool canFinalize;
 	private static bool usePlayerResources;
@@ -9,18 +9,11 @@ public class Furniture : MonoBehaviour {
 
 	[SerializeField]
 	private Structure parent;
-	private SpriteRenderer sr;
 	private Color defaultColor;
 	private Vector3 desiredScale;
 	private float triggered;
 
 	public static bool EditEnabled { get { return editEnabled; } }
-
-	private void Awake() {
-		sr = GetComponent<SpriteRenderer>();
-		defaultColor = sr.color;
-		desiredScale = transform.localScale;
-	}
 
 	public static void BeginEdit(Furniture f) {
 		editObj = f;
@@ -53,7 +46,7 @@ public class Furniture : MonoBehaviour {
 
 	public static void FinalizeEdit() {
 		if (canFinalize) {
-			editObj.sr.color = editObj.defaultColor;
+			editObj.sprite.color = editObj.defaultColor;
 			editEnabled = false;
 			canFinalize = false;
 			if (usePlayerResources) {
@@ -72,6 +65,29 @@ public class Furniture : MonoBehaviour {
 		return "";
 	}
 
+	protected override void Initialize() {
+		sprite = gameObject.GetComponent<SpriteRenderer>(); //get the sprite component
+		defaultColor = sprite.color;
+		desiredScale = transform.localScale;
+
+		if (parent != null) {
+			parent.RegisterFurniture(this);
+		} else {
+			ResetTransformParent();
+		}
+
+		DisableInteraction(); //disable interaction as of now -- some furniture may open crafting menus later on
+		base.Initialize();
+	}
+
+	public void Load(Texture2D texture, Structure parentStructure = null) {
+		SetSprite(texture);
+
+		if (parentStructure != null) {
+			parentStructure.RegisterFurniture(this);
+		}
+	}
+
 	private void OnTriggerStay(Collider other) {
 		if (other.CompareTag("structure")) { //if triggered by structure
 			Structure currStructure = other.GetComponent<Structure>(); //get structure script
@@ -79,7 +95,7 @@ public class Furniture : MonoBehaviour {
 				if (editEnabled) { //if editing a furniture obj
 					if (editObj.Equals(this)) { //if this is the obj
 						if (parent == null || currStructure.Equals(parent)) { //if triggered by parent structure or no parent structure
-							sr.color = StructureCell.Color_Unoccupied; //color = green
+							sprite.color = StructureCell.Color_Unoccupied; //color = green
 							canFinalize = true; //can place here
 							triggered = 0f; //flag canFinalize as triggered recently
 						}
@@ -95,34 +111,33 @@ public class Furniture : MonoBehaviour {
 		SetTransformParent(AreaManager.GetEntityParent("Furniture"));
 	}
 
-	private void Start() {
-		if (parent != null) {
-			SetTransformParent(parent.transform);
-			parent.RegisterFurniture(this);
-		} else {
-			ResetTransformParent();
-		}
-	}
-
-	public void SetStructureParent(Structure s) {
+	public void SetStructureParent(Structure s, bool setTransformParent = false) {
 		if (s != null) {
 			parent = s;
+			if (setTransformParent) {
+				SetTransformParent(s.transform);
+			}
 		}
 	}
 
+	/// <summary>
+	/// Sets the transform parent and ensures the furniture object remains the same size on screen.
+	/// </summary>
 	public void SetTransformParent(Transform t) {
-		transform.SetParent(t);
+		if (transform.parent != t) { //if new transform to set to parent
+			transform.SetParent(t); //set parent in inspector
 
-		Vector3 newScale = Vector3.one;
-		if (t.localScale.sqrMagnitude > desiredScale.sqrMagnitude) {
-			newScale.x =  desiredScale.x / t.localScale.x;
-			newScale.y = desiredScale.y / t.localScale.y;
-		} else if (t.localScale.sqrMagnitude > desiredScale.sqrMagnitude) {
-			newScale.x = t.localScale.x / desiredScale.x;
-			newScale.y = t.localScale.y / desiredScale.y;
+			Vector3 newScale = Vector3.one; //start with scale of 1
+			if (t.localScale.sqrMagnitude < desiredScale.sqrMagnitude) { //if the parent scale is smaller than what we want
+				newScale.x = desiredScale.x / t.localScale.x;
+				newScale.y = desiredScale.y / t.localScale.y;
+			} else if (t.localScale.sqrMagnitude > desiredScale.sqrMagnitude) { //if parent scale is bigger than what we want
+				newScale.x = t.localScale.x / desiredScale.x;
+				newScale.y = t.localScale.y / desiredScale.y;
+			}
+
+			transform.localScale = newScale; //set the scale
 		}
-
-		transform.localScale = newScale;
 	}
 
 	private void Update() {
@@ -135,12 +150,10 @@ public class Furniture : MonoBehaviour {
 				if (triggered < 0.15f) { //if triggered recently
 					triggered += Time.deltaTime;
 				} else { //not triggered recently
-					sr.color = StructureCell.Color_Occupied;
+					sprite.color = StructureCell.Color_Occupied;
 					canFinalize = false; //flag for not placing
 				}
 			}
 		}
-		
-		
 	}
 }

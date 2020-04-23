@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-//To do: add character ownership
 //to do: add structure preset name (i.e. "default", "CPR_blacksmith")
-//to do: change structure walls texture based on based on city owner; change roof and floor based on structure preset
 /// <summary>
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
@@ -14,17 +12,32 @@ public class Structure : MonoBehaviour {
 	[SerializeField, Tooltip("The structure's additional cell size (x,y); Default size of 1 == (0,0)")]
 	private Vector2Int dimensions;
 	private string owner; //convert to character? load character in load() using string?
+	private string preset;
 	private List<Furniture> furniture;
 
 	public Vector2Int Dimensions { get { return dimensions; } }
 	public string Owner { get { return owner; } }
+	public string Preset { get { return preset; } }
 
 	private void Awake() {
 		Initialize();
 	}
 
-	private void GenerateFurniture() {
-		//use presets to generate -- i.e. blacksmith -- take into consideration current area owner; i.e. CPR, HoZ, Player, etc
+	public void GenerateFurniture() {
+		//use presets to generate -- i.e. blacksmith
+		//List<string> furniturePrefixes = new List<string>();  ??
+		switch (GetDimensionSize(dimensions)) { //different amounts of furniture based on size
+			case "tiny":
+				break;
+			case "small":
+				break;
+			case "medium":
+				break;
+			case "large":
+				break;
+			default:
+				break;
+		}
 	}
 
 	public static string GetDimensionSize(Vector2Int dimensions) {
@@ -70,11 +83,15 @@ public class Structure : MonoBehaviour {
 	/// <summary>
 	/// Passes required information to an already-instantiated structure.
 	/// </summary>
-	/// <param name="dimensions">The extra grid cells required by the structure. Default: Size of 1 cell = (0, 0)</param>
-	/// <param name="worldPosition">Where the structure should be placed in the world prior to snapping to grid.</param>
-	public void Load(Vector2Int Dimensions, string Owner = "Player", Texture2D[] textures = null) {
+	public void Load(Vector2Int Dimensions, string Owner = "Player", string Preset = "default", bool instantiateFurniture = false, Texture2D[] textures = null) {
 		dimensions = Dimensions;
 		owner = Owner;
+		preset = Preset;
+
+		if (instantiateFurniture) {
+			GenerateFurniture();
+		}
+
 		SetSprites(textures);
 	}
 

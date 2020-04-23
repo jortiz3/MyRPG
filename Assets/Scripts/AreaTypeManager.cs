@@ -23,17 +23,13 @@ namespace internal_Area {
 
 		private void GenerateDefaultAreaTypes() {
 			areaTypes.Clear();
-			areaTypes.Add(new AreaType("Plains", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 5000));
-			areaTypes.Add(new AreaType("Forest", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 25000));
-			areaTypes.Add(new AreaType("Mountain", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 10000));
-			areaTypes.Add(new AreaType("Marsh", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 20000));
-			areaTypes.Add(new AreaType("City_RAM", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));
-			areaTypes.Add(new AreaType("City_CPR", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));
-			areaTypes.Add(new AreaType("City_HoZ", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));
-			areaTypes.Add(new AreaType("City_DV", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));
-			areaTypes.Add(new AreaType("Camp_Bandit", new Vector2IntS(3, 10), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 0));
-			areaTypes.Add(new AreaType("Dungeon_Minor Lich", new Vector2IntS(0, 0), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 0));
-			areaTypes.Add(new AreaType("Dungeon_Greater Demon", new Vector2IntS(0, 0), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 0));
+			areaTypes.Add(new AreaType("plains", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 5000));
+			areaTypes.Add(new AreaType("forest", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 25000));
+			areaTypes.Add(new AreaType("mountain", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 10000));
+			areaTypes.Add(new AreaType("marsh", new Vector2IntS(0, 1), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 20000));
+			areaTypes.Add(new AreaType("city", new Vector2IntS(10, 20), new Vector2IntS(50, 300), new Vector2IntS(0, 0), 0));
+			areaTypes.Add(new AreaType("camp", new Vector2IntS(3, 10), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 0));
+			areaTypes.Add(new AreaType("dungeon", new Vector2IntS(0, 0), new Vector2IntS(50, 500), new Vector2IntS(0, 0), 0));
 		}
 
 		public static string[] GetAllAreaTypeNames() {

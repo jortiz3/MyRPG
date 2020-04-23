@@ -12,6 +12,7 @@ public class AssetManager : MonoBehaviour {
 	private Dictionary<string, Texture2D> items;
 	private Dictionary<string, Texture2D> scenery;
 	private Dictionary<string, Texture2D> structures;
+	private Dictionary<string, Texture2D> furniture;
 
 	private void Awake() {
 		if (instance != null) {
@@ -54,6 +55,42 @@ public class AssetManager : MonoBehaviour {
 		LoadAssets<Texture2D>(out scenery, "Textures/Scenery");
 		yield return new WaitForEndOfFrame();
 		LoadAssets<Texture2D>(out structures, "Textures/Structures");
+		yield return new WaitForEndOfFrame();
+		LoadAssets<Texture2D>(out furniture, "Textures/Furniture");
+	}
+
+	public Character InstantiateCharacter() {
+		return null;
+	}
+
+	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string textureName = "chest_default") {
+		string prefabKey = "furniture";
+
+		if (prefabs.ContainsKey(prefabKey)) { //if furniture prefab exists
+			if (furniture.ContainsKey(textureName)) { //if texture exists
+				GameObject curr_prefab_reference = prefabs[prefabKey]; //get the prefab
+
+				if (curr_prefab_reference != null) { //shouldn't happen but just in case
+					GameObject spawnedPrefab = Instantiate(curr_prefab_reference); //spawn copy of prefab
+					Furniture spawnedFurniture = spawnedPrefab.GetComponent<Furniture>(); //get furniture component
+					if (spawnedFurniture != null) { //if component retrieved
+						TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
+						Texture2D curr_texture_reference = scenery[textureName]; //get texture2d from dictionary
+						if (curr_texture_reference != null) { //if texture retrieved
+							spawnedFurniture.Load(curr_texture_reference, parentStructure);
+						}
+						if (position != null) { //if given valid position
+							spawnedFurniture.transform.position = position; //set the position of the object
+						}
+						return spawnedFurniture;
+					} else { //necessary component not found
+						Destroy(spawnedPrefab); //remove object from scene
+					} //endif furniture component
+				} //endif prefab reference != null
+			} //endif furniture.containskey
+		} //endif prefabs.containskey
+
+		return null;
 	}
 
 	public Item InstantiateItem(Vector3 position, int itemID = 0, string itemBaseName = "", int quantity = 1, string textureName = "log") {
@@ -105,7 +142,7 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string[] textureNames = null) {
+	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string preset = "default", bool instantiateFurniture = false, string[] textureNames = null) {
 		string structureSize = Structure.GetDimensionSize(dimensions);
 		string prefabKey = "structure_" + structureSize;
 
@@ -129,9 +166,9 @@ public class AssetManager : MonoBehaviour {
 					}//end for
 
 					if (position != null) { //if given valid position
-						spawnedStructure.transform.position = position; //set the position of the structure
+						spawnedStructure.transform.position = position; //set the position of the object
 					}
-					spawnedStructure.Load(dimensions, owner, curr_texture_references); //pass required info to structure
+					spawnedStructure.Load(dimensions, owner, preset, instantiateFurniture, curr_texture_references); //pass required info to structure
 					return spawnedStructure; //return reference to spawned structure
 				} else { //necessary component not on gameobject
 					Destroy(spawnedPrefab); //destroy the recently spawned gameobject

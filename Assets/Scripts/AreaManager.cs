@@ -143,33 +143,32 @@ public class AreaManager : MonoBehaviour {
 	private int GenerateUniqueAreaData() {
 		List<string> hardCodedAreaTypes = new List<string>();
 		hardCodedAreaTypes.AddRange(AreaTypeManager.GetAllAreaTypeNames());
-		hardCodedAreaTypes.RemoveRange(0, 4); //remove the generic area types (Plains, Forest, Mountain, Marsh)
-		int numUniqueAreas = hardCodedAreaTypes.Count;
+		hardCodedAreaTypes.RemoveRange(0, 7); //remove default area types
+		int numUniqueAreas = hardCodedAreaTypes.Count + 4/*cities*/ + 2/*dungeons*/;
 
 		if (hardCodedAreaTypes.Count > areas.GetLength(0) * areas.GetLength(1)) { //if there are somehow more unique areas than available slots
 			Debug.Log("Out of Range Error: AreaManager.GenerateUniqueAreaData() => loaded types (" + (hardCodedAreaTypes.Count - 4) + ") > map size (" + (areas.GetLength(0) * areas.GetLength(1)) + ")");
 			return 0;
 		}
 
-		List<Vector2Int> hardCodedPositions = new List<Vector2Int>(); //instantiate list
-		hardCodedPositions.Add(new Vector2Int(1, 1)); //place city locations
-		hardCodedPositions.Add(new Vector2Int(10, 1));
-		hardCodedPositions.Add(new Vector2Int(1, 10));
-		hardCodedPositions.Add(new Vector2Int(10, 10));
+		List<Vector2Int> cityPositions = new List<Vector2Int>(); //instantiate list
+		cityPositions.Add(new Vector2Int(1, 1)); //place city locations
+		cityPositions.Add(new Vector2Int(10, 1));
+		cityPositions.Add(new Vector2Int(1, 10));
+		cityPositions.Add(new Vector2Int(10, 10));
 
 		int randomIndex; //stores random number
 		Vector2Int tempPos; //stores the current position
 		Area currArea;
+		string[] cityOwners = new string[] { "CPR", "HoZ", "RAM", "DV" };
 		for (int cities = 3; cities >= 0; cities--) { //next 4 in types 'should' be cities
-			randomIndex = UnityEngine.Random.Range(0, hardCodedPositions.Count); //pick random position
-			tempPos = hardCodedPositions[randomIndex]; //store position
+			randomIndex = UnityEngine.Random.Range(0, cityPositions.Count); //pick random position
+			tempPos = cityPositions[randomIndex]; //store position
 
-			currArea = new Area(tempPos, hardCodedAreaTypes[cities]); //create area at position
+			currArea = new Area(tempPos, "city", cityOwners[cities]); //create area at position
 			StartCoroutine(currArea.Populate(false)); //populate the area
 			areas[tempPos.x, tempPos.y] = currArea; //add area to array
-
-			hardCodedAreaTypes.RemoveAt(cities); //remove type name from list
-			hardCodedPositions.RemoveAt(randomIndex); //remove position
+			cityPositions.RemoveAt(randomIndex); //remove position from list
 		}
 
 		for (int typeIndex = hardCodedAreaTypes.Count - 1; typeIndex >= 0; typeIndex--) { //go through remaining area types
