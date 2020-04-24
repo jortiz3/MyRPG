@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-//to do: add structure preset name (i.e. "default", "CPR_blacksmith")
 /// <summary>
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
@@ -24,19 +23,33 @@ public class Structure : MonoBehaviour {
 	}
 
 	public void GenerateFurniture() {
-		//use presets to generate -- i.e. blacksmith
-		//List<string> furniturePrefixes = new List<string>();  ??
+		string[] furniturePrefixes = null;
 		switch (GetDimensionSize(dimensions)) { //different amounts of furniture based on size
-			case "tiny":
-				break;
 			case "small":
+				furniturePrefixes = new string[] { "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_" };
 				break;
 			case "medium":
+				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
 				break;
 			case "large":
+				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
 				break;
 			default:
+				furniturePrefixes = new string[] { "bed_", "chest_", "table_", "chair_" };
 				break;
+		}
+
+		AssetManager.instance.InstantiateFurniture(transform.position + new Vector3(0, (dimensions.y + 1) * 5), this, "workbench"); //ensure there is always a workbench
+
+		List<Vector3> furniturePositions = new List<Vector3>();
+		for (int i = 0; i < furniturePrefixes.Length; i++) {
+			furniturePositions.Add(transform.position + new Vector3((i + dimensions.x) / 5, ((i + dimensions.y) * 2.5f) % 5));
+		}
+
+		if (furniturePrefixes.Length == furniturePositions.Count) {
+			for (int i = 0; i < furniturePrefixes.Length; i++) {
+				AssetManager.instance.InstantiateFurniture(furniturePositions[i], this, furniturePrefixes[i] + preset);
+			}
 		}
 	}
 
@@ -75,9 +88,6 @@ public class Structure : MonoBehaviour {
 				defaultColors[i] = sprites[i].color;
 			}
 		}
-
-		//if not loaded or loaded without furniture
-		//GenerateFurniture() based off of preset
 	}
 
 	/// <summary>

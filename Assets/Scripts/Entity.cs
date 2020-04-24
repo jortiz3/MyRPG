@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace internal_Area {
 
@@ -7,19 +8,19 @@ namespace internal_Area {
 	/// Entity: Information regarding a GameObject that may be loaded into a Scene.
 	/// Written by Justin Ortiz
 	/// </summary>
-	[Serializable]
+	[Serializable, JsonObject(MemberSerialization.Fields)]
 	public class Entity {
-		public string type; //item, structure, scenery object, prefab name
-		public string[] textures; //textures to assign
-		public int itemID; //harvestItemID
-		public int quantity; //harvestCount
-		public string uniqueString_0; //prefix, structure dimensions
-		public string uniqueString_1; //suffix, structure owner
-		public string uniqueString_2; //structure preset
-		public bool uniqueBool_0; //allow structure collision, instantiate furniture on first instantiate
-		public float positionX;
-		public float positionY;
-		public int lastUpdated; // time since last update (seconds)
+		private string type; //item, structure, scenery object, prefab name
+		private string[] textures; //textures to assign
+		private int itemID; //harvestItemID
+		private int quantity; //harvestCount
+		private string uniqueString_0; //prefix, structure dimensions
+		private string uniqueString_1; //suffix, structure owner
+		private string uniqueString_2; //structure preset
+		private bool uniqueBool_0; //allow structure collision, instantiate furniture on first instantiate
+		private float positionX;
+		private float positionY;
+		private int lastUpdated; // time since last update (seconds)
 
 		public Entity() {
 			type = "null";
@@ -86,6 +87,9 @@ namespace internal_Area {
 			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
 		}
 
+		/// <summary>
+		/// Creates entity data for furniture.
+		/// </summary>
 		public Entity(Vector3 position, string Texture) {
 			type = "furniture";
 			textures = new string[] { Texture };
@@ -199,6 +203,11 @@ namespace internal_Area {
 					break;
 			}
 			return temp;
+		}
+
+		public void SetPosition(Vector3 position) {
+			positionX = position.x;
+			positionY = position.y;
 		}
 	}
 }

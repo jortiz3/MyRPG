@@ -65,13 +65,14 @@ public class AssetManager : MonoBehaviour {
 
 	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string textureName = "chest_default") {
 		string prefabKey = "furniture";
+		GameObject spawnedPrefab = null;
 
 		if (prefabs.ContainsKey(prefabKey)) { //if furniture prefab exists
 			if (furniture.ContainsKey(textureName)) { //if texture exists
 				GameObject curr_prefab_reference = prefabs[prefabKey]; //get the prefab
 
 				if (curr_prefab_reference != null) { //shouldn't happen but just in case
-					GameObject spawnedPrefab = Instantiate(curr_prefab_reference); //spawn copy of prefab
+					spawnedPrefab = Instantiate(curr_prefab_reference); //spawn copy of prefab
 					Furniture spawnedFurniture = spawnedPrefab.GetComponent<Furniture>(); //get furniture component
 					if (spawnedFurniture != null) { //if component retrieved
 						TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
@@ -83,25 +84,29 @@ public class AssetManager : MonoBehaviour {
 							spawnedFurniture.transform.position = position; //set the position of the object
 						}
 						return spawnedFurniture;
-					} else { //necessary component not found
-						Destroy(spawnedPrefab); //remove object from scene
-					} //endif furniture component
+					}
 				} //endif prefab reference != null
 			} //endif furniture.containskey
 		} //endif prefabs.containskey
 
-		return null;
+		if (spawnedPrefab != null) { //if something didn't go right, and spawnedprefab was assigned
+			Destroy(spawnedPrefab); //remove object from scene
+		}
+		return null; //return null furniture script
 	}
 
 	public Item InstantiateItem(Vector3 position, int itemID = 0, string itemBaseName = "", int quantity = 1, string textureName = "log") {
-		GameObject curr_prefab_reference = prefabs["item"]; //get the prefab from dictionary
+		string prefabKey = "item";
+		GameObject spawnedPrefab = null;
 
-		if (curr_prefab_reference != null) { //should exist, but just in case
+		if (prefabs.ContainsKey(prefabKey)) { //should exist, but just in case
 			if (items.ContainsKey(textureName)) { //if the texture exists
+				GameObject curr_prefab_reference = prefabs[prefabKey]; //get the prefab from dictionary
 				Texture2D curr_texture_reference = items[textureName]; //get texture from texture2d list
 
 				if (curr_texture_reference != null) { //if the texture was retrieved
-					Item currItem = Instantiate(curr_prefab_reference).GetComponent<Item>(); //instantiate copy of prefab
+					spawnedPrefab = Instantiate(curr_prefab_reference);
+					Item currItem = spawnedPrefab.GetComponent<Item>(); //instantiate copy of prefab
 
 					if (currItem != null) { //if instantiated properly
 						TrimGameObjectName(currItem.gameObject);
@@ -112,13 +117,16 @@ public class AssetManager : MonoBehaviour {
 				}
 			}
 		}
+		if (spawnedPrefab != null) { //if something didn't go right, and spawnedprefab was assigned
+			Destroy(spawnedPrefab); //remove object from scene
+		}
 		return null;
 	}
 
 	public SceneryObject InstantiateSceneryObject(Vector3 position, string textureName = "bush_0",
 		int harvestedItemID = -int.MaxValue, int sceneryObjectHP = 3, bool allowStructureCollision = false) {
-
-		string prefabKey = "scenery_" + SceneryObject.GetSceneryType(textureName);
+		string prefabKey = "scenery_" + SceneryObject.GetSceneryType(textureName.Split('_')[0]);
+		GameObject spawnedPrefab = null;
 		if (prefabs.ContainsKey(prefabKey)) {
 			GameObject curr_prefab_reference = prefabs[prefabKey]; //get the prefab from dictionary
 			if (curr_prefab_reference != null) { //if prefab retrieved
@@ -126,8 +134,8 @@ public class AssetManager : MonoBehaviour {
 					Texture2D curr_texture_reference = scenery[textureName]; //get texture2d from dictionary
 
 					if (curr_texture_reference != null) { //if texture retrieved
-						SceneryObject currObject; //reference to current scenery object
-						currObject = Instantiate(curr_prefab_reference).GetComponent<SceneryObject>(); //instantiate copy of prefab
+						spawnedPrefab = Instantiate(curr_prefab_reference);
+						SceneryObject currObject = spawnedPrefab.GetComponent<SceneryObject>(); //instantiate copy of prefab
 
 						if (currObject != null) { //if successfully instantiated
 							TrimGameObjectName(currObject.gameObject);
@@ -139,18 +147,22 @@ public class AssetManager : MonoBehaviour {
 				}
 			}
 		}
+		if (spawnedPrefab != null) { //if something didn't go right, and spawnedprefab was assigned
+			Destroy(spawnedPrefab); //remove object from scene
+		}
 		return null;
 	}
 
-	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string preset = "default", bool instantiateFurniture = false, string[] textureNames = null) {
-		string structureSize = Structure.GetDimensionSize(dimensions);
-		string prefabKey = "structure_" + structureSize;
+	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string preset = "default",
+		bool instantiateFurniture = false, string[] textureNames = null) {
+		string prefabKey = "structure_" + Structure.GetDimensionSize(dimensions);
+		GameObject spawnedPrefab = null;
 
 		if (prefabs.ContainsKey(prefabKey)) {
 			GameObject curr_prefab_reference = prefabs[prefabKey]; //get the prefab from dictionary
 
 			if (curr_prefab_reference != null) { //if prefab retrieved
-				GameObject spawnedPrefab = Instantiate(curr_prefab_reference);
+				spawnedPrefab = Instantiate(curr_prefab_reference);
 				Structure spawnedStructure = spawnedPrefab.GetComponent<Structure>(); //instantiate copy of prefab
 				if (spawnedStructure != null) { //if prefab has required component
 					TrimGameObjectName(spawnedPrefab);
@@ -170,11 +182,12 @@ public class AssetManager : MonoBehaviour {
 					}
 					spawnedStructure.Load(dimensions, owner, preset, instantiateFurniture, curr_texture_references); //pass required info to structure
 					return spawnedStructure; //return reference to spawned structure
-				} else { //necessary component not on gameobject
-					Destroy(spawnedPrefab); //destroy the recently spawned gameobject
-				} //endif structure component
+				}
 			}//endif prefab reference != null
 		}//endif prefabs.containskey
+		if (spawnedPrefab != null) { //if something didn't go right, and spawnedprefab was assigned
+			Destroy(spawnedPrefab); //remove object from scene
+		}
 		return null; //somehow procedure failed, return null reference
 	}
 

@@ -25,9 +25,9 @@ public class Vector2IntS {
 	}
 
 	public static Vector2IntS Parse(string text) {
-		text.Replace(" ", "");
-		text.Replace("(", "");
-		text.Replace(")", "");
+		text = text.Replace(" ", "");
+		text = text.Replace("(", "");
+		text = text.Replace(")", "");
 		string[] textArray = text.Split(',');
 		Vector2IntS temp = new Vector2IntS();
 		try {

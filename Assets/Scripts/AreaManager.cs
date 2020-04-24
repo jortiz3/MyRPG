@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using internal_Area;
+using Newtonsoft.Json;
 
 /// <summary>
 /// AreaManager: Class that procedurally generates, loads, and manages a grid of Areas.
@@ -80,12 +81,16 @@ public class AreaManager : MonoBehaviour {
 		}
 
 		areas = new Area[12, 12]; //create array
-
-		float totalNumAreas = areas.GetLength(0) * areas.GetLength(1);
 		int areasCompleted = GenerateUniqueAreaData();
+
+		if (areasCompleted < 0) { //if something went wrong
+			yield break; //abort
+		}
+		
+		float totalNumAreas = areas.GetLength(0) * areas.GetLength(1); //get total num of areas based off array just created -- only calculate 1 time
 		int prevAreasCompleted = 0;
 		string typeToSpread; //the type of area that is most likely to spread
-		while (areasCompleted < totalNumAreas) {
+		while ( areasCompleted < totalNumAreas) {
 			for (int x = 0; x < areas.GetLength(0); x++) {
 				for (int y = 0; y < areas.GetLength(1); y++) {
 					if (areas[x, y] != null) { //start with hard-coded areas
@@ -143,13 +148,14 @@ public class AreaManager : MonoBehaviour {
 	private int GenerateUniqueAreaData() {
 		List<string> hardCodedAreaTypes = new List<string>();
 		hardCodedAreaTypes.AddRange(AreaTypeManager.GetAllAreaTypeNames());
-		hardCodedAreaTypes.RemoveRange(0, 7); //remove default area types
-		int numUniqueAreas = hardCodedAreaTypes.Count + 4/*cities*/ + 2/*dungeons*/;
 
 		if (hardCodedAreaTypes.Count > areas.GetLength(0) * areas.GetLength(1)) { //if there are somehow more unique areas than available slots
-			Debug.Log("Out of Range Error: AreaManager.GenerateUniqueAreaData() => loaded types (" + (hardCodedAreaTypes.Count - 4) + ") > map size (" + (areas.GetLength(0) * areas.GetLength(1)) + ")");
-			return 0;
+			Debug.Log("Out of Range Error: AreaManager.GenerateUniqueAreaData() => loaded types (" + (hardCodedAreaTypes.Count) + ") > map size (" + (areas.GetLength(0) * areas.GetLength(1)) + ")");
+			return -1;
 		}
+
+		hardCodedAreaTypes.RemoveRange(0, 7); //remove default area types
+		int numUniqueAreas = 0;
 
 		List<Vector2Int> cityPositions = new List<Vector2Int>(); //instantiate list
 		cityPositions.Add(new Vector2Int(1, 1)); //place city locations
@@ -169,6 +175,7 @@ public class AreaManager : MonoBehaviour {
 			StartCoroutine(currArea.Populate(false)); //populate the area
 			areas[tempPos.x, tempPos.y] = currArea; //add area to array
 			cityPositions.RemoveAt(randomIndex); //remove position from list
+			numUniqueAreas++;
 		}
 
 		for (int typeIndex = hardCodedAreaTypes.Count - 1; typeIndex >= 0; typeIndex--) { //go through remaining area types
@@ -181,6 +188,7 @@ public class AreaManager : MonoBehaviour {
 			areas[tempPos.x, tempPos.y] = currArea; //add next area type to the randomly generated position
 
 			hardCodedAreaTypes.RemoveAt(typeIndex); //remove the area type from the list
+			numUniqueAreas++;
 		}
 
 		return numUniqueAreas;
@@ -323,7 +331,7 @@ public class AreaManager : MonoBehaviour {
 					yield break; //give up on loading
 				} else {
 					StreamReader reader = new StreamReader(File.Open(currFilePath, FileMode.Open));
-					areas[x, y] = JsonUtility.FromJson<Area>(reader.ReadToEnd());
+					areas[x, y] = JsonConvert.DeserializeObject<Area>(reader.ReadToEnd());
 					reader.Close();
 				}
 			}

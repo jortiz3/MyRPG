@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Newtonsoft.Json;
 
 namespace internal_Area {
 
@@ -11,34 +12,32 @@ namespace internal_Area {
 	/// Area: Class that randomly populates, manages, and displays entities that belong in an area.
 	/// Written by Justin Ortiz
 	/// </summary>
-	[Serializable]
+	[Serializable, JsonObject(MemberSerialization.OptIn)]
 	public class Area {
 		public static int Size { get { return boundaryRadius; } }
 
 		private static int boundaryRadius = 100; //square boundary; distance (worldspace) from center to edge
 		private static int cityRadius = 50;
 
-		[SerializeField]
+		[JsonProperty]
 		private string typeName;
-		[SerializeField]
+		[JsonProperty]
 		private string owner;
-		[SerializeField]
+		[JsonProperty]
 		private List<Entity> entities;
-		[SerializeField]
+		[JsonProperty]
 		private List<ContainerSaveData> containers;
-		[SerializeField]
+		[JsonProperty]
 		private Vector2IntS position;
-		[SerializeField]
+		[JsonProperty]
 		private bool discovered;
-		[SerializeField]
+		[JsonProperty]
 		private int lastUpdated;
-
 
 		public Vector2IntS MapPosition { get { return position; } }
 		public bool Discovered { get { return discovered; } }
 		public int LastUpdated { get { return lastUpdated; } }
 		public string TypeName { get { return typeName; } }
-		public List<Entity> Entities { get { return entities; } }
 
 		public Area() {
 			discovered = false;
@@ -73,7 +72,7 @@ namespace internal_Area {
 
 		private void InstantiateEntities() {
 			if (entities != null) {
-				for (int i = 0; i < entities.Count; i++) {
+				for (int i = entities.Count - 1; i >= 0; i--) {
 					if (!entities[i].Instantiate()) { //try instantiate entity
 						entities.RemoveAt(i); //if failed, remove from list
 					}
@@ -184,8 +183,7 @@ namespace internal_Area {
 									assetPrefixes[currAsset] + UnityEngine.Random.Range(0, assetCounts[currAsset]).ToString());
 
 								//generate position for the entity
-								tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
-								tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
+								tempEntity.SetPosition(new Vector3(UnityEngine.Random.Range(-currRadius, currRadius), UnityEngine.Random.Range(-currRadius, currRadius)));
 
 								entities.Add(tempEntity); //add entity to the list
 								yield return new WaitForEndOfFrame(); //add time between iterations
@@ -223,17 +221,19 @@ namespace internal_Area {
 
 						float heightSpacing = CustomMath.GetLargestFactor(currRadius); //get largest factor to determine structure row spacing
 						float numOfRowsForRadius = currRadius / heightSpacing; //get num of rows depending on spacing
+						Vector3 entityPos = Vector3.zero;
 
 						for (i = 0; i < numEntities; i++) {
 							tempEntity = new Entity(owner, "default", Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" }, true);
 
 							//generate position for the entity
-							tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
+							entityPos.x = UnityEngine.Random.Range(-currRadius, currRadius);
 							if (isInhabited) { //if area is a city
-								tempEntity.positionY = (int)UnityEngine.Random.Range(-numOfRowsForRadius, numOfRowsForRadius) * heightSpacing; //get random row, then convert to world pos using cell height
+								entityPos.y = (int)UnityEngine.Random.Range(-numOfRowsForRadius, numOfRowsForRadius) * heightSpacing; //get random row, then convert to world pos using cell height
 							} else { //just random position
-								tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
+								entityPos.y = UnityEngine.Random.Range(-currRadius, currRadius);
 							}
+							tempEntity.SetPosition(entityPos);
 
 							entities.Add(tempEntity); //add entity to the list
 							yield return new WaitForEndOfFrame(); //add time between iterations
@@ -249,14 +249,15 @@ namespace internal_Area {
 				}
 				yield return new WaitForEndOfFrame(); //add time between iterations
 			}
+			Debug.Log(position.ToString() + " count:" + entities.Count);
 
-			Save(entities);
+			Save();
 		}
 
 		private void Save() {
 			string pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json";
 			StreamWriter writer = new StreamWriter(File.Create(pathToSaveTo));//initialize writer with creating/opening filepath
-			string json = JsonUtility.ToJson(this, true);
+			string json = JsonConvert.SerializeObject(this, Formatting.Indented);
 			writer.Write(json); //convert this object to json and write it
 			writer.Close(); //close the file
 		}
@@ -284,17 +285,11 @@ namespace internal_Area {
 		}
 
 		private void UpdateContainers(List<ContainerSaveData> Containers) {
-			containers.Clear();
-			if (Containers.Count > 0) {
-				containers.AddRange(Containers);
-			}
+			containers = Containers; //set the new reference
 		}
 
 		private void UpdateEntities(List<Entity> Entities) {
-			entities.Clear();
-			if (Entities.Count > 0) {
-				entities.AddRange(Entities);
-			}
+			entities = Entities; //set the new reference
 		}
 	}
 }
