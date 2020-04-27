@@ -1,7 +1,8 @@
 ﻿using System;
 using internal_Items;
+using Newtonsoft.Json;
 
-[Serializable]
+[Serializable, JsonObject(MemberSerialization.OptOut)]
 public class ItemSaveData {
 	public int id;
 	public string baseName;

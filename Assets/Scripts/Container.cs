@@ -13,16 +13,18 @@ public class Container : Interactable {
 	private static Toggle containerTab;
 	private static Transform containerParent;
 	private static Transform containerElementPrefab;
+	private static int nextInstanceID;
 
-	[SerializeField] //remove later
 	protected List<Item> items;
 	protected Transform currParent;
 	private float totalWeight;
 	protected float maxWeight;
+	private int instanceID;
 
 	public List<Item> Items { get { return items; } }
 	public float TotalWeight { get { return totalWeight; } }
 	public float MaxWeight { get { return maxWeight; } }
+	public int InstanceID { get { return instanceID; } }
 
 	public bool Add(Item item) {
 		if (totalWeight + item.GetWeight() <= maxWeight) {
@@ -32,6 +34,7 @@ public class Container : Interactable {
 				items.Add(item);
 				CreateContainerElement(item); //ensure there's a ui element for the item
 			}
+			item.ContainerID = instanceID;
 			return true;
 		}
 		return false;
@@ -65,6 +68,22 @@ public class Container : Interactable {
 		MenuScript.instance.ChangeState("Inventory");
 	}
 
+	public static Container GetContainer(int instanceID) {
+		if (instanceID >= 0) {
+			Transform furnitureParent = AreaManager.GetEntityParent("furniture");
+			string[] currNameInfo;
+			foreach (Transform child in furnitureParent) {
+				if (child.name.Contains("container")) {
+					currNameInfo = child.name.Split('_');
+					if (currNameInfo[currNameInfo.Length - 1].Equals(instanceID.ToString())) {
+						return child.GetComponent<Container>();
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	protected Item GetItem(string fullItemName) {
 		for (int i = 0; i < items.Count; i++) {
 			if (items[i].ToString().Equals(fullItemName)) {
@@ -72,6 +91,12 @@ public class Container : Interactable {
 			}
 		}
 		return null;
+	}
+
+	protected int GetNextInstanceID() {
+		int id = nextInstanceID;
+		nextInstanceID++;
+		return id;
 	}
 
 	protected override void Initialize() {
@@ -84,13 +109,19 @@ public class Container : Interactable {
 			containerTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
 		}
 		currParent = containerParent;
-		gameObject.tag = "container";
 
 		if (items == null) {
 			items = new List<Item>();
 			totalWeight = 0;
 		}
 		maxWeight = 1000.0f;
+
+		if (instanceID <= nextInstanceID) {
+			instanceID = GetNextInstanceID();
+		}
+
+		gameObject.name += "_container_" + instanceID.ToString();
+
 		base.Initialize();
 	}
 
@@ -103,6 +134,14 @@ public class Container : Interactable {
 
 	public void Load(ContainerSaveData data) {
 		items = data.GetItems();
+	}
+
+	public void Load(int InstanceID) {
+		
+	}
+
+	public void Populate() {
+
 	}
 
 	protected void RefreshDisplay() {
@@ -184,6 +223,10 @@ public class Container : Interactable {
 
 	private void RemoveUIElement(Item item) {
 		Destroy(currParent.Find(item.ToString()).gameObject);
+	}
+
+	public static void ResetInstanceIDs() {
+		nextInstanceID = 0;
 	}
 
 	/// <summary>

@@ -26,8 +26,6 @@ namespace internal_Area {
 		[JsonProperty]
 		private List<Entity> entities;
 		[JsonProperty]
-		private List<ContainerSaveData> containers;
-		[JsonProperty]
 		private Vector2IntS position;
 		[JsonProperty]
 		private bool discovered;
@@ -45,7 +43,6 @@ namespace internal_Area {
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			owner = "none";
 			entities = new List<Entity>();
-			containers = new List<ContainerSaveData>();
 		}
 
 		public Area(Vector2Int Position) {
@@ -54,7 +51,6 @@ namespace internal_Area {
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			owner = "none";
 			entities = new List<Entity>();
-			containers = new List<ContainerSaveData>();
 		}
 
 		public Area(Vector2Int Position, string AreaTypeName, string Owner = "none") {
@@ -63,7 +59,6 @@ namespace internal_Area {
 			typeName = AreaTypeName;
 			owner = Owner;
 			entities = new List<Entity>();
-			containers = new List<ContainerSaveData>();
 		}
 
 		public void AssignType(string TypeName) {
@@ -110,6 +105,8 @@ namespace internal_Area {
 			while (!StructureGridManager.instance.GridInitialized || StructureGridManager.instance.RegisteringStructure) { //in case structures need more time
 				yield return new WaitForEndOfFrame();
 			}
+
+			discovered = true;
 
 			LoadingScreen.instance.SetProgress(1f);
 			yield return new WaitForSeconds(0.5f);
@@ -258,30 +255,13 @@ namespace internal_Area {
 			writer.Close(); //close the file
 		}
 
-		private void Save(List<Entity> Entities) {
-			UpdateEntities(Entities);
-			Save();
-		}
-
-		public void Save(List<Container> Containers, List<Entity> Entities) {
-			UpdateContainers(Containers);
+		public void Save(List<Entity> Entities) {
 			UpdateEntities(Entities);
 			Save();
 		}
 
 		public void SetPosition(Vector2Int newPosition) {
 			position = new Vector2IntS(newPosition);
-		}
-
-		private void UpdateContainers(List<Container> Containers) {
-			containers.Clear();
-			foreach (Container c in Containers) {
-				containers.Add(new ContainerSaveData(c));
-			}
-		}
-
-		private void UpdateContainers(List<ContainerSaveData> Containers) {
-			containers = Containers; //set the new reference
 		}
 
 		private void UpdateEntities(List<Entity> Entities) {

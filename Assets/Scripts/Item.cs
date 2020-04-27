@@ -8,9 +8,8 @@ using internal_Items;
 public class Item : Interactable {
 	private static GameObject itemPrefab;
 
-	[SerializeField]
 	private int id;
-	[SerializeField]
+	private int containerID;
 	private string baseName;
 	private ItemModifier prefix;
 	private ItemModifier suffix;
@@ -30,6 +29,7 @@ public class Item : Interactable {
 	private string[] tags; //used for sorting the item in the inventory screen
 
 	public int ID { get { return id; } }
+	public int ContainerID { get { return containerID; } set { containerID = value; } }
 	public string BaseName { get { return baseName; } }
 	public string Prefix { get { return prefix != null ? prefix.Name : ""; } }
 	public string Suffix { get { return suffix != null ? suffix.Name : ""; } }
@@ -255,12 +255,17 @@ public class Item : Interactable {
 		gameObject.name = ToString();
 	}
 
-	public void Load(int ID = -1, string ItemBaseName = "", int Quantity = 1, Texture2D Texture = null) {
+	public void Load(int ID = -1, int ContainerID = -1, string ItemBaseName = "", int Quantity = 1, Texture2D Texture = null) {
 		id = ID;
 		baseName = ItemBaseName;
 		quantity = Quantity;
 		Load(null);
 		SetSprite(Texture);
+
+		Container c = Container.GetContainer(ContainerID);
+		if (c != null) {
+			c.Add(this);
+		}
 	}
 
 	/// <summary>

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using internal_Items;
 
+/// <summary>
+/// Saves the items stored in a container. To be used for serializing player inventory.
+/// </summary>
 [Serializable]
 public class ContainerSaveData {
 	[SerializeField]

@@ -298,7 +298,7 @@ public class AreaManager : MonoBehaviour {
 
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
-						areas[currentAreaPos.x, currentAreaPos.y].Save(currContainers, currEntities);
+						areas[currentAreaPos.x, currentAreaPos.y].Save(currEntities);
 						LoadingScreen.instance.IncreaseProgress(loadIncrement);
 
 						for (int i = currContainers.Count - 1; i >=0; i--) { //go through all containers once saved
@@ -306,8 +306,8 @@ public class AreaManager : MonoBehaviour {
 						}
 					}
 
-					UpdateAreaExits(position);
-
+					UpdateAreaExits(position); //hide/display exits when appropriate
+					Container.ResetInstanceIDs(); //reset the ids for the next area
 					StructureGridManager.instance.ResetGridStatus(); //reset grid so any loaded structures can properly snap to it
 					StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh)); //initiate async load area
 					currentAreaPos = position;

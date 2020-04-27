@@ -95,7 +95,7 @@ public class AssetManager : MonoBehaviour {
 		return null; //return null furniture script
 	}
 
-	public Item InstantiateItem(Vector3 position, int itemID = 0, string itemBaseName = "", int quantity = 1, string textureName = "log") {
+	public Item InstantiateItem(Vector3 position, int itemID = 0, int containerID = -1, string itemBaseName = "", int quantity = 1, string textureName = "log") {
 		string prefabKey = "item";
 		GameObject spawnedPrefab = null;
 
@@ -111,7 +111,7 @@ public class AssetManager : MonoBehaviour {
 					if (currItem != null) { //if instantiated properly
 						TrimGameObjectName(currItem.gameObject);
 						currItem.transform.position = position;
-						currItem.Load(itemID, itemBaseName, quantity, curr_texture_reference); //pass item info and texture
+						currItem.Load(ID: itemID, ContainerID: containerID, ItemBaseName: itemBaseName, Quantity: quantity, Texture: curr_texture_reference); //pass item info and texture
 						return currItem;
 					}
 				}

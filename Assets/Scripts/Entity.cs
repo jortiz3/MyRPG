@@ -16,7 +16,7 @@ namespace internal_Area {
 		private int quantity; //harvestCount
 		private string uniqueString_0; //prefix, structure dimensions
 		private string uniqueString_1; //suffix, structure owner
-		private string uniqueString_2; //structure preset
+		private string uniqueString_2; //container info, structure preset
 		private bool uniqueBool_0; //allow structure collision, instantiate furniture on first instantiate
 		private float positionX;
 		private float positionY;
@@ -39,13 +39,13 @@ namespace internal_Area {
 		/// <summary>
 		/// Creates entity data for items.
 		/// </summary>
-		public Entity(int ItemID, string Prefix, string Suffix, int Quantity, Vector3 Position, string Texture) {
+		public Entity(int ItemID, string Prefix, string Suffix, int Quantity, Vector3 Position, string Texture, string containerInfo = "") {
 			type = "item";
 			textures = new string[] { Texture };
 			itemID = ItemID;
 			uniqueString_0 = Prefix;
 			uniqueString_1 = Suffix;
-			uniqueString_2 = "";
+			uniqueString_2 = containerInfo;
 			quantity = Quantity;
 			uniqueBool_0 = false;
 			positionX = Position.x;
@@ -125,7 +125,12 @@ namespace internal_Area {
 			Vector3 position = new Vector3(positionX, positionY);
 			switch (type) {
 				case "item":
-					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: itemID, quantity: quantity, textureName: textures[0]);
+					int containerID = -1; //no container
+					try {
+						containerID = int.Parse(uniqueString_2);
+					} catch {}
+
+					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: itemID, containerID: containerID, quantity: quantity, textureName: textures[0]);
 					if (i != null) {
 						return true;
 					}
@@ -173,7 +178,7 @@ namespace internal_Area {
 				case "item":
 					Item i = transform.GetComponent<Item>(); //get item component
 					if (i != null) { //if component was there
-						temp = new Entity(i.ID, i.Prefix, i.Suffix, i.Quantity, transform.position, i.GetTextureName()); //create entity object
+						temp = new Entity(i.ID, i.Prefix, i.Suffix, i.Quantity, transform.position, i.GetTextureName(), i.ContainerID.ToString()); //create entity object
 					}
 					break;
 				case "structure":
