@@ -209,33 +209,37 @@ public class AreaManager : MonoBehaviour {
 		}
 	}
 
-	public void LoadArea(Directions direction, bool teleportPlayer = false) {
-		Vector3 teleportPos = Player.instance.transform.position;
-		switch (direction) {
+	public bool LoadArea(Directions direction, bool teleportPlayer = false) {
+		Vector3 teleportPos = Player.instance.transform.position; //get current player position
+		bool loaded = false; //store whether next area was loaded
+		switch (direction) { //based on direction
 			case Directions.up:
-				LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y - 1), true);
-				teleportPos.y *= -1;
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y - 1), true); //load the area north of current
+				teleportPos.y = -Mathf.Abs(teleportPos.y); //always set position to bottom of screen
 				break;
 			case Directions.down:
-				LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y + 1), true);
-				teleportPos.y *= -1;
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y + 1), true); //load area south of current
+				teleportPos.y = Mathf.Abs(teleportPos.y); //always set position to top
 				break;
 			case Directions.left:
-				LoadArea(new Vector2Int(currentAreaPos.x - 1, currentAreaPos.y), true);
-				teleportPos.x *= -1;
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x - 1, currentAreaPos.y), true); //load area west of current
+				teleportPos.x = Mathf.Abs(teleportPos.x); //always set position to right
 				break;
 			default: //right as default
-				LoadArea(new Vector2Int(currentAreaPos.x + 1, currentAreaPos.y), true);
-				teleportPos.x *= -1;
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x + 1, currentAreaPos.y), true); //load area east of current
+				teleportPos.x = -Mathf.Abs(teleportPos.x); //always set position to left
 				break;
 		}
 
 		if (teleportPlayer) {
-			Player.instance.TeleportToPos(teleportPos);
+			if (loaded) {
+				Player.instance.TeleportToPos(teleportPos);
+			}
 		}
+		return loaded;
 	}
 
-	private void LoadArea(Vector2Int position, bool saveEntities = false, bool resetLoadingScreen = true) {
+	private bool LoadArea(Vector2Int position, bool saveEntities = false, bool resetLoadingScreen = true) {
 		if (position.x < areas.GetLength(0) && 0 <= position.x) { //if the x is within map bounds
 			if (position.y < areas.GetLength(1) && 0 <= position.y) { //if y is within map bounds
 				if (areas[position.x, position.y] != null) { //if the desired area isn't empty
@@ -307,9 +311,11 @@ public class AreaManager : MonoBehaviour {
 					StructureGridManager.instance.ResetGridStatus(); //reset grid so any loaded structures can properly snap to it
 					StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh)); //initiate async load area
 					currentAreaPos = position;
+					return true;
 				} //endif area empty check
 			} //endif y bounds check
 		} //endif x bounds check
+		return false;
 	}
 
 	public IEnumerator LoadAreasFromSave(string playerName, string worldName, Vector2Int loadedPos) {
