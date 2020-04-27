@@ -214,19 +214,19 @@ public class AreaManager : MonoBehaviour {
 		bool loaded = false; //store whether next area was loaded
 		switch (direction) { //based on direction
 			case Directions.up:
-				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y - 1), true); //load the area north of current
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y - 1), saveEntities: true); //load the area north of current
 				teleportPos.y = -Mathf.Abs(teleportPos.y); //always set position to bottom of screen
 				break;
 			case Directions.down:
-				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y + 1), true); //load area south of current
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y + 1), saveEntities: true); //load area south of current
 				teleportPos.y = Mathf.Abs(teleportPos.y); //always set position to top
 				break;
 			case Directions.left:
-				loaded = LoadArea(new Vector2Int(currentAreaPos.x - 1, currentAreaPos.y), true); //load area west of current
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x - 1, currentAreaPos.y), saveEntities: true); //load area west of current
 				teleportPos.x = Mathf.Abs(teleportPos.x); //always set position to right
 				break;
 			default: //right as default
-				loaded = LoadArea(new Vector2Int(currentAreaPos.x + 1, currentAreaPos.y), true); //load area east of current
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x + 1, currentAreaPos.y), saveEntities: true); //load area east of current
 				teleportPos.x = -Mathf.Abs(teleportPos.x); //always set position to left
 				break;
 		}
