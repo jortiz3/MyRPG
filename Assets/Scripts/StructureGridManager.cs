@@ -27,8 +27,10 @@ public class StructureGridManager : MonoBehaviour {
 
 	private CanvasGroup canvasGroup;
 
+	public bool GridInitialized { get { return gridInitialized; } }
 	public bool EditEnabled { get { return editEnabled; } }
 	public bool EditFinalizing { get { return editFinalizing; } }
+	public bool RegisteringStructure { get { return registeringStructure; } }
 
 	private void Awake() {
 		if (instance != null) { //if another instance exists
@@ -189,6 +191,7 @@ public class StructureGridManager : MonoBehaviour {
 		editFinalizing = true;
 		SetGridActive(false);
 		s.ResetColor();
+		s.Registered = true;
 
 		for (int x = cellIndex.x; x <= cellIndex.x + s.Dimensions.x; x++) { //start current x, go to dimension size
 			for (int y = cellIndex.y; y <= cellIndex.y + s.Dimensions.y; y++) { //start current y, go to dimension size

@@ -22,10 +22,9 @@ public class CameraManager : MonoBehaviour
 	}
 
 	private IEnumerator Refocus() {
-		Transform currFollow = current.m_Follow;
-		current.m_Follow = null;
+		current.enabled = false;
 		yield return new WaitForEndOfFrame();
-		current.m_Follow = currFollow;
+		current.enabled = true;
 	}
 
 	/// <summary>

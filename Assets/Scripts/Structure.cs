@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -13,16 +14,22 @@ public class Structure : MonoBehaviour {
 	private string owner; //convert to character? load character in load() using string?
 	private string preset;
 	private List<Furniture> furniture;
+	private bool registeredToManager;
 
 	public Vector2Int Dimensions { get { return dimensions; } }
 	public string Owner { get { return owner; } }
 	public string Preset { get { return preset; } }
+	public bool Registered { get { return registeredToManager; } set { registeredToManager = value; } }
 
 	private void Awake() {
 		Initialize();
 	}
 
-	public void GenerateFurniture() {
+	public IEnumerator GenerateFurniture() {
+		while (!registeredToManager) {
+			yield return new WaitForEndOfFrame();
+		}
+
 		string[] furniturePrefixes = null;
 		switch (GetDimensionSize(dimensions)) { //different amounts of furniture based on size
 			case "small":
@@ -43,7 +50,7 @@ public class Structure : MonoBehaviour {
 
 		List<Vector3> furniturePositions = new List<Vector3>();
 		for (int i = 0; i < furniturePrefixes.Length; i++) {
-			furniturePositions.Add(transform.position + new Vector3((i + dimensions.x) / 5, ((i + dimensions.y) * 2.5f) % 5));
+			furniturePositions.Add(transform.position + new Vector3(i / ((dimensions.y + 1) * 2), (i * 2.5f) % 5));
 		}
 
 		if (furniturePrefixes.Length == furniturePositions.Count) {
@@ -99,7 +106,7 @@ public class Structure : MonoBehaviour {
 		preset = Preset;
 
 		if (instantiateFurniture) {
-			GenerateFurniture();
+			StartCoroutine(GenerateFurniture());
 		}
 
 		SetSprites(textures);

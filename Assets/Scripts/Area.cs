@@ -84,7 +84,7 @@ namespace internal_Area {
 			LoadingScreen.instance.SetText("Loading area..");
 			LoadingScreen.instance.Show();
 
-			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 3f; //get remaining progress, divide by how many load sections
+			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 2f; //get remaining progress, divide by how many load sections
 
 			string bgFileName = "Backgrounds/";
 			if (typeName.Contains("City")) {
@@ -101,22 +101,18 @@ namespace internal_Area {
 			} else {
 				Debug.Log("Asset Load Error: Area.LoadToScene(...) => background filename: " + bgFileName);
 			}
-			//enable/disable area exits -- up, left, right, down
-			yield return new WaitForSeconds(0.3f);
+			yield return new WaitForSeconds(0.2f);
 
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
-			LoadingScreen.instance.SetText("Loading entities..");
 			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
 			InstantiateEntities(); //begin instantiating entities
-			yield return new WaitForSeconds(0.3f);
+			yield return new WaitForSeconds(2f);
+			while (!StructureGridManager.instance.GridInitialized || StructureGridManager.instance.RegisteringStructure) { //in case structures need more time
+				yield return new WaitForEndOfFrame();
+			}
 
-			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
-			LoadingScreen.instance.SetText("Positioning player..");
-			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
-												  //set player position
-			yield return new WaitForSeconds(0.3f);
-
-			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
+			LoadingScreen.instance.SetProgress(1f);
+			yield return new WaitForSeconds(0.5f);
 			LoadingScreen.instance.Hide();
 		}
 

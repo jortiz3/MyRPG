@@ -132,11 +132,8 @@ namespace internal_Area {
 					break;
 				case "structure":
 					Structure s = AssetManager.instance.InstantiateStructure(position: position, dimensions: Vector2IntS.Parse(uniqueString_0).ToVector2Int(),
-						owner: uniqueString_1, preset: uniqueString_2, textureNames: textures);
+						owner: uniqueString_1, preset: uniqueString_2, instantiateFurniture: uniqueBool_0, textureNames: textures);
 					if (s != null) { //if instantiated
-						if (uniqueBool_0) { //if furniture needs to be instantiated
-							s.GenerateFurniture(); //generate furniture
-						}
 						return true;
 					}
 					break;

@@ -70,12 +70,7 @@ public class Furniture : Interactable {
 		defaultColor = sprite.color;
 		desiredScale = transform.localScale;
 
-		if (parent != null) {
-			parent.RegisterFurniture(this);
-		} else {
-			ResetTransformParent();
-		}
-
+		ResetTransformParent();
 		DisableInteraction(); //disable interaction as of now -- some furniture may open crafting menus later on
 		base.Initialize();
 	}

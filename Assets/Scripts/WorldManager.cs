@@ -23,7 +23,7 @@ public class WorldManager : MonoBehaviour {
 
 	public void LoadAdjacentArea(Directions direction) {
 		HUD.instance.HideInteractionText(); //ensure hud is cleared as next area is loaded
-		AreaManager.instance.LoadArea(direction);
+		AreaManager.instance.LoadArea(direction, true);
 		GameManager.instance.SaveGame();
 	}
 

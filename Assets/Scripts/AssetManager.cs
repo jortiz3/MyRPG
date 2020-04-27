@@ -76,7 +76,7 @@ public class AssetManager : MonoBehaviour {
 					Furniture spawnedFurniture = spawnedPrefab.GetComponent<Furniture>(); //get furniture component
 					if (spawnedFurniture != null) { //if component retrieved
 						TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
-						Texture2D curr_texture_reference = scenery[textureName]; //get texture2d from dictionary
+						Texture2D curr_texture_reference = furniture[textureName]; //get texture2d from dictionary
 						if (curr_texture_reference != null) { //if texture retrieved
 							spawnedFurniture.Load(curr_texture_reference, parentStructure);
 						}
