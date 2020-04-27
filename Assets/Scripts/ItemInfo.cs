@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace Items {
+namespace internal_Items {
 	/// <summary>
 	/// Written by Justin Ortiz
 	/// </summary>
 	[Serializable]
 	public class ItemInfo {
 		public int id;
-		public string name;
+		public string baseName;
 		public string prefix;
 		public string suffix;
 		public int stat_magic;
@@ -25,7 +25,7 @@ namespace Items {
 
 		public ItemInfo() {
 			id = -1;
-			name = "Null";
+			baseName = "Null";
 			prefix = "";
 			suffix = "";
 			stat_magic = 0;
@@ -44,7 +44,7 @@ namespace Items {
 
 		public ItemInfo(ItemInfo copy) {
 			id = copy.id;
-			name = copy.name;
+			baseName = copy.baseName;
 			prefix = copy.prefix;
 			suffix = copy.suffix;
 			stat_magic = copy.stat_magic;
@@ -63,7 +63,7 @@ namespace Items {
 
 		public ItemInfo(Item item) {
 			id = item.ID;
-			name = item.BaseName;
+			baseName = item.BaseName;
 			prefix = item.Prefix;
 			suffix = item.Suffix;
 			stat_magic = item.BaseMagicStat;
@@ -84,7 +84,7 @@ namespace Items {
 			int Quality_Value, float Weight, bool Equipable, bool Slottable, bool Consumable, bool isCraftingMaterial, bool isWeapon,
 			bool isArmor, string[] Tags) {
 			id = ID;
-			name = Name;
+			baseName = Name;
 			prefix = Prefix;
 			suffix = Suffix;
 			stat_magic = Stat_Magic;
@@ -110,7 +110,7 @@ namespace Items {
 		}
 
 		public override string ToString() {
-			return prefix + " " + name + " " + suffix;
+			return prefix + " " + baseName + " " + suffix;
 		}
 	}
 }

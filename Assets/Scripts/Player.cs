@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class Player : Character {
 	public static Player instance;
@@ -11,5 +12,9 @@ public class Player : Character {
 		}
 
 		base.Initialize();
+	}
+
+	public override void TeleportToPos(Vector3 position) {
+		StartCoroutine(Teleport(position, true));
 	}
 }

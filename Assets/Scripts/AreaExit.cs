@@ -37,7 +37,7 @@ public class AreaExit : Interactable {
 	}
 
 	protected override void InteractInternal() {
-		AreaManager.instance.LoadArea(direction);
+		AreaManager.instance.LoadArea(direction, teleportPlayer: true);
 		base.InteractInternal();
 	}
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine;
-using Items;
+using internal_Items;
 
 /// <summary>
 /// Written by Justin Ortiz.
@@ -28,8 +28,6 @@ public class Item : Interactable {
 	private bool weapon;
 	private bool armor;
 	private string[] tags; //used for sorting the item in the inventory screen
-
-	private SpriteRenderer sprite;
 
 	public int ID { get { return id; } }
 	public string BaseName { get { return baseName; } }
@@ -211,7 +209,7 @@ public class Item : Interactable {
 
 		if (providedInfo != null) { //if given info
 			id = providedInfo.id; //use id
-			baseName = providedInfo.name; //use base name
+			baseName = providedInfo.baseName; //use base name
 		}
 
 		retrievedInfo = ItemDatabase.GetItemInfo(id); //check database for info using id
@@ -226,7 +224,7 @@ public class Item : Interactable {
 		}
 
 		id = retrievedInfo.id; //ensure id matches database
-		baseName = retrievedInfo.name; //ensure base name matches database
+		baseName = retrievedInfo.baseName; //ensure base name matches database
 		stat_magic = retrievedInfo.stat_magic;
 		stat_physical = retrievedInfo.stat_physical;
 		currency_value = retrievedInfo.currency_value;
@@ -246,18 +244,21 @@ public class Item : Interactable {
 			prefix = ItemModifierDatabase.GetPrefix(providedInfo.prefix);
 			suffix = ItemModifierDatabase.GetSuffix(providedInfo.suffix);
 		} else {
-			quantity = 1;
+			quantity = quantity <= 0 ? 1 : quantity;
 			equipped = false;
-			prefix = ItemModifierDatabase.GetPrefix(retrievedInfo.prefix);
-			suffix = ItemModifierDatabase.GetSuffix(retrievedInfo.suffix);
+			if (prefix == null)
+				prefix = ItemModifierDatabase.GetPrefix(retrievedInfo.prefix);
+			if (suffix == null)
+				suffix = ItemModifierDatabase.GetSuffix(retrievedInfo.suffix);
 		}
 
 		gameObject.name = ToString();
 	}
 
-	public void Load(int ID = -1, string ItemBaseName = "", Texture2D Texture = null) {
+	public void Load(int ID = -1, string ItemBaseName = "", int Quantity = 1, Texture2D Texture = null) {
 		id = ID;
 		baseName = ItemBaseName;
+		quantity = Quantity;
 		Load(null);
 		SetSprite(Texture);
 	}
@@ -267,12 +268,6 @@ public class Item : Interactable {
 	/// </summary>
 	public void SetPrefix(string prefixName) {
 		prefix = ItemModifierDatabase.GetPrefix(prefixName);
-	}
-
-	private void SetSprite(Texture2D texture) {
-		if (texture != null) {
-			sprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-		}
 	}
 
 	public void SetSpriteActive(bool active) {

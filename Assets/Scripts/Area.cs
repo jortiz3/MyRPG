@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Newtonsoft.Json;
 
 namespace internal_Area {
 
@@ -11,37 +12,38 @@ namespace internal_Area {
 	/// Area: Class that randomly populates, manages, and displays entities that belong in an area.
 	/// Written by Justin Ortiz
 	/// </summary>
-	[Serializable]
+	[Serializable, JsonObject(MemberSerialization.OptIn)]
 	public class Area {
 		public static int Size { get { return boundaryRadius; } }
 
 		private static int boundaryRadius = 100; //square boundary; distance (worldspace) from center to edge
 		private static int cityRadius = 50;
 
-		[SerializeField]
+		[JsonProperty]
 		private string typeName;
-		[SerializeField]
+		[JsonProperty]
+		private string owner;
+		[JsonProperty]
 		private List<Entity> entities;
-		[SerializeField]
+		[JsonProperty]
 		private List<ContainerSaveData> containers;
-		[SerializeField]
+		[JsonProperty]
 		private Vector2IntS position;
-		[SerializeField]
+		[JsonProperty]
 		private bool discovered;
-		[SerializeField]
+		[JsonProperty]
 		private int lastUpdated;
-
 
 		public Vector2IntS MapPosition { get { return position; } }
 		public bool Discovered { get { return discovered; } }
 		public int LastUpdated { get { return lastUpdated; } }
 		public string TypeName { get { return typeName; } }
-		public List<Entity> Entities { get { return entities; } }
 
 		public Area() {
 			discovered = false;
 			position = Vector2IntS.zero;
 			typeName = AreaTypeManager.GetAreaType(0).name;
+			owner = "none";
 			entities = new List<Entity>();
 			containers = new List<ContainerSaveData>();
 		}
@@ -50,14 +52,16 @@ namespace internal_Area {
 			discovered = false;
 			position = new Vector2IntS(Position);
 			typeName = AreaTypeManager.GetAreaType(0).name;
+			owner = "none";
 			entities = new List<Entity>();
 			containers = new List<ContainerSaveData>();
 		}
 
-		public Area(Vector2Int Position, string areaTypeName) {
+		public Area(Vector2Int Position, string AreaTypeName, string Owner = "none") {
 			discovered = false;
 			position = new Vector2IntS(Position);
-			typeName = areaTypeName;
+			typeName = AreaTypeName;
+			owner = Owner;
 			entities = new List<Entity>();
 			containers = new List<ContainerSaveData>();
 		}
@@ -68,7 +72,7 @@ namespace internal_Area {
 
 		private void InstantiateEntities() {
 			if (entities != null) {
-				for (int i = 0; i < entities.Count; i++) {
+				for (int i = entities.Count - 1; i >= 0; i--) {
 					if (!entities[i].Instantiate()) { //try instantiate entity
 						entities.RemoveAt(i); //if failed, remove from list
 					}
@@ -80,7 +84,7 @@ namespace internal_Area {
 			LoadingScreen.instance.SetText("Loading area..");
 			LoadingScreen.instance.Show();
 
-			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 3f; //get remaining progress, divide by how many load sections
+			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 2f; //get remaining progress, divide by how many load sections
 
 			string bgFileName = "Backgrounds/";
 			if (typeName.Contains("City")) {
@@ -97,22 +101,18 @@ namespace internal_Area {
 			} else {
 				Debug.Log("Asset Load Error: Area.LoadToScene(...) => background filename: " + bgFileName);
 			}
-			//enable/disable area exits -- up, left, right, down
-			yield return new WaitForSeconds(0.3f);
+			yield return new WaitForSeconds(0.2f);
 
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
-			LoadingScreen.instance.SetText("Loading entities..");
 			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
 			InstantiateEntities(); //begin instantiating entities
-			yield return new WaitForSeconds(0.3f);
+			yield return new WaitForSeconds(2f);
+			while (!StructureGridManager.instance.GridInitialized || StructureGridManager.instance.RegisteringStructure) { //in case structures need more time
+				yield return new WaitForEndOfFrame();
+			}
 
-			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
-			LoadingScreen.instance.SetText("Positioning player..");
-			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
-												  //set player position
-			yield return new WaitForSeconds(0.3f);
-
-			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
+			LoadingScreen.instance.SetProgress(1f);
+			yield return new WaitForSeconds(0.5f);
 			LoadingScreen.instance.Hide();
 		}
 
@@ -127,107 +127,133 @@ namespace internal_Area {
 
 			AreaType type = AreaTypeManager.GetAreaType(typeName);
 
-			if (type.name.Contains("City") || type.name.Contains("Camp")) {
+			if (type.name.Contains("city") || type.name.Contains("camp")) {
 				isInhabited = true;
-			} else if (type.name.Contains("Dungeon")) {
+			} else if (type.name.Contains("dungeon")) {
 				isDungeon = true;
 			}
-
-			string entityAreaPrefix = type.name + "_";
-			string currEntityFilename;
-
+			
 			if (entities == null) { //shouldn't be null, but just in case
 				entities = new List<Entity>();
 			} else {
 				entities.Clear();
 			}
 
-			Entity tempEntity; //current entity to add
+			List<string> assetPrefixes = new List<string>();
+			List<int> assetCounts = new List<int>();
+			Entity tempEntity = null; //current entity to add
 			int i; //index for all 3 iterations
+			int currAsset;
+			int currAssetCount;
 			int numEntities = 0; //num of entites for this area
-			int currAssetCount = 0; // num of assets available for areatype
-			int minAssetSpawnCount = 20;
 			int assetTypeLimit = charactersOnly ? 1 : 3; //limits the loop to only do characters if true
 			int currRadius;
-			float heightSpacing = 0;
-			float numOfRowsForRadius = 0;
+
 
 			for (int assetType = 0; assetType < assetTypeLimit; assetType++) { //loop through each asset type and do (mostly) the same thing
 				switch (assetType) { //establish the only differences
-					case 1:
-						currAssetCount = type.sceneryAssetCount; //set the count
-						currEntityFilename = "Scenery/" + entityAreaPrefix; //set folder path
-						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.sceneryMaxSpawnCount); //set random quantity for scenery objs in this area
-						currRadius = boundaryRadius;
+					case 1: //scenery
+						assetPrefixes.Clear();
+						assetCounts.Clear();
+
+						assetPrefixes.Add(type.name + "_bush_");
+						assetPrefixes.Add(type.name + "_tree_");
+						assetPrefixes.Add(type.name + "_rock_");
+
+						for (i = assetPrefixes.Count - 1; i >= 0; i--) {
+							currAssetCount = AssetManager.instance.GetAssetCount("scenery", assetPrefixes[i]); //get the count for current prefix
+							if (currAssetCount > 0) { //if there are assets
+								assetCounts.Insert(0, currAssetCount); //add the count
+							} else { //if no assets with prefix
+								assetPrefixes.RemoveAt(i); //remove prefix
+							}
+						}
+
+						if (assetPrefixes.Count > 0 && assetCounts.Count == assetPrefixes.Count) { //if there were assets
+							numEntities = UnityEngine.Random.Range(type.scenerySpawnRange.x, type.scenerySpawnRange.y); //set random quantity for scenery objs in this area
+							currRadius = boundaryRadius;
+
+							for (i = 0; i < numEntities; i++) {
+								currAsset = UnityEngine.Random.Range(0, assetPrefixes.Count);
+								tempEntity = new Entity(0, 1, false, Vector3.zero,
+									assetPrefixes[currAsset] + UnityEngine.Random.Range(0, assetCounts[currAsset]).ToString());
+
+								//generate position for the entity
+								tempEntity.SetPosition(new Vector3(UnityEngine.Random.Range(-currRadius, currRadius), UnityEngine.Random.Range(-currRadius, currRadius)));
+
+								entities.Add(tempEntity); //add entity to the list
+								yield return new WaitForEndOfFrame(); //add time between iterations
+							}
+						}
 						break;
 					case 2:
-						currAssetCount = type.structureAssetCount; //set the count
-						currEntityFilename = "Structures/" + entityAreaPrefix; //set folder path
-						minAssetSpawnCount = isInhabited ? 20 : 1;
-						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.structureMaxSpawnCount); //set random quantity for scenery objs in this area
+						assetPrefixes.Clear();
+						assetCounts.Clear();
 
-						string tempAssetPrefix = currEntityFilename.Split('_')[0]; //i.e. "Structures/City" || "Structures/Camp" || "Structures/Dungeon"
+						numEntities = UnityEngine.Random.Range(type.structureSpawnRange.x, type.structureSpawnRange.y); //set random quantity for scenery objs in this area
+
+						string tempAssetPrefix = type.name;
 						if (isInhabited) {
 							currRadius = cityRadius - 5; //1 cell margin for sides
 
 							//add the walls surrounding the city/camp
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", -60, 60); //top
+							tempEntity = new Entity("City_Wall_Horizontal", new Vector3(-60, 60)); //top
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Horizontal", -60, -50); //bottom
+							tempEntity = new Entity("City_Wall_Horizontal", new Vector3(-60, -50)); //bottom
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", -60, 50); //left
+							tempEntity = new Entity("City_Wall_Vertical", new Vector3(-60, 50)); //left
 							entities.Add(tempEntity);
-							tempEntity = new Entity(tempAssetPrefix + "_Wall_Vertical", 55, 50); //right
+							tempEntity = new Entity("City_Wall_Vertical", new Vector3(55, 50)); //right
 							entities.Add(tempEntity);
 						} else if (isDungeon) {
 							currRadius = boundaryRadius;
 
 							//add the dungeon entrance
-							tempEntity = new Entity(tempAssetPrefix + "_Entrance", 0, 0);
+							tempEntity = new Entity(tempAssetPrefix + "_Entrance", new Vector3(0, 0));
 							entities.Add(tempEntity);
 						} else {
 							currRadius = boundaryRadius;
 						}
 
-						heightSpacing = CustomMath.GetLargestFactor(currRadius); //get largest factor to determine structure row spacing
-						numOfRowsForRadius = currRadius / heightSpacing; //get num of rows depending on spacing
+						float heightSpacing = CustomMath.GetLargestFactor(currRadius); //get largest factor to determine structure row spacing
+						float numOfRowsForRadius = currRadius / heightSpacing; //get num of rows depending on spacing
+						Vector3 entityPos = Vector3.zero;
+
+						for (i = 0; i < numEntities; i++) {
+							tempEntity = new Entity(owner, "default", Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" }, true);
+
+							//generate position for the entity
+							entityPos.x = UnityEngine.Random.Range(-currRadius, currRadius);
+							if (isInhabited) { //if area is a city
+								entityPos.y = (int)UnityEngine.Random.Range(-numOfRowsForRadius, numOfRowsForRadius) * heightSpacing; //get random row, then convert to world pos using cell height
+							} else { //just random position
+								entityPos.y = UnityEngine.Random.Range(-currRadius, currRadius);
+							}
+							tempEntity.SetPosition(entityPos);
+
+							entities.Add(tempEntity); //add entity to the list
+							yield return new WaitForEndOfFrame(); //add time between iterations
+						}
 						break;
 					default: //aka 0
-						currAssetCount = type.characterAssetCount; //set the count
-						currEntityFilename = "Characters/" + entityAreaPrefix; //set folder path
-						numEntities = UnityEngine.Random.Range(minAssetSpawnCount, type.characterMaxSpawnCount); //set random quantity for character objs in this area
+						assetPrefixes.Clear();
+						assetCounts.Clear();
+
+						numEntities = UnityEngine.Random.Range(type.characterSpawnRange.x, type.characterSpawnRange.y); //set random quantity for character objs in this area
 						currRadius = boundaryRadius;
 						break;
 				}
-
-				if (currAssetCount > 0) { //if asset type has assets to offer
-					for (i = 0; i < numEntities; i++) {
-						tempEntity = new Entity(); //instantiate new entity
-						tempEntity.name = currEntityFilename + (UnityEngine.Random.Range(0, currAssetCount)); //i.e. "Structures/Plains_0" -- So, it will be prepped for Resources.Load<GameObject>(path)
-
-						//generate position for the entity
-						tempEntity.positionX = UnityEngine.Random.Range(-currRadius, currRadius);
-						if (assetType == 2 && isInhabited) { //if asset is a structure && is a city
-							tempEntity.positionY = (int)UnityEngine.Random.Range(-numOfRowsForRadius, numOfRowsForRadius) * heightSpacing; //get random row, then convert to world pos using cell height
-						} else { //just random position
-							tempEntity.positionY = UnityEngine.Random.Range(-currRadius, currRadius);
-						}
-
-						tempEntity.lastUpdated = (int)GameManager.instance.ElapsedGameTime;
-						entities.Add(tempEntity);
-						yield return new WaitForEndOfFrame(); //add time between iterations
-					}
-				}
 				yield return new WaitForEndOfFrame(); //add time between iterations
 			}
+			Debug.Log(position.ToString() + " count:" + entities.Count);
 
-			Save(entities);
+			Save();
 		}
 
 		private void Save() {
 			string pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json";
 			StreamWriter writer = new StreamWriter(File.Create(pathToSaveTo));//initialize writer with creating/opening filepath
-			string json = JsonUtility.ToJson(this, true);
+			string json = JsonConvert.SerializeObject(this, Formatting.Indented);
 			writer.Write(json); //convert this object to json and write it
 			writer.Close(); //close the file
 		}
@@ -249,23 +275,17 @@ namespace internal_Area {
 
 		private void UpdateContainers(List<Container> Containers) {
 			containers.Clear();
-			foreach(Container c in Containers) {
+			foreach (Container c in Containers) {
 				containers.Add(new ContainerSaveData(c));
 			}
 		}
 
 		private void UpdateContainers(List<ContainerSaveData> Containers) {
-			containers.Clear();
-			if (Containers.Count > 0) {
-				containers.AddRange(Containers);
-			}
+			containers = Containers; //set the new reference
 		}
 
 		private void UpdateEntities(List<Entity> Entities) {
-			entities.Clear();
-			if (Entities.Count > 0) {
-				entities.AddRange(Entities);
-			}
+			entities = Entities; //set the new reference
 		}
 	}
 }

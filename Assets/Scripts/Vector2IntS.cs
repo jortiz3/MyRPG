@@ -4,6 +4,7 @@ using UnityEngine;
 [Serializable]
 public class Vector2IntS {
 	public static Vector2IntS zero { get { return new Vector2IntS(0, 0); } }
+	public static Vector2IntS one { get { return new Vector2IntS(1, 1); } }
 
 	public int x;
 	public int y;
@@ -24,7 +25,9 @@ public class Vector2IntS {
 	}
 
 	public static Vector2IntS Parse(string text) {
-		text.Replace(" ", "");
+		text = text.Replace(" ", "");
+		text = text.Replace("(", "");
+		text = text.Replace(")", "");
 		string[] textArray = text.Split(',');
 		Vector2IntS temp = new Vector2IntS();
 		try {
@@ -42,6 +45,10 @@ public class Vector2IntS {
 	}
 
 	public override string ToString() {
-		return x + ", " + y;
+		return "(" + x + ", " + y + ")";
+	}
+
+	public Vector2Int ToVector2Int() {
+		return new Vector2Int(x, y);
 	}
 }

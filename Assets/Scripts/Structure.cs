@@ -1,26 +1,91 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-//To do: add character ownership
-//To do: add LoadCustomStructure(string baseFileName, string roofFileName, string doorFileName) { load template structure, apply filenames>sprite to sprites[] }
 /// <summary>
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
 public class Structure : MonoBehaviour {
-
 	private Color[] defaultColors;
 	[SerializeField, Tooltip("All of the sprites that make up the structure.")]
 	private SpriteRenderer[] sprites;
 	[SerializeField, Tooltip("The structure's additional cell size (x,y); Default size of 1 == (0,0)")]
 	private Vector2Int dimensions;
-	private string owner;
+	private string owner; //convert to character? load character in load() using string?
+	private string preset;
 	private List<Furniture> furniture;
+	private bool registeredToManager;
 
 	public Vector2Int Dimensions { get { return dimensions; } }
 	public string Owner { get { return owner; } }
+	public string Preset { get { return preset; } }
+	public bool Registered { get { return registeredToManager; } set { registeredToManager = value; } }
 
 	private void Awake() {
 		Initialize();
+	}
+
+	public IEnumerator GenerateFurniture() {
+		while (!registeredToManager) {
+			yield return new WaitForEndOfFrame();
+		}
+
+		string[] furniturePrefixes = null;
+		switch (GetDimensionSize(dimensions)) { //different amounts of furniture based on size
+			case "small":
+				furniturePrefixes = new string[] { "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_" };
+				break;
+			case "medium":
+				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
+				break;
+			case "large":
+				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
+				break;
+			default:
+				furniturePrefixes = new string[] { "bed_", "chest_", "table_", "chair_" };
+				break;
+		}
+
+		AssetManager.instance.InstantiateFurniture(transform.position + new Vector3(0, (dimensions.y + 1) * 5), this, "workbench"); //ensure there is always a workbench
+
+		List<Vector3> furniturePositions = new List<Vector3>();
+		for (int i = 0; i < furniturePrefixes.Length; i++) {
+			furniturePositions.Add(transform.position + new Vector3(i / ((dimensions.y + 1) * 2), (i * 2.5f) % 5));
+		}
+
+		if (furniturePrefixes.Length == furniturePositions.Count) {
+			for (int i = 0; i < furniturePrefixes.Length; i++) {
+				AssetManager.instance.InstantiateFurniture(furniturePositions[i], this, furniturePrefixes[i] + preset);
+			}
+		}
+	}
+
+	public static string GetDimensionSize(Vector2Int dimensions) {
+		if (dimensions.x == dimensions.y) {
+			if (dimensions.x <= 0) {
+				return "tiny";
+			} else if (dimensions.x <= 1) {
+				return "small";
+			} else if (dimensions.x <= 2) {
+				return "medium";
+			} else {
+				return "large";
+			}
+		}
+		return "unique";
+	}
+
+	public string[] GetTextures() {
+		if (sprites != null && sprites.Length > 0) {
+			string[] textureNames = new string[sprites.Length];
+			for (int i = 0; i < textureNames.Length; i++) {
+				if (sprites[i] != null) {
+					textureNames[i] = sprites[i].sprite.texture.name;
+				}
+			}
+			return textureNames;
+		}
+		return null;
 	}
 
 	public void Initialize() {
@@ -33,24 +98,18 @@ public class Structure : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Adds a custom structure to the scene.
+	/// Passes required information to an already-instantiated structure.
 	/// </summary>
-	/// <param name="dimensions">The extra grid cells required by the structure. Default: Size of 1 cell = (0, 0)</param>
-	/// <param name="worldPosition">Where the structure should be placed in the world prior to snapping to grid.</param>
-	public static void LoadCustomStructure(Sprite sprite_base, Sprite sprite_roof, Sprite sprite_door, Vector2Int dimensions, Vector3 worldPosition) {
-		Structure s = Resources.Load<Structure>("Structures/template_structure");
-		if (s != null) { //if the template was loaded
-			s = Instantiate(s.gameObject).GetComponent<Structure>(); //add to the scene, store reference to script in scene
+	public void Load(Vector2Int Dimensions, string Owner = "Player", string Preset = "default", bool instantiateFurniture = false, Texture2D[] textures = null) {
+		dimensions = Dimensions;
+		owner = Owner;
+		preset = Preset;
 
-			s.sprites[0].sprite = sprite_base; //update the sprites
-			s.sprites[1].sprite = sprite_roof;
-			s.sprites[2].sprite = sprite_door;
-			
-			s.transform.localScale = new Vector3(5 + (5 * dimensions.x), 5 + (5 * dimensions.y), 1); //adjust the size of the building to conform to the grid
-			s.transform.position = worldPosition; //set the position
-
-			s.Initialize();
+		if (instantiateFurniture) {
+			StartCoroutine(GenerateFurniture());
 		}
+
+		SetSprites(textures);
 	}
 
 	public void RegisterFurniture(Furniture f) {
@@ -102,6 +161,26 @@ public class Structure : MonoBehaviour {
 
 	public void SetOwner(string name) {
 		owner = name;
+	}
+
+	private void SetSprites(Texture2D[] textures) {
+		if (textures != null) { //if the array isn't null
+			if (textures.Length == sprites.Length) { //if the array has the same amount of textures as structure manages sprites
+				Vector2 defaultSpriteSize = new Vector2((dimensions.x + 1) * 5, (dimensions.y + 1) * 5); //get sizes for roof and floor
+				Vector2 doorSpriteSize = defaultSpriteSize / 3f;
+				for (int i = 0; i < sprites.Length; i++) { //go through all textures/sprites
+					if (sprites[i] != null && textures[i] != null) { //ensure corresponding texture-sprite pair exists
+						sprites[i].sprite = Sprite.Create(textures[i], new Rect(0, 0, textures[i].width, textures[i].height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
+
+						if (sprites[i].gameObject.name.ToLower().Contains("door")) {
+							sprites[i].size = doorSpriteSize;
+						} else {
+							sprites[i].size = defaultSpriteSize;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private void Start() {

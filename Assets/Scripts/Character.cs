@@ -149,14 +149,17 @@ public class Character : MonoBehaviour {
 		transform.SetParent(AreaManager.GetEntityParent("Character"));
 	}
 
-	private IEnumerator Teleport(Vector3 position) {
+	protected IEnumerator Teleport(Vector3 position, bool refocusCamera = false) {
 		navAgent.enabled = false;
 		transform.position = position;
 		yield return new WaitForEndOfFrame();
 		navAgent.enabled = true;
+		if (refocusCamera) {
+			CameraManager.instance.RefocusOnTarget();
+		}
 	}
 
-	public void TeleportToPos(Vector3 position) {
+	public virtual void TeleportToPos(Vector3 position) {
 		StartCoroutine(Teleport(position));
 	}
 

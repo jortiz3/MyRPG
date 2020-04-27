@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using internal_Area;
+using Newtonsoft.Json;
 
 /// <summary>
 /// AreaManager: Class that procedurally generates, loads, and manages a grid of Areas.
@@ -80,12 +81,16 @@ public class AreaManager : MonoBehaviour {
 		}
 
 		areas = new Area[12, 12]; //create array
-
-		float totalNumAreas = areas.GetLength(0) * areas.GetLength(1);
 		int areasCompleted = GenerateUniqueAreaData();
+
+		if (areasCompleted < 0) { //if something went wrong
+			yield break; //abort
+		}
+		
+		float totalNumAreas = areas.GetLength(0) * areas.GetLength(1); //get total num of areas based off array just created -- only calculate 1 time
 		int prevAreasCompleted = 0;
 		string typeToSpread; //the type of area that is most likely to spread
-		while (areasCompleted < totalNumAreas) {
+		while ( areasCompleted < totalNumAreas) {
 			for (int x = 0; x < areas.GetLength(0); x++) {
 				for (int y = 0; y < areas.GetLength(1); y++) {
 					if (areas[x, y] != null) { //start with hard-coded areas
@@ -124,16 +129,12 @@ public class AreaManager : MonoBehaviour {
 						}
 					} //found non-null area for parent
 				} //y for loop
-				LoadingScreen.instance.IncreaseProgress((areasCompleted - prevAreasCompleted) / totalNumAreas);
+				LoadingScreen.instance.IncreaseProgress((areasCompleted - prevAreasCompleted) / totalNumAreas * 0.30f);
 				prevAreasCompleted = areasCompleted;
 				yield return new WaitForEndOfFrame(); //allow for time between each row
 			} //x for loop
 		}
-
-		LoadingScreen.instance.SetProgress(1f);
-		LoadArea(startPos, false);
-		yield return new WaitForEndOfFrame();
-		LoadingScreen.instance.Hide();
+		LoadArea(startPos, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
 	}
 
 	/// <summary>
@@ -143,33 +144,34 @@ public class AreaManager : MonoBehaviour {
 	private int GenerateUniqueAreaData() {
 		List<string> hardCodedAreaTypes = new List<string>();
 		hardCodedAreaTypes.AddRange(AreaTypeManager.GetAllAreaTypeNames());
-		hardCodedAreaTypes.RemoveRange(0, 4); //remove the generic area types (Plains, Forest, Mountain, Marsh)
-		int numUniqueAreas = hardCodedAreaTypes.Count;
 
 		if (hardCodedAreaTypes.Count > areas.GetLength(0) * areas.GetLength(1)) { //if there are somehow more unique areas than available slots
-			Debug.Log("Out of Range Error: AreaManager.GenerateUniqueAreaData() => loaded types (" + (hardCodedAreaTypes.Count - 4) + ") > map size (" + (areas.GetLength(0) * areas.GetLength(1)) + ")");
-			return 0;
+			Debug.Log("Out of Range Error: AreaManager.GenerateUniqueAreaData() => loaded types (" + (hardCodedAreaTypes.Count) + ") > map size (" + (areas.GetLength(0) * areas.GetLength(1)) + ")");
+			return -1;
 		}
 
-		List<Vector2Int> hardCodedPositions = new List<Vector2Int>(); //instantiate list
-		hardCodedPositions.Add(new Vector2Int(1, 1)); //place city locations
-		hardCodedPositions.Add(new Vector2Int(10, 1));
-		hardCodedPositions.Add(new Vector2Int(1, 10));
-		hardCodedPositions.Add(new Vector2Int(10, 10));
+		hardCodedAreaTypes.RemoveRange(0, 7); //remove default area types
+		int numUniqueAreas = 0;
+
+		List<Vector2Int> cityPositions = new List<Vector2Int>(); //instantiate list
+		cityPositions.Add(new Vector2Int(1, 1)); //place city locations
+		cityPositions.Add(new Vector2Int(10, 1));
+		cityPositions.Add(new Vector2Int(1, 10));
+		cityPositions.Add(new Vector2Int(10, 10));
 
 		int randomIndex; //stores random number
 		Vector2Int tempPos; //stores the current position
 		Area currArea;
+		string[] cityOwners = new string[] { "CPR", "HoZ", "RAM", "DV" };
 		for (int cities = 3; cities >= 0; cities--) { //next 4 in types 'should' be cities
-			randomIndex = UnityEngine.Random.Range(0, hardCodedPositions.Count); //pick random position
-			tempPos = hardCodedPositions[randomIndex]; //store position
+			randomIndex = UnityEngine.Random.Range(0, cityPositions.Count); //pick random position
+			tempPos = cityPositions[randomIndex]; //store position
 
-			currArea = new Area(tempPos, hardCodedAreaTypes[cities]); //create area at position
+			currArea = new Area(tempPos, "city", cityOwners[cities]); //create area at position
 			StartCoroutine(currArea.Populate(false)); //populate the area
 			areas[tempPos.x, tempPos.y] = currArea; //add area to array
-
-			hardCodedAreaTypes.RemoveAt(cities); //remove type name from list
-			hardCodedPositions.RemoveAt(randomIndex); //remove position
+			cityPositions.RemoveAt(randomIndex); //remove position from list
+			numUniqueAreas++;
 		}
 
 		for (int typeIndex = hardCodedAreaTypes.Count - 1; typeIndex >= 0; typeIndex--) { //go through remaining area types
@@ -182,6 +184,7 @@ public class AreaManager : MonoBehaviour {
 			areas[tempPos.x, tempPos.y] = currArea; //add next area type to the randomly generated position
 
 			hardCodedAreaTypes.RemoveAt(typeIndex); //remove the area type from the list
+			numUniqueAreas++;
 		}
 
 		return numUniqueAreas;
@@ -206,32 +209,48 @@ public class AreaManager : MonoBehaviour {
 		}
 	}
 
-	public void LoadArea(Directions direction) {
-		switch (direction) {
+	public bool LoadArea(Directions direction, bool teleportPlayer = false) {
+		Vector3 teleportPos = Player.instance.transform.position; //get current player position
+		bool loaded = false; //store whether next area was loaded
+		switch (direction) { //based on direction
 			case Directions.up:
-				LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y - 1), true);
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y - 1), saveEntities: true); //load the area north of current
+				teleportPos.y = -Mathf.Abs(teleportPos.y); //always set position to bottom of screen
 				break;
 			case Directions.down:
-				LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y + 1), true);
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x, currentAreaPos.y + 1), saveEntities: true); //load area south of current
+				teleportPos.y = Mathf.Abs(teleportPos.y); //always set position to top
 				break;
 			case Directions.left:
-				LoadArea(new Vector2Int(currentAreaPos.x - 1, currentAreaPos.y), true);
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x - 1, currentAreaPos.y), saveEntities: true); //load area west of current
+				teleportPos.x = Mathf.Abs(teleportPos.x); //always set position to right
 				break;
 			default: //right as default
-				LoadArea(new Vector2Int(currentAreaPos.x + 1, currentAreaPos.y), true);
-				return;
+				loaded = LoadArea(new Vector2Int(currentAreaPos.x + 1, currentAreaPos.y), saveEntities: true); //load area east of current
+				teleportPos.x = -Mathf.Abs(teleportPos.x); //always set position to left
+				break;
 		}
+
+		if (teleportPlayer) {
+			if (loaded) {
+				Player.instance.TeleportToPos(teleportPos);
+			}
+		}
+		return loaded;
 	}
 
-	private void LoadArea(Vector2Int position, bool saveEntities) {
+	private bool LoadArea(Vector2Int position, bool saveEntities = false, bool resetLoadingScreen = true) {
 		if (position.x < areas.GetLength(0) && 0 <= position.x) { //if the x is within map bounds
 			if (position.y < areas.GetLength(1) && 0 <= position.y) { //if y is within map bounds
 				if (areas[position.x, position.y] != null) { //if the desired area isn't empty
-					LoadingScreen.instance.ResetProgress();
-					LoadingScreen.instance.SetText("Gathering save data..");
-					LoadingScreen.instance.Show();
+					if (resetLoadingScreen) {
+						LoadingScreen.instance.ResetProgress();
+						LoadingScreen.instance.Show();
+					}
+					LoadingScreen.instance.SetText("Gathering Current Area Data..");
 
-					float loadIncrement = 0.40f / (transform.childCount - 1);
+					float numIncrements = saveEntities ? transform.childCount + 1 : transform.childCount;
+					float loadIncrement = ((1f - LoadingScreen.instance.GetProgress()) / 2f) / numIncrements;
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
 					List<Container> currContainers = new List<Container>();
 					Transform child;
@@ -272,36 +291,36 @@ public class AreaManager : MonoBehaviour {
 										Destroy(child.gameObject); //destroy gameobject from scene
 									}
 								} //end if player
-								LoadingScreen.instance.IncreaseProgress(loadIncrement / parent.childCount);
-							} //end for
+							} //end for child.child
 						} //end if area exit
-					} //end foreach
+						LoadingScreen.instance.IncreaseProgress(loadIncrement);
+					} //end foreach child
 
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
 						areas[currentAreaPos.x, currentAreaPos.y].Save(currContainers, currEntities);
-						LoadingScreen.instance.SetProgress(0.45f); //update load progress
+						LoadingScreen.instance.IncreaseProgress(loadIncrement);
 
 						for (int i = currContainers.Count - 1; i >=0; i--) { //go through all containers once saved
 							currContainers[i].SelfDestruct(); //remove containers and corresponding items from scene
 						}
 					}
 
-					LoadingScreen.instance.SetText("Loading Next Area.."); //inform player of process
 					UpdateAreaExits(position);
 
-					LoadingScreen.instance.SetProgress(0.5f); //update progress once complete
 					StructureGridManager.instance.ResetGridStatus(); //reset grid so any loaded structures can properly snap to it
 					StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh)); //initiate async load area
 					currentAreaPos = position;
+					return true;
 				} //endif area empty check
 			} //endif y bounds check
 		} //endif x bounds check
+		return false;
 	}
 
 	public IEnumerator LoadAreasFromSave(string playerName, string worldName, Vector2Int loadedPos) {
 		LoadingScreen.instance.ResetProgress();
-		LoadingScreen.instance.SetText("Loading..");
+		LoadingScreen.instance.SetText("Loading Save Data..");
 		LoadingScreen.instance.Show();
 
 		currentSaveFolder = Application.persistentDataPath + "/saves" + "/" + playerName + "/" + worldName + "/";
@@ -313,6 +332,7 @@ public class AreaManager : MonoBehaviour {
 
 		areas = new Area[12, 12]; //instantiate array
 		string currFilePath; //for storing current area filename
+		float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) * (1/12f) * 0.3f; 
 		for (int x = 0; x < 12; x++) {
 			for (int y = 0; y < 12; y++) {
 				currFilePath = currentSaveFolder + x + "_" + y + ".json";
@@ -324,16 +344,14 @@ public class AreaManager : MonoBehaviour {
 					yield break; //give up on loading
 				} else {
 					StreamReader reader = new StreamReader(File.Open(currFilePath, FileMode.Open));
-					areas[x, y] = JsonUtility.FromJson<Area>(reader.ReadToEnd());
+					areas[x, y] = JsonConvert.DeserializeObject<Area>(reader.ReadToEnd());
 					reader.Close();
 				}
 			}
-			LoadingScreen.instance.IncreaseProgress((x + 1) * 12 / 144.0f);
+			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
 			yield return new WaitForEndOfFrame(); //allow for time between each row
 		}
-		LoadArea(loadedPos, false);
-		yield return new WaitForEndOfFrame();
-		LoadingScreen.instance.Hide();
+		LoadArea(loadedPos, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
 	}
 
 	private void UpdateAreaExits(Vector2Int position) {

@@ -8,40 +8,22 @@ namespace internal_Area {
 	[Serializable]
 	public class AreaType {
 		public string name;
-		public int structureAssetCount;
-		public int structureMaxSpawnCount;
-		public int sceneryAssetCount;
-		public int sceneryMaxSpawnCount;
-		public int characterAssetCount;
-		public int characterMaxSpawnCount;
+		public Vector2IntS structureSpawnRange;
+		public Vector2IntS scenerySpawnRange;
+		public Vector2IntS characterSpawnRange;
 		public int spreadChance; //revisit & rename
 
 		public AreaType() {
 			name = "Empty";
-			structureAssetCount = 0;
-			structureMaxSpawnCount = 0;
-
-			sceneryAssetCount = 0;
-			sceneryMaxSpawnCount = 0;
-
-			characterAssetCount = 0;
-			characterMaxSpawnCount = 0;
-
 			spreadChance = 0;
 		}
 
-		public AreaType(string Name, int StructureAssetCount, int StructureMaxSpawnCount, int SceneryAssetCount,
-			int SceneryMaxSpawnCount, int CharacterAssetCount, int CharacterMaxSpawnCount, int SpreadChance) {
+		public AreaType(string Name, Vector2IntS StructureSpawnRange, Vector2IntS ScenerySpawnRange,
+			Vector2IntS CharacterSpawnRange, int SpreadChance) {
 			name = Name;
-			structureAssetCount = StructureAssetCount;
-			structureMaxSpawnCount = StructureMaxSpawnCount;
-
-			sceneryAssetCount = SceneryAssetCount;
-			sceneryMaxSpawnCount = SceneryMaxSpawnCount;
-
-			characterAssetCount = CharacterAssetCount;
-			characterMaxSpawnCount = CharacterMaxSpawnCount;
-
+			structureSpawnRange = StructureSpawnRange;
+			scenerySpawnRange = ScenerySpawnRange;
+			characterSpawnRange = CharacterSpawnRange;
 			spreadChance = SpreadChance;
 		}
 

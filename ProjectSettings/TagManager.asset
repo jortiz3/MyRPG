@@ -9,6 +9,8 @@ TagManager:
   - container
   - inventory
   - item
+  - scenery
+  - furniture
   layers:
   - Default
   - TransparentFX

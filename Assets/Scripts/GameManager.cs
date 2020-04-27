@@ -52,8 +52,8 @@ public class GameManager : MonoBehaviour {
 
 			loadPrefab.SetActive(false);
 
-			Items.ItemDatabase.Initialize();
-			Items.ItemModifierDatabase.Initialize();
+			internal_Items.ItemDatabase.Initialize();
+			internal_Items.ItemModifierDatabase.Initialize();
 		}
 	}
 
@@ -133,7 +133,6 @@ public class GameManager : MonoBehaviour {
 				Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
 				CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
 			}
-
 			state_gameInitialized = true;
 		}
 	}
