@@ -28,17 +28,20 @@ public class Container : Interactable {
 	public int InstanceID { get { return instanceID; } }
 
 	public bool Add(Item item) {
-		if (totalWeight + item.GetWeight() <= maxWeight) {
-			int itemIndex = IndexOf(item);
-			if (0 <= itemIndex) { //container has some of this item already
-				items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
-				Destroy(item.gameObject); //remove item from scene
-			} else { //first time this item is added
-				items.Add(item);
-				item.ContainerID = instanceID; //ensure the item knows which container it is in
-				CreateContainerElement(item); //ensure there's a ui element for the item
+		if (item != null) {
+			if (totalWeight + item.GetWeight() <= maxWeight) {
+				int itemIndex = IndexOf(item);
+				if (itemIndex >= 0) { //container has some of this item already
+					items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
+					Destroy(item.gameObject); //remove item from scene
+				} else { //first time this item is added
+					items.Add(item);
+					item.ContainerID = instanceID; //ensure the item knows which container it is in
+					CreateContainerElement(item); //ensure there's a ui element for the item
+					item.SetSpriteActive(false); //hide the item from world space
+				}
+				return true;
 			}
-			return true;
 		}
 		return false;
 	}
@@ -164,8 +167,8 @@ public class Container : Interactable {
 		}
 	}
 
-	public void Populate() {
-		//search for preset name, then use preset to generate items using ItemDB
+	public void Populate() { //use asset manager, pass container id, item will add itself to container
+		AssetManager.instance.InstantiateItem(position: transform.position, containerID: instanceID); //search for preset name, then use preset to generate items using ItemDB
 	}
 
 	protected void RefreshDisplay() {

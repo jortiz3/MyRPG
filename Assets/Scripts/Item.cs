@@ -193,7 +193,9 @@ public class Item : Interactable {
 		transform.parent = AreaManager.GetEntityParent("Item");
 		gameObject.tag = "item";
 
-		if (0 < containerID) {
+		if (containerID == Inventory.instance.InstanceID) {
+			Inventory.instance.Add(this);
+		} else if (0 < containerID) {
 			Container c = Container.GetContainer(containerID);
 			if (c != null) {
 				c.Add(this);

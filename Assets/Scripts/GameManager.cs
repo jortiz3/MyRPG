@@ -181,6 +181,8 @@ public class GameManager : MonoBehaviour {
 		bf.Serialize(file, new GameSave());
 		file.Close();
 
+		AreaManager.instance.SaveCurrentArea();
+
 		UpdateCurrLoadElement();
 	}
 
