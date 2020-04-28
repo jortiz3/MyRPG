@@ -16,10 +16,11 @@ public class Container : Interactable {
 	private static int nextInstanceID;
 
 	protected List<Item> items;
-	protected Transform currParent;
+	protected Transform currDisplayParent;
 	private float totalWeight;
 	protected float maxWeight;
-	private int instanceID;
+	protected int instanceID; //never 0 or less than
+	protected bool optout_populateItems;
 
 	public List<Item> Items { get { return items; } }
 	public float TotalWeight { get { return totalWeight; } }
@@ -28,13 +29,15 @@ public class Container : Interactable {
 
 	public bool Add(Item item) {
 		if (totalWeight + item.GetWeight() <= maxWeight) {
-			if (items.Contains(item)) { //container has some of this item already
-				items[items.IndexOf(item)].Quantity += item.Quantity;
-			} else {
+			int itemIndex = IndexOf(item);
+			if (0 <= itemIndex) { //container has some of this item already
+				items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
+				Destroy(item.gameObject); //remove item from scene
+			} else { //first time this item is added
 				items.Add(item);
+				item.ContainerID = instanceID; //ensure the item knows which container it is in
 				CreateContainerElement(item); //ensure there's a ui element for the item
 			}
-			item.ContainerID = instanceID;
 			return true;
 		}
 		return false;
@@ -55,9 +58,9 @@ public class Container : Interactable {
 	/// <param name="i">The item to be added to or found in the UI.</param>
 	/// <returns>Reference to the created or found transform.</returns>
 	private Transform CreateContainerElement(Item i) {
-		Transform temp = currParent.Find(i.ToString());
+		Transform temp = currDisplayParent.Find(i.ToString());
 		if (temp == null) {
-			temp = Instantiate(containerElementPrefab, currParent).transform;
+			temp = Instantiate(containerElementPrefab, currDisplayParent).transform;
 			temp.name = i.ToString();
 		}
 		return temp;
@@ -94,9 +97,16 @@ public class Container : Interactable {
 	}
 
 	protected int GetNextInstanceID() {
-		int id = nextInstanceID;
-		nextInstanceID++;
-		return id;
+		return ++nextInstanceID; //increment id then return it
+	}
+
+	private int IndexOf(Item item) {
+		for (int i = 0; i < items.Count; i++) {
+			if (items[i].Equals(item)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	protected override void Initialize() {
@@ -108,16 +118,25 @@ public class Container : Interactable {
 
 			containerTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
 		}
-		currParent = containerParent;
+
+		if (currDisplayParent == null) {
+			currDisplayParent = containerParent;
+		}
 
 		if (items == null) {
 			items = new List<Item>();
 			totalWeight = 0;
 		}
-		maxWeight = 1000.0f;
 
-		if (instanceID <= nextInstanceID) {
-			instanceID = GetNextInstanceID();
+		if (maxWeight <= 0) {
+			maxWeight = 1000.0f;
+		}
+
+		if (!optout_populateItems) { //only player inventory opts out of autopopulating
+			if (instanceID <= 0) {
+				instanceID = GetNextInstanceID();
+				Populate();
+			}
 		}
 
 		gameObject.name += "_container_" + instanceID.ToString();
@@ -137,15 +156,20 @@ public class Container : Interactable {
 	}
 
 	public void Load(int InstanceID) {
-		
+		if (InstanceID > 0) {
+			instanceID = InstanceID;
+			if (instanceID >= nextInstanceID) {
+				nextInstanceID = instanceID;
+			}
+		}
 	}
 
 	public void Populate() {
-
+		//search for preset name, then use preset to generate items using ItemDB
 	}
 
 	protected void RefreshDisplay() {
-		StartCoroutine(RefreshDisplay(currParent));
+		StartCoroutine(RefreshDisplay(currDisplayParent));
 	}
 
 	/// <summary>
@@ -167,7 +191,7 @@ public class Container : Interactable {
 
 		//resize the container slide area
 		float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
-		RectTransform currParentRect = currParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
+		RectTransform currParentRect = currDisplayParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
 		currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
 
 		displayedContainer = this;
@@ -222,7 +246,7 @@ public class Container : Interactable {
 	}
 
 	private void RemoveUIElement(Item item) {
-		Destroy(currParent.Find(item.ToString()).gameObject);
+		Destroy(currDisplayParent.Find(item.ToString()).gameObject);
 	}
 
 	public static void ResetInstanceIDs() {

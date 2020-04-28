@@ -12,7 +12,7 @@ namespace internal_Area {
 	public class Entity {
 		private string type; //item, structure, scenery object, prefab name
 		private string[] textures; //textures to assign
-		private int itemID; //harvestItemID
+		private int id; //itemID, harvestItemID, containerID
 		private int quantity; //harvestCount
 		private string uniqueString_0; //prefix, structure dimensions
 		private string uniqueString_1; //suffix, structure owner
@@ -25,7 +25,7 @@ namespace internal_Area {
 		public Entity() {
 			type = "null";
 			textures = null;
-			itemID = -1;
+			id = -1;
 			quantity = 0;
 			uniqueString_0 = "";
 			uniqueString_1 = "";
@@ -42,7 +42,7 @@ namespace internal_Area {
 		public Entity(int ItemID, string Prefix, string Suffix, int Quantity, Vector3 Position, string Texture, string containerInfo = "") {
 			type = "item";
 			textures = new string[] { Texture };
-			itemID = ItemID;
+			id = ItemID;
 			uniqueString_0 = Prefix;
 			uniqueString_1 = Suffix;
 			uniqueString_2 = containerInfo;
@@ -59,7 +59,7 @@ namespace internal_Area {
 		public Entity(string Owner, string Preset, Vector2Int Dimensions, Vector3 Position, string[] Textures, bool InstantiateFurniture = false) {
 			type = "structure";
 			textures = Textures;
-			itemID = -1;
+			id = -1;
 			uniqueString_0 = Dimensions.ToString();
 			uniqueString_1 = Owner;
 			uniqueString_2 = Preset;
@@ -76,7 +76,7 @@ namespace internal_Area {
 		public Entity(int ItemID, int HarvestCount, bool AllowStructureCollision, Vector3 Position, string Texture) {
 			type = "structure";
 			textures = new string[] { Texture };
-			itemID = ItemID;
+			id = ItemID;
 			uniqueString_0 = "";
 			uniqueString_1 = "";
 			uniqueString_2 = "";
@@ -90,10 +90,10 @@ namespace internal_Area {
 		/// <summary>
 		/// Creates entity data for furniture.
 		/// </summary>
-		public Entity(Vector3 position, string Texture) {
+		public Entity(Vector3 position, int containerID = -1, string Texture = "chest_default") {
 			type = "furniture";
 			textures = new string[] { Texture };
-			itemID = -1;
+			id = containerID;
 			quantity = 0;
 			uniqueString_0 = "";
 			uniqueString_1 = "";
@@ -110,7 +110,7 @@ namespace internal_Area {
 		public Entity(string prefabName, Vector3 position) {
 			type = prefabName;
 			textures = null;
-			itemID = -1;
+			id = -1;
 			quantity = 0;
 			uniqueString_0 = "";
 			uniqueString_1 = "";
@@ -130,7 +130,7 @@ namespace internal_Area {
 						containerID = int.Parse(uniqueString_2);
 					} catch {}
 
-					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: itemID, containerID: containerID, quantity: quantity, textureName: textures[0]);
+					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: id, containerID: containerID, quantity: quantity, textureName: textures[0]);
 					if (i != null) {
 						return true;
 					}
@@ -143,7 +143,7 @@ namespace internal_Area {
 					}
 					break;
 				case "scenery":
-					SceneryObject sc = AssetManager.instance.InstantiateSceneryObject(position: position, textureName: textures[0], harvestedItemID: itemID,
+					SceneryObject sc = AssetManager.instance.InstantiateSceneryObject(position: position, textureName: textures[0], harvestedItemID: id,
 						sceneryObjectHP: quantity, allowStructureCollision: uniqueBool_0);
 					if (sc != null) {
 						return true;
@@ -152,6 +152,10 @@ namespace internal_Area {
 				case "furniture":
 					Furniture f = AssetManager.instance.InstantiateFurniture(position, textureName: textures[0]);
 					if (f != null) {
+						Container c = f.GetComponent<Container>();
+						if (c != null) {
+							c.Load(id);
+						}
 						return true;
 					}
 					break;
@@ -197,7 +201,14 @@ namespace internal_Area {
 				case "furniture":
 					Furniture f = transform.GetComponent<Furniture>();
 					if (f != null) {
-						temp = new Entity(f.transform.position, f.GetTextureName());
+						int containerID;
+						if (f.gameObject.name.Contains("container")) {
+							string[] splitname = f.gameObject.name.Split('_');
+							int.TryParse(splitname[splitname.Length - 1], out containerID);
+						} else {
+							containerID = -1;
+						}
+						temp = new Entity(f.transform.position, containerID, f.GetTextureName());
 					}
 					break;
 				default:

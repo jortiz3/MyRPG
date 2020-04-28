@@ -82,9 +82,9 @@ namespace internal_Area {
 			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 2f; //get remaining progress, divide by how many load sections
 
 			string bgFileName = "Backgrounds/";
-			if (typeName.Contains("City")) {
+			if (typeName.Contains("city")) {
 				bgFileName += "City";
-			} else if (typeName.Contains("Camp")) {
+			} else if (typeName.Contains("camp")) {
 				bgFileName += "Camp";
 			} else {
 				bgFileName += typeName;

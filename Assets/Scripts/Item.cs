@@ -70,10 +70,10 @@ public class Item : Interactable {
 	}
 
 	public override bool Equals(object other) {
-		if (other.GetType() == typeof(Item)) {
-			Item temp = (Item)other;
-			if (baseName.Equals(temp.baseName)) {
-				if (id == temp.id) {
+		if (other.GetType() == typeof(Item)) { //if the other object is an item
+			Item temp = (Item)other; //store/cast to item to access attributes
+			if (ToString().Equals(temp.ToString())) { //both items have same prefix, base name, & suffix
+				if (id == temp.id) { //both items have the same item ID
 					return true;
 				}
 			}
@@ -192,6 +192,14 @@ public class Item : Interactable {
 		SetInteractMessage("to pick up " + ToString() + ".");
 		transform.parent = AreaManager.GetEntityParent("Item");
 		gameObject.tag = "item";
+
+		if (0 < containerID) {
+			Container c = Container.GetContainer(containerID);
+			if (c != null) {
+				c.Add(this);
+			}
+		}
+
 		base.Initialize();
 	}
 
@@ -257,15 +265,11 @@ public class Item : Interactable {
 
 	public void Load(int ID = -1, int ContainerID = -1, string ItemBaseName = "", int Quantity = 1, Texture2D Texture = null) {
 		id = ID;
+		containerID = ContainerID;
 		baseName = ItemBaseName;
 		quantity = Quantity;
 		Load(null);
 		SetSprite(Texture);
-
-		Container c = Container.GetContainer(ContainerID);
-		if (c != null) {
-			c.Add(this);
-		}
 	}
 
 	/// <summary>
