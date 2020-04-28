@@ -20,7 +20,7 @@ public class AreaExit : Interactable {
 		UpdateImages("Plains");
 	}
 
-	public override void DisableInteraction() {
+	protected override void DisableInteraction() {
 		if (background_edge != null)
 			background_edge.color = Color.clear;
 		if (background_exit != null)
@@ -28,7 +28,7 @@ public class AreaExit : Interactable {
 		base.DisableInteraction();
 	}
 
-	public override void EnableInteraction() {
+	protected override void EnableInteraction() {
 		if (background_edge != null)
 			background_edge.color = Color.white;
 		if (background_exit != null)

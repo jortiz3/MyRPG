@@ -15,14 +15,14 @@ public class Interactable : MonoBehaviour {
 	/// <summary>
 	/// Disables the capability for the player to interact with this object.
 	/// </summary>
-	public virtual void DisableInteraction() {
+	protected virtual void DisableInteraction() {
 		disabled = true; //change to enable/disable box collider
 	}
 
 	/// <summary>
 	/// Enables the capability for the player to interact with this object.
 	/// </summary>
-	public virtual void EnableInteraction() {
+	protected virtual void EnableInteraction() {
 		disabled = false;
 	}
 
@@ -86,6 +86,16 @@ public class Interactable : MonoBehaviour {
 		}
 	}
 
+	public virtual void SetInteractionActive(bool enabled = true) {
+		if (enabled) {
+			EnableInteraction();
+		} else {
+			DisableInteraction();
+		}
+
+		SetSpriteActive(enabled);
+	}
+
 	/// <summary>
 	/// Updates the message that is displayed once the player enters the interaction range.
 	/// </summary>
@@ -104,6 +114,12 @@ public class Interactable : MonoBehaviour {
 				sprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
 				gameObject.name = texture.name;
 			}
+		}
+	}
+
+	protected void SetSpriteActive(bool active) {
+		if (sprite != null) {
+			sprite.enabled = active;
 		}
 	}
 

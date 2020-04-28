@@ -59,16 +59,6 @@ public class Item : Interactable {
 		return temp;
 	}
 
-	public override void DisableInteraction() {
-		SetSpriteActive(false); //hide the sprite
-		base.DisableInteraction();
-	}
-
-	public override void EnableInteraction() {
-		SetSpriteActive(true); //show the sprite
-		base.EnableInteraction();
-	}
-
 	public override bool Equals(object other) {
 		if (other.GetType() == typeof(Item)) { //if the other object is an item
 			Item temp = (Item)other; //store/cast to item to access attributes
@@ -279,12 +269,6 @@ public class Item : Interactable {
 	/// </summary>
 	public void SetPrefix(string prefixName) {
 		prefix = ItemModifierDatabase.GetPrefix(prefixName);
-	}
-
-	public void SetSpriteActive(bool active) {
-		if (sprite != null) {
-			sprite.enabled = active;
-		}
 	}
 
 	public void SetSuffix(string suffixName) {

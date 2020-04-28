@@ -27,7 +27,7 @@ public class Inventory : Container {
 		} else {
 			item.transform.position = Player.instance.transform.position + InputManager.ConvertDirectionToVector3(Player.instance.LookDirection);
 			item.ContainerID = 0;
-			item.EnableInteraction();
+			item.SetInteractionActive();
 		}
 	}
 

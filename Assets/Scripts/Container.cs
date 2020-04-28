@@ -38,7 +38,7 @@ public class Container : Interactable {
 					items.Add(item);
 					item.ContainerID = instanceID; //ensure the item knows which container it is in
 					CreateContainerElement(item); //ensure there's a ui element for the item
-					item.SetSpriteActive(false); //hide the item from world space
+					item.SetInteractionActive(false); //hide the item from world space
 				}
 				return true;
 			}
