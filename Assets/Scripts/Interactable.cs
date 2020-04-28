@@ -16,7 +16,7 @@ public class Interactable : MonoBehaviour {
 	/// Disables the capability for the player to interact with this object.
 	/// </summary>
 	protected virtual void DisableInteraction() {
-		disabled = true; //change to enable/disable box collider
+		disabled = true;
 	}
 
 	/// <summary>
@@ -106,7 +106,7 @@ public class Interactable : MonoBehaviour {
 
 	protected void SetSprite(Texture2D texture) {
 		if (texture != null) {
-			if (sprite == null) { //if this is the first time the sprite is changed
+			if (sprite == null) { //if the sprite has not been assigned yet -- sometimes called prior to initialize
 				sprite = gameObject.GetComponent<SpriteRenderer>(); //get the sprite component
 			} //no else bc we still want to try to set sprite
 
@@ -117,7 +117,11 @@ public class Interactable : MonoBehaviour {
 		}
 	}
 
-	protected void SetSpriteActive(bool active) {
+	protected virtual void SetSpriteActive(bool active = true) {
+		if (sprite == null) { //if the sprite has not been assigned yet -- sometimes called prior to initialize
+			sprite = gameObject.GetComponent<SpriteRenderer>(); //get the sprite component
+		}
+
 		if (sprite != null) {
 			sprite.enabled = active;
 		}

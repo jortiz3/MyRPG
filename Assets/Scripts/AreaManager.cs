@@ -24,11 +24,13 @@ public class AreaManager : MonoBehaviour {
 
 	private Area[,] areas;
 	private Vector2Int currentAreaPos;
+	private bool save_load;
 
 	public static string CurrentSaveFolder { get { return currentSaveFolder; } }
 	public static int AreaSize { get { return Area.Size; } }
 
 	public Vector2Int Position { get { return currentAreaPos; } }
+	public bool SaveOrLoadInProgress { get { return save_load; }  set { save_load = value; } }
 
 	private void Awake() {
 		if (instance != null) {
@@ -72,7 +74,9 @@ public class AreaManager : MonoBehaviour {
 
 	public IEnumerator GenerateAllAreas(string playerName, string worldName, Vector2Int startPos) {
 		LoadingScreen.instance.ResetProgress();
+		LoadingScreen.instance.SetText("Generating world..");
 		LoadingScreen.instance.Show();
+		save_load = true;
 
 		currentSaveFolder = Application.persistentDataPath + "/saves" + "/" + playerName + "/" + worldName + "/";
 
@@ -134,7 +138,8 @@ public class AreaManager : MonoBehaviour {
 				yield return new WaitForEndOfFrame(); //allow for time between each row
 			} //x for loop
 		}
-		LoadArea(startPos, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
+		currentAreaPos = new Vector2Int(-1, -1); //reset the currentArea in case a game was loaded previously
+		LoadArea(position: startPos, saveEntities: false, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
 	}
 
 	/// <summary>
@@ -243,6 +248,8 @@ public class AreaManager : MonoBehaviour {
 		if (position.x < areas.GetLength(0) && 0 <= position.x) { //if the x is within map bounds
 			if (position.y < areas.GetLength(1) && 0 <= position.y) { //if y is within map bounds
 				if (areas[position.x, position.y] != null) { //if the desired area isn't empty
+					save_load = true;
+
 					if (resetLoadingScreen) {
 						LoadingScreen.instance.ResetProgress();
 						LoadingScreen.instance.Show();
@@ -253,9 +260,11 @@ public class AreaManager : MonoBehaviour {
 					float numIncrements = saveEntities ? transform.childCount + 1 : transform.childCount;
 					float loadIncrement = ((1f - LoadingScreen.instance.GetProgress()) / 2f) / numIncrements;
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
+					Transform parent;
 					Transform child;
 					bool destroyChild = false;
-					foreach (Transform parent in transform) { //areamanager script is attached to parent transform of entity types
+					for (int i = 0; i < transform.childCount; i++) { //this script is attached to parent of all entities
+						parent = transform.GetChild(i); //get the current parent transform
 						if (!parent.name.Equals("Area Exits")) { //do not process items(yet) or area exits
 							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
 								child = parent.GetChild(index);
@@ -291,7 +300,7 @@ public class AreaManager : MonoBehaviour {
 							} //end for child.child
 						} //end if area exit
 						LoadingScreen.instance.IncreaseProgress(loadIncrement);
-					} //end foreach child
+					} //end for parent
 
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
@@ -346,6 +355,7 @@ public class AreaManager : MonoBehaviour {
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
 			yield return new WaitForEndOfFrame(); //allow for time between each row
 		}
+		currentAreaPos = new Vector2Int(-1, -1); //reset current pos
 		LoadArea(loadedPos, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
 	}
 

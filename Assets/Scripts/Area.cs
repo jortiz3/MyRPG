@@ -67,9 +67,10 @@ namespace internal_Area {
 
 		private void InstantiateEntities() {
 			if (entities != null) {
-				for (int i = entities.Count - 1; i >= 0; i--) {
+				for (int i = 0; i < entities.Count; i++) {
 					if (!entities[i].Instantiate()) { //try instantiate entity
 						entities.RemoveAt(i); //if failed, remove from list
+						i--; //counteract the shifting of elements
 					}
 				}
 			}
@@ -109,6 +110,7 @@ namespace internal_Area {
 			discovered = true;
 
 			LoadingScreen.instance.SetProgress(1f);
+			AreaManager.instance.SaveOrLoadInProgress = false;
 			yield return new WaitForSeconds(0.5f);
 			LoadingScreen.instance.Hide();
 		}
@@ -242,8 +244,6 @@ namespace internal_Area {
 				}
 				yield return new WaitForEndOfFrame(); //add time between iterations
 			}
-			Debug.Log(position.ToString() + " count:" + entities.Count);
-
 			Save();
 		}
 

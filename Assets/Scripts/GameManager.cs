@@ -93,47 +93,49 @@ public class GameManager : MonoBehaviour {
 	/// Finds game save data and populates the Load/Save UI
 	/// </summary>
 	private void InitializeLoadGameUI() {
-		DirectoryInfo dir = new DirectoryInfo(filePath);
-		DirectoryInfo[] info = dir.GetDirectories("*");
+		DirectoryInfo dir = new DirectoryInfo(filePath); //get base directory
+		DirectoryInfo[] info = dir.GetDirectories("*"); //get all folders at base directory
 
-		Transform temp;
-		Text textComponent;
+		Transform temp; //current ui for savegame
+		Text textComponent; //text component for current ui
 
-		float scrollContentHeight = 0;
-		float prefabHeight = loadPrefab.GetComponent<RectTransform>().sizeDelta.y;
-		foreach (DirectoryInfo f in info) {
-			temp = loadParent.Find(f.Name);
+		float scrollContentHeight = 0; //total height for scroll view content
+		float prefabHeight = loadPrefab.GetComponent<RectTransform>().sizeDelta.y; //get the height for each prefab
+		foreach (DirectoryInfo f in info) { //for each folder (savegame)
+			temp = loadParent.Find(f.Name); //check to see if it has been checked already
 
-			if (temp == null) {
-				temp = AddLoadElement(f.Name);
+			if (temp == null) { //if nothing found
+				temp = AddLoadElement(f.Name); //instantiate prefab
 			}
 
-			textComponent = temp.GetChild(0).GetComponent<Text>();
-			textComponent.text = GetSaveDetails(f.Name);
+			textComponent = temp.GetChild(0).GetComponent<Text>(); //get the text component
+			textComponent.text = GetSaveDetails(f.Name); //get save details and display relevant text
 
-			scrollContentHeight += prefabHeight;
+			scrollContentHeight += prefabHeight; //adjust total scroll view height
 		}
 		
-		RectTransform parentRect = loadParent.GetComponent<RectTransform>();
-		parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, scrollContentHeight);
+		RectTransform parentRect = loadParent.GetComponent<RectTransform>(); //get the parent rect once all prefabs instantiated
+		parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, scrollContentHeight); //adjust the size so it fits appropriately
 	}
 
 	private void LoadGame() {
-		if (!playerName.Equals("") && !worldName.Equals("")) {
-			if (File.Exists(filePath + playerName + fileName)) {
-				FileStream file = File.OpenRead(filePath + playerName + fileName);
-				BinaryFormatter bf = new BinaryFormatter();
-				GameSave saveData = bf.Deserialize(file) as GameSave;
-				file.Close();
+		if (!AreaManager.instance.SaveOrLoadInProgress) { //prevent multiple loading sequences
+			if (!playerName.Equals("") && !worldName.Equals("")) { //ensure required names are assigned
+				if (File.Exists(filePath + playerName + fileName)) { //ensure the file exists
+					FileStream file = File.OpenRead(filePath + playerName + fileName); //open the file
+					BinaryFormatter bf = new BinaryFormatter(); //create formatter
+					GameSave saveData = bf.Deserialize(file) as GameSave; //load the file into GameSave class
+					file.Close(); //close file
 
-				currDifficulty = saveData.Difficulty;
-				elapsedGameTime = saveData.ElapsedGameTime;
+					currDifficulty = saveData.Difficulty; //load difficulty
+					elapsedGameTime = saveData.ElapsedGameTime; //load elapsed gametime
 
-				WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
-				Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
-				CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
+					WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
+					Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
+					CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
+					state_gameInitialized = true; //flag game as initialized
+				}
 			}
-			state_gameInitialized = true;
 		}
 	}
 
@@ -176,14 +178,16 @@ public class GameManager : MonoBehaviour {
 	/// Called by button(s) using unity inspector & certain in-game events
 	/// </summary>
 	public void SaveGame() {
-		FileStream file = File.Create(filePath + playerName + fileName);
-		BinaryFormatter bf = new BinaryFormatter();
-		bf.Serialize(file, new GameSave());
-		file.Close();
+		if (!state_gameInitialized || !AreaManager.instance.SaveOrLoadInProgress) {
+			FileStream file = File.Create(filePath + playerName + fileName);
+			BinaryFormatter bf = new BinaryFormatter();
+			bf.Serialize(file, new GameSave());
+			file.Close();
 
-		AreaManager.instance.SaveCurrentArea();
+			AreaManager.instance.SaveCurrentArea();
 
-		UpdateCurrLoadElement();
+			UpdateCurrLoadElement();
+		}
 	}
 
 	public void SaveSettings() {
@@ -207,14 +211,17 @@ public class GameManager : MonoBehaviour {
 	/// Called by button(s) using unity inspector
 	/// </summary>
 	public void StartNewGame(int difficulty) {
-		if (playerName != null && !playerName.Equals("")) {
-			if (!File.Exists(filePath + playerName + fileName)) {
-				WorldManager.instance.GenerateWorldAreas(playerName, worldName);
-				currDifficulty = difficulty;
-				MenuScript.instance.ChangeState("");
-				SaveGame();
-				state_gameInitialized = true;
+		if (playerName != null && !playerName.Equals("")) { //if the player name has been entered
+			if (!File.Exists(filePath + playerName + fileName)) { //if the file doesn't exist, then we can create it
+				WorldManager.instance.GenerateWorldAreas(playerName, worldName); //generate the world
+				currDifficulty = difficulty; //set the difficulty
+				MenuScript.instance.ChangeState(""); //hide the menus
+				Player.instance.TeleportToPos(Vector3.zero); //move the player to center
+				SaveGame(); //create a save file
+				state_gameInitialized = true; //flag game as initialized
 			}
+		} else {
+			//show pop-up stating "Enter a name for your character, then try again."
 		}
 	}
 
