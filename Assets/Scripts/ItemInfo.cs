@@ -21,6 +21,7 @@ namespace internal_Items {
 		public bool crafting_material;
 		public bool weapon;
 		public bool armor;
+		public string texture_default;
 		public string[] tags;
 
 		public ItemInfo() {
@@ -39,6 +40,7 @@ namespace internal_Items {
 			crafting_material = false;
 			weapon = false;
 			armor = false;
+			texture_default = "Log";
 			tags = null;
 		}
 
@@ -58,6 +60,7 @@ namespace internal_Items {
 			crafting_material = copy.crafting_material;
 			weapon = copy.weapon;
 			armor = copy.armor;
+			texture_default = copy.texture_default;
 			tags = copy.tags;
 		}
 
@@ -77,12 +80,13 @@ namespace internal_Items {
 			crafting_material = item.isCraftingMaterial;
 			weapon = item.isWeapon;
 			armor = item.isArmor;
+			texture_default = item.GetTextureName();
 			tags = item.GetTags();
 		}
 
 		public ItemInfo(int ID, string Prefix, string Name, string Suffix, int Stat_Magic, int Stat_Physical, int Currency_Value,
 			int Quality_Value, float Weight, bool Equipable, bool Slottable, bool Consumable, bool isCraftingMaterial, bool isWeapon,
-			bool isArmor, string[] Tags) {
+			bool isArmor, string[] Tags, string Texture = "") {
 			id = ID;
 			baseName = Name;
 			prefix = Prefix;
@@ -98,6 +102,11 @@ namespace internal_Items {
 			crafting_material = isCraftingMaterial;
 			weapon = isWeapon;
 			armor = isArmor;
+			if (Texture.Equals("")) {
+				texture_default = Name;
+			} else {
+				texture_default = Texture;
+			}
 			tags = Tags;
 		}
 

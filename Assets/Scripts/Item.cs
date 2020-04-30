@@ -53,12 +53,6 @@ public class Item : Interactable {
 		}
 	}
 
-	public static Item Create(ItemSaveData info) {
-		Item temp = GameObject.Instantiate(itemPrefab).GetComponent<Item>();
-		temp.Load(info);
-		return temp;
-	}
-
 	public override bool Equals(object other) {
 		if (other.GetType() == typeof(Item)) { //if the other object is an item
 			Item temp = (Item)other; //store/cast to item to access attributes
@@ -156,9 +150,20 @@ public class Item : Interactable {
 	}
 
 	public int GetValue() {
-		return currency_value + prefix.Value_Modifier + suffix.Value_Modifier;
+		int totalValue = currency_value;
+		if (prefix != null) {
+			totalValue += prefix.Value_Modifier;
+		}
+		if (suffix != null) {
+			totalValue += suffix.Value_Modifier;
+		}
+		return totalValue;
 	}
 
+	/// <summary>
+	/// Returns to total weight of this item.
+	/// </summary>
+	/// <returns>weight * quantity</returns>
 	public float GetWeight() {
 		float currWeight = weight * quantity;
 		currWeight = (float)Math.Truncate(currWeight * 100f) / 100f;
@@ -204,21 +209,18 @@ public class Item : Interactable {
 	/// <summary>
 	/// Load attribute info from database. (only item name, prefix, suffix, & ID are saved)
 	/// </summary>
-	public void Load(ItemSaveData providedInfo) {
+	private void LoadDBInfo(int ID = 0, string Prefix = "", string BaseName = "", string Suffix = "", int Quantity = 1) {
+		id = ID;
+		baseName = BaseName;
+
 		ItemInfo retrievedInfo;
-
-		if (providedInfo != null) { //if given info
-			id = providedInfo.id; //use id
-			baseName = providedInfo.baseName; //use base name
-		}
-
 		retrievedInfo = ItemDatabase.GetItemInfo(id); //check database for info using id
 
 		if (retrievedInfo == null) { //if not found
 			retrievedInfo = ItemDatabase.GetItemInfo(baseName); //check database for info using base name
 		}
 
-		if (retrievedInfo == null) { // if still not found
+		if (retrievedInfo == null) { // if still no info to use
 			Destroy(gameObject); //remove from scene
 			return; //quit
 		}
@@ -229,6 +231,7 @@ public class Item : Interactable {
 		stat_physical = retrievedInfo.stat_physical;
 		currency_value = retrievedInfo.currency_value;
 		quality_value = retrievedInfo.quality_value;
+		quantity = Quantity;
 		weight = retrievedInfo.weight;
 		equippable = retrievedInfo.equipable;
 		slottable = retrievedInfo.slottable;
@@ -238,29 +241,18 @@ public class Item : Interactable {
 		armor = retrievedInfo.armor;
 		tags = retrievedInfo.tags;
 
-		if (providedInfo != null) {
-			quantity = providedInfo.quantity;
-			equipped = providedInfo.equipped; //convert to Player.instance.Equip(this);
-			prefix = ItemModifierDatabase.GetPrefix(providedInfo.prefix);
-			suffix = ItemModifierDatabase.GetSuffix(providedInfo.suffix);
-		} else {
-			quantity = quantity <= 0 ? 1 : quantity;
-			equipped = false;
-			if (prefix == null)
-				prefix = ItemModifierDatabase.GetPrefix(retrievedInfo.prefix);
-			if (suffix == null)
-				suffix = ItemModifierDatabase.GetSuffix(retrievedInfo.suffix);
-		}
+		string prefixToObtain = !Prefix.Equals("") ? Prefix : retrievedInfo.prefix;
+		prefix = ItemModifierDatabase.GetPrefix(prefixToObtain);
+
+		string suffixToObtain = !Suffix.Equals("") ? Suffix : retrievedInfo.suffix;
+		suffix = ItemModifierDatabase.GetSuffix(suffixToObtain);
 
 		gameObject.name = ToString();
 	}
 
-	public void Load(int ID = -1, int ContainerID = -1, string ItemBaseName = "", int Quantity = 1, Texture2D Texture = null) {
-		id = ID;
+	public void Load(int ID = -1, int ContainerID = -1, string Prefix = "", string BaseName = "", string Suffix = "", int Quantity = 1, Texture2D Texture = null) {
 		containerID = ContainerID;
-		baseName = ItemBaseName;
-		quantity = Quantity;
-		Load(null);
+		LoadDBInfo(ID: ID, BaseName: BaseName, Quantity: Quantity);
 		SetSprite(Texture);
 	}
 
@@ -273,16 +265,6 @@ public class Item : Interactable {
 
 	public void SetSuffix(string suffixName) {
 		suffix = ItemModifierDatabase.GetSuffix(suffixName);
-	}
-
-	public ItemInfo ToItemInfo() {
-		ItemInfo temp = new ItemInfo(this);
-		return temp;
-	}
-
-	public ItemSaveData ToItemSaveData() {
-		ItemSaveData temp = new ItemSaveData(this);
-		return temp;
 	}
 
 	public override string ToString() { //returns the items full name: prefix + baseName + suffix

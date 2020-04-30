@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using internal_Items;
 
 /// <summary>
 /// Stores a list of items and displays them to the screen. Written by Justin Ortiz
@@ -154,10 +155,6 @@ public class Container : Interactable {
 		base.InteractInternal(); //finish interaction
 	}
 
-	public void Load(ContainerSaveData data) {
-		items = data.GetItems();
-	}
-
 	public void Load(int InstanceID) {
 		if (InstanceID > 0) {
 			instanceID = InstanceID;
@@ -168,7 +165,15 @@ public class Container : Interactable {
 	}
 
 	public void Populate() { //use asset manager, pass container id, item will add itself to container
-		AssetManager.instance.InstantiateItem(position: transform.position, containerID: instanceID); //search for preset name, then use preset to generate items using ItemDB
+		int numItems = UnityEngine.Random.Range(5, 15);
+		ItemInfo[] dropTable = ItemDatabase.GetDropTable(quality: 0);
+		int dropTableIndex;
+		for (int i = 0; i < numItems; i++) {
+			dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length);
+			AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
+				containerID: instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
+				textureName: dropTable[dropTableIndex].texture_default); //search for preset name, then use preset to generate items using ItemDB
+		}
 	}
 
 	protected void RefreshDisplay() {
@@ -220,7 +225,7 @@ public class Container : Interactable {
 				} else if (child.name.Contains("Weight")) {
 					text.text = item.GetWeight().ToString(); //display weight
 				} else if (child.name.Contains("Currency")) {
-					text.text = item.BaseValue.ToString(); //display currency value
+					text.text = item.GetValue().ToString(); //display currency value
 				} else if (child.name.Contains("ItemType")) {
 					text.text = item.GetItemType(); //display the item type
 				}
