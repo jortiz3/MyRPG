@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace internal_Items {
 	/// <summary>
@@ -10,18 +11,22 @@ namespace internal_Items {
 
 		public static bool Initialized { get { return initialized; } }
 
-		public static ItemInfo[] GetDropTable(int quality = 0, int minQuality = -int.MaxValue) {
-			List<ItemInfo> items = new List<ItemInfo>();
+		/// <summary>
+		/// Uses the provided tags to return an array of items.
+		/// </summary>
+		/// <param name="Tags">Each item must have at least one of these.</param>
+		/// <returns>Array of type ItemInfo.</returns>
+		public static ItemInfo[] GetDropTable(string[] Tags) {
+			List<ItemInfo> items = new List<ItemInfo>(); //the items to be returned
 
-			if (minQuality == -int.MaxValue) {
-				minQuality = quality - 2;
-			}
-
-			for (int i = 0; i < db.Count; i++) {
-				if (minQuality <= db[i].quality_value && db[i].quality_value <= quality) { //add variation to qualities; desired quality and
-					items.Add(db[i]);
+			for (int dbIndex = 0; dbIndex < db.Count; dbIndex++) { //for all items in db
+				for (int paramTagsIndex = 0; paramTagsIndex < Tags.Length; paramTagsIndex++) { //for all tags included in parameter
+					if (Array.Exists(db[dbIndex].tags, element => element.Equals(Tags[paramTagsIndex]))) { //if one of the tags is met
+						items.Add(db[dbIndex]); //add to the list
+						break; //exit param tags loop
+					}
 				}
-			}
+			} //end for db index
 			return items.ToArray();
 		}
 
@@ -35,7 +40,7 @@ namespace internal_Items {
 			}
 			return -1;
 		}
-		
+
 		/// <summary>
 		/// Gets an item from the database.
 		/// </summary>
@@ -70,7 +75,7 @@ namespace internal_Items {
 		/// </summary>
 		public static void Initialize() {
 			db = new List<ItemInfo>();
-			db.Add(new ItemInfo(db.Count, "", "Log", "", 0, 0, 15, -1, 50.0f, false, false, false, true, false, false, new string[] { "material" }));
+			db.Add(new ItemInfo(db.Count, "", "Log", "", 0, 0, 15, -1, 50.0f, false, false, false, new string[] { "material", "chest" }));
 			initialized = true;
 		}
 	}

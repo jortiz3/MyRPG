@@ -164,15 +164,17 @@ public class Container : Interactable {
 		}
 	}
 
-	public void Populate() { //use asset manager, pass container id, item will add itself to container
-		int numItems = UnityEngine.Random.Range(5, 15);
-		ItemInfo[] dropTable = ItemDatabase.GetDropTable(quality: 0);
-		int dropTableIndex;
+	protected void Populate() {
+		SelfDestruct(destroySelf: false); //ensure there are no items in the container
+
+		int numItems = UnityEngine.Random.Range(5, 15); //determine how many times items will be instantiated into the chest
+		ItemInfo[] dropTable = ItemDatabase.GetDropTable(GetTextureName().Split('_')); //determine which items can be spawned in this container -- determined by texture name (i.e. "chest_default")
+		int dropTableIndex; //the currently selected item to add
 		for (int i = 0; i < numItems; i++) {
-			dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length);
+			dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
 			AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
-				containerID: instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
-				textureName: dropTable[dropTableIndex].texture_default); //search for preset name, then use preset to generate items using ItemDB
+				containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
+				textureName: dropTable[dropTableIndex].texture_default); //instantiate the item -- the item will add itself to this container
 		}
 	}
 
@@ -208,7 +210,7 @@ public class Container : Interactable {
 	private void RefreshUIElement(Item item) {
 		Transform element = CreateContainerElement(item);
 		Text text;
-		foreach(Transform child in element) {
+		foreach (Transform child in element) {
 			text = child.GetComponent<Text>();
 
 			if (text != null) {
@@ -264,12 +266,19 @@ public class Container : Interactable {
 	/// <summary>
 	/// Removes all contained items from the scene, then destroys itself.
 	/// </summary>
-	public virtual void SelfDestruct() {
+	public virtual void SelfDestruct(bool destroyItems = true, bool destroySelf = true) {
 		for (int i = items.Count - 1; i >= 0; i--) {
-			RemoveUIElement(items[i]);
-			Destroy(items[i].gameObject);
+			RemoveUIElement(items[i]); //either way, remove ui element
+			if (destroyItems) { //if we are destroying the items
+				Destroy(items[i].gameObject); //destroy item game object to remove all item info
+			} else if (destroySelf) { //if !destroyItems, but destroying self
+				items[i].ContainerID = -1; //remove link to containerID
+			}
 		}
-		Destroy(gameObject);
+
+		if (destroySelf) {
+			Destroy(gameObject);
+		}
 	}
 
 	protected void SetContainerActive(bool active) {

@@ -23,9 +23,6 @@ public class Item : Interactable {
 	private bool equipped;
 	private bool slottable;
 	private bool consumable;
-	private bool crafting_material;
-	private bool weapon;
-	private bool armor;
 	private string[] tags; //used for sorting the item in the inventory screen
 
 	public int ID { get { return id; } }
@@ -43,9 +40,6 @@ public class Item : Interactable {
 	public bool Equipped { get { return equipped; } set { equipped = value; } }
 	public bool Slottable { get { return slottable; } }
 	public bool Consumable { get { return consumable; } }
-	public bool isCraftingMaterial { get { return crafting_material; } }
-	public bool isWeapon { get { return weapon; } }
-	public bool isArmor { get { return armor; } }
 
 	private void Awake() {
 		if (itemPrefab == null) {
@@ -71,14 +65,12 @@ public class Item : Interactable {
 
 	public string GetItemType() {
 		string temp = "";
-		if (weapon) {
+		/*if (weapon) {
 			temp = "W";
 		} else if (armor) {
 			temp = "A";
-		} else if (consumable) {
+		} else*/ if (consumable) {
 			temp = "C";
-		} else if (crafting_material) {
-			temp = "M";
 		}
 		return temp;
 	}
@@ -236,9 +228,6 @@ public class Item : Interactable {
 		equippable = retrievedInfo.equipable;
 		slottable = retrievedInfo.slottable;
 		consumable = retrievedInfo.consumable;
-		crafting_material = retrievedInfo.crafting_material;
-		weapon = retrievedInfo.weapon;
-		armor = retrievedInfo.armor;
 		tags = retrievedInfo.tags;
 
 		string prefixToObtain = !Prefix.Equals("") ? Prefix : retrievedInfo.prefix;

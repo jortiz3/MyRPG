@@ -45,9 +45,9 @@ public class Inventory : Container {
 		playerInfo.Find("Inventory_Player_TotalWeight").GetComponent<Text>().text = "Weight: " + TotalWeight + "/" + MaxWeight+ " kg"; //display the total weight
 	}
 
-	public override void SelfDestruct() {
+	public override void SelfDestruct(bool destroyItems = true, bool destroySelf = false) {
 		if (!GameManager.instance.State_Play) { //if the call to self destruct isn't during gameplay (i.e. loading areas)
-			base.SelfDestruct();
+			base.SelfDestruct(destroyItems, destroySelf);
 		}
 	}
 
