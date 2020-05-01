@@ -29,6 +29,7 @@ public class Inventory : Container {
 			item.ContainerID = 0;
 			item.SetInteractionActive();
 		}
+		item.LastUpdated = GameManager.instance.ElapsedGameTime;
 	}
 
 	protected override void Initialize() {

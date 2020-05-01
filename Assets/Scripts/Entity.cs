@@ -39,7 +39,7 @@ namespace internal_Area {
 		/// <summary>
 		/// Creates entity data for items.
 		/// </summary>
-		public Entity(int ItemID, string Prefix, string Suffix, int Quantity, Vector3 Position, string Texture, string containerInfo = "") {
+		public Entity(int ItemID, string Prefix, string Suffix, int Quantity, Vector3 Position, string Texture, string containerInfo = "", float LastUpdated = 0) {
 			type = "item";
 			textures = new string[] { Texture };
 			id = ItemID;
@@ -50,7 +50,7 @@ namespace internal_Area {
 			uniqueBool_0 = false;
 			positionX = Position.x;
 			positionY = Position.y;
-			lastUpdated = 0;
+			lastUpdated = (int)LastUpdated;
 		}
 
 		/// <summary>
@@ -130,7 +130,8 @@ namespace internal_Area {
 						containerID = int.Parse(uniqueString_2);
 					} catch {}
 
-					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: id, containerID: containerID, quantity: quantity, textureName: textures[0]);
+					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: id, containerID: containerID, quantity: quantity,
+						textureName: textures[0], lastUpdated: lastUpdated);
 					if (i != null) {
 						return true;
 					}
@@ -182,7 +183,7 @@ namespace internal_Area {
 				case "item":
 					Item i = transform.GetComponent<Item>(); //get item component
 					if (i != null) { //if component was there
-						temp = new Entity(i.ID, i.Prefix, i.Suffix, i.Quantity, transform.position, i.GetTextureName(), i.ContainerID.ToString()); //create entity object
+						temp = new Entity(i.ID, i.Prefix, i.Suffix, i.Quantity, transform.position, i.GetTextureName(), i.ContainerID.ToString(), i.LastUpdated); //create entity object
 					}
 					break;
 				case "structure":

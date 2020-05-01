@@ -12,7 +12,7 @@ public class Interactable : MonoBehaviour {
 	protected float lastUpdated;
 	protected SpriteRenderer sprite;
 
-	public float LastUpdated { get { return lastUpdated; } }
+	public float LastUpdated { get { return lastUpdated; } set { lastUpdated = value; } }
 
 	/// <summary>
 	/// Disables the capability for the player to interact with this object.

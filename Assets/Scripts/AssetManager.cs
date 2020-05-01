@@ -96,7 +96,7 @@ public class AssetManager : MonoBehaviour {
 	}
 
 	public Item InstantiateItem(Vector3 position, int itemID = 0, int containerID = -1, string itemPrefix = "", string itemBaseName = "",
-		string itemSuffix = "", int quantity = 1, string textureName = "log") {
+		string itemSuffix = "", int quantity = 1, string textureName = "log", float lastUpdated = 0) {
 		string prefabKey = "item";
 		GameObject spawnedPrefab = null;
 

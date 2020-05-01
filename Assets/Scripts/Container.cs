@@ -30,18 +30,24 @@ public class Container : Interactable {
 
 	public bool Add(Item item) {
 		if (item != null) {
-			if (totalWeight + item.GetWeight() <= maxWeight) {
-				int itemIndex = IndexOf(item);
-				if (itemIndex >= 0) { //container has some of this item already
-					items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
-					Destroy(item.gameObject); //remove item from scene
-				} else { //first time this item is added
-					items.Add(item);
-					item.ContainerID = instanceID; //ensure the item knows which container it is in
-					CreateContainerElement(item); //ensure there's a ui element for the item
-					item.SetInteractionActive(false); //hide the item from world space
+			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated) { //if container not updated recently, and item attempting to add is new
+				if (totalWeight + item.GetWeight() <= maxWeight) {
+					int itemIndex = IndexOf(item);
+					if (itemIndex >= 0) { //container has some of this item already
+						items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
+						Destroy(item.gameObject); //remove item from scene
+						items[itemIndex].LastUpdated = GameManager.instance.ElapsedGameTime;
+					} else { //first time this item is added
+						items.Add(item);
+						item.ContainerID = instanceID; //ensure the item knows which container it is in
+						CreateContainerElement(item); //ensure there's a ui element for the item
+						item.SetInteractionActive(false); //hide the item from world space
+						item.LastUpdated = GameManager.instance.ElapsedGameTime;
+					}
+					return true;
 				}
-				return true;
+			} else { //container is attempting to repopulate
+				Destroy(item.gameObject); //destroy old item
 			}
 		}
 		return false;
@@ -165,8 +171,8 @@ public class Container : Interactable {
 			}
 
 			if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
-				//how to prevent old items populating afterwards
-
+				Populate();
+				lastUpdated = GameManager.instance.ElapsedGameTime;
 			}
 		}
 	}
@@ -181,7 +187,7 @@ public class Container : Interactable {
 			dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
 			AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
 				containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
-				textureName: dropTable[dropTableIndex].texture_default); //instantiate the item -- the item will add itself to this container
+				textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
 		}
 	}
 

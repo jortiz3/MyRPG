@@ -239,8 +239,17 @@ public class Item : Interactable {
 		gameObject.name = ToString();
 	}
 
-	public void Load(int ID = -1, int ContainerID = -1, string Prefix = "", string BaseName = "", string Suffix = "", int Quantity = 1, Texture2D Texture = null) {
+	public void Load(int ID = -1, int ContainerID = -1, string Prefix = "", string BaseName = "", string Suffix = "",
+		int Quantity = 1, Texture2D Texture = null, float LastUpdated = 0) {
 		containerID = ContainerID;
+		lastUpdated = LastUpdated;
+
+		if (containerID < 1 && containerID != Inventory.instance.InstanceID) { //not in container
+			if (GameManager.instance.ElapsedGameTime - lastUpdated > 300) { //if item has been laying on ground for 5 mins
+				Destroy(gameObject); //remove from scene
+			}
+		}
+
 		LoadDBInfo(ID: ID, BaseName: BaseName, Quantity: Quantity);
 		SetSprite(Texture);
 	}
