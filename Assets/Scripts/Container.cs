@@ -155,11 +155,18 @@ public class Container : Interactable {
 		base.InteractInternal(); //finish interaction
 	}
 
-	public void Load(int InstanceID) {
+	public void Load(int InstanceID, float LastUpdated) {
+		lastUpdated = LastUpdated;
+
 		if (InstanceID > 0) {
 			instanceID = InstanceID;
 			if (instanceID >= nextInstanceID) {
 				nextInstanceID = instanceID;
+			}
+
+			if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
+				//how to prevent old items populating afterwards
+
 			}
 		}
 	}

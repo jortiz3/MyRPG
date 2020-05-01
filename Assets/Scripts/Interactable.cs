@@ -9,8 +9,10 @@ public class Interactable : MonoBehaviour {
 	private string interactMessage;
 	private bool interactable;
 	private bool disabled;
-
+	protected float lastUpdated;
 	protected SpriteRenderer sprite;
+
+	public float LastUpdated { get { return lastUpdated; } }
 
 	/// <summary>
 	/// Disables the capability for the player to interact with this object.

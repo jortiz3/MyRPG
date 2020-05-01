@@ -63,7 +63,7 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string textureName = "chest_default") {
+	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string textureName = "chest_default", float lastUpdated = 0) {
 		string prefabKey = "furniture";
 		GameObject spawnedPrefab = null;
 
@@ -78,7 +78,7 @@ public class AssetManager : MonoBehaviour {
 						TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
 						Texture2D curr_texture_reference = furniture[textureName]; //get texture2d from dictionary
 						if (curr_texture_reference != null) { //if texture retrieved
-							spawnedFurniture.Load(curr_texture_reference, parentStructure);
+							spawnedFurniture.Load(curr_texture_reference, parentStructure, lastUpdated);
 						}
 						if (position != null) { //if given valid position
 							spawnedFurniture.transform.position = position; //set the position of the object
@@ -95,7 +95,8 @@ public class AssetManager : MonoBehaviour {
 		return null; //return null furniture script
 	}
 
-	public Item InstantiateItem(Vector3 position, int itemID = 0, int containerID = -1, string itemPrefix = "", string itemBaseName = "", string itemSuffix = "", int quantity = 1, string textureName = "log") {
+	public Item InstantiateItem(Vector3 position, int itemID = 0, int containerID = -1, string itemPrefix = "", string itemBaseName = "",
+		string itemSuffix = "", int quantity = 1, string textureName = "log") {
 		string prefabKey = "item";
 		GameObject spawnedPrefab = null;
 
@@ -111,7 +112,8 @@ public class AssetManager : MonoBehaviour {
 					if (currItem != null) { //if instantiated properly
 						TrimGameObjectName(currItem.gameObject);
 						currItem.transform.position = position;
-						currItem.Load(ID: itemID, ContainerID: containerID, Prefix: itemPrefix, BaseName: itemBaseName, Suffix: itemSuffix, Quantity: quantity, Texture: curr_texture_reference); //pass item info and texture
+						currItem.Load(ID: itemID, ContainerID: containerID, Prefix: itemPrefix, BaseName: itemBaseName, Suffix: itemSuffix,
+							Quantity: quantity, Texture: curr_texture_reference); //pass item info and texture
 						return currItem;
 					}
 				}
@@ -124,7 +126,7 @@ public class AssetManager : MonoBehaviour {
 	}
 
 	public SceneryObject InstantiateSceneryObject(Vector3 position, string textureName = "bush_0",
-		int harvestedItemID = -int.MaxValue, int sceneryObjectHP = 3, bool allowStructureCollision = false) {
+		int harvestedItemID = -int.MaxValue, int sceneryObjectHP = 3, bool allowStructureCollision = false, float lastUpdated = 0) {
 		string prefabKey = "scenery_" + SceneryObject.GetSceneryType(textureName.Split('_')[0]);
 		GameObject spawnedPrefab = null;
 		if (prefabs.ContainsKey(prefabKey)) {
@@ -140,7 +142,7 @@ public class AssetManager : MonoBehaviour {
 						if (currObject != null) { //if successfully instantiated
 							TrimGameObjectName(currObject.gameObject);
 							currObject.transform.position = position; //set the position
-							currObject.Load(curr_texture_reference, harvestedItemID, sceneryObjectHP, allowStructureCollision); //pass info to scenery object script
+							currObject.Load(curr_texture_reference, harvestedItemID, sceneryObjectHP, allowStructureCollision, lastUpdated); //pass info to scenery object script
 							return currObject;
 						}
 					}
@@ -154,7 +156,7 @@ public class AssetManager : MonoBehaviour {
 	}
 
 	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string preset = "default",
-		bool instantiateFurniture = false, string[] textureNames = null) {
+		bool instantiateFurniture = false, string[] textureNames = null, float lastUpdated = 0) {
 		string prefabKey = "structure_" + Structure.GetDimensionSize(dimensions);
 		GameObject spawnedPrefab = null;
 
@@ -180,7 +182,7 @@ public class AssetManager : MonoBehaviour {
 					if (position != null) { //if given valid position
 						spawnedStructure.transform.position = position; //set the position of the object
 					}
-					spawnedStructure.Load(dimensions, owner, preset, instantiateFurniture, curr_texture_references); //pass required info to structure
+					spawnedStructure.Load(dimensions, owner, preset, instantiateFurniture, curr_texture_references, lastUpdated); //pass required info to structure
 					return spawnedStructure; //return reference to spawned structure
 				}
 			}//endif prefab reference != null

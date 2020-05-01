@@ -50,13 +50,13 @@ namespace internal_Area {
 			uniqueBool_0 = false;
 			positionX = Position.x;
 			positionY = Position.y;
-			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
+			lastUpdated = 0;
 		}
 
 		/// <summary>
 		/// Creates entity data for structures.
 		/// </summary>
-		public Entity(string Owner, string Preset, Vector2Int Dimensions, Vector3 Position, string[] Textures, bool InstantiateFurniture = false) {
+		public Entity(string Owner, string Preset, Vector2Int Dimensions, Vector3 Position, string[] Textures, bool InstantiateFurniture = false, float LastUpdated = 0) {
 			type = "structure";
 			textures = Textures;
 			id = -1;
@@ -67,14 +67,14 @@ namespace internal_Area {
 			uniqueBool_0 = InstantiateFurniture;
 			positionX = Position.x;
 			positionY = Position.y;
-			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
+			lastUpdated = (int)LastUpdated;
 		}
 
 		/// <summary>
 		/// Creates entity data for scenery.
 		/// </summary>
-		public Entity(int ItemID, int HarvestCount, bool AllowStructureCollision, Vector3 Position, string Texture) {
-			type = "structure";
+		public Entity(int ItemID, int HarvestCount, bool AllowStructureCollision, Vector3 Position, string Texture, float LastUpdated = 0) {
+			type = "scenery";
 			textures = new string[] { Texture };
 			id = ItemID;
 			uniqueString_0 = "";
@@ -84,13 +84,13 @@ namespace internal_Area {
 			uniqueBool_0 = AllowStructureCollision;
 			positionX = Position.x;
 			positionY = Position.y;
-			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
+			lastUpdated = (int)LastUpdated;
 		}
 
 		/// <summary>
 		/// Creates entity data for furniture.
 		/// </summary>
-		public Entity(Vector3 position, int containerID = -1, string Texture = "chest_default") {
+		public Entity(Vector3 position, int containerID = -1, string Texture = "chest_default", float LastUpdated = 0) {
 			type = "furniture";
 			textures = new string[] { Texture };
 			id = containerID;
@@ -101,7 +101,7 @@ namespace internal_Area {
 			uniqueBool_0 = false;
 			positionX = position.x;
 			positionY = position.y;
-			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
+			lastUpdated = (int)LastUpdated;
 		}
 
 		/// <summary>
@@ -137,24 +137,24 @@ namespace internal_Area {
 					break;
 				case "structure":
 					Structure s = AssetManager.instance.InstantiateStructure(position: position, dimensions: Vector2IntS.Parse(uniqueString_0).ToVector2Int(),
-						owner: uniqueString_1, preset: uniqueString_2, instantiateFurniture: uniqueBool_0, textureNames: textures);
+						owner: uniqueString_1, preset: uniqueString_2, instantiateFurniture: uniqueBool_0, textureNames: textures, lastUpdated);
 					if (s != null) { //if instantiated
 						return true;
 					}
 					break;
 				case "scenery":
 					SceneryObject sc = AssetManager.instance.InstantiateSceneryObject(position: position, textureName: textures[0], harvestedItemID: id,
-						sceneryObjectHP: quantity, allowStructureCollision: uniqueBool_0);
+						sceneryObjectHP: quantity, allowStructureCollision: uniqueBool_0, lastUpdated);
 					if (sc != null) {
 						return true;
 					}
 					break;
 				case "furniture":
-					Furniture f = AssetManager.instance.InstantiateFurniture(position, textureName: textures[0]);
+					Furniture f = AssetManager.instance.InstantiateFurniture(position, textureName: textures[0], lastUpdated: lastUpdated);
 					if (f != null) {
 						Container c = f.GetComponent<Container>();
 						if (c != null) {
-							c.Load(id);
+							c.Load(id, lastUpdated);
 						}
 						return true;
 					}
@@ -188,14 +188,14 @@ namespace internal_Area {
 				case "structure":
 					Structure s = transform.GetComponent<Structure>(); //get structure component
 					if (s != null) { //if component was there
-						temp = new Entity(s.Owner, s.Preset, s.Dimensions, transform.position, s.GetTextures());
+						temp = new Entity(s.Owner, s.Preset, s.Dimensions, transform.position, s.GetTextures(), false, s.LastUpdated);
 					}
 					break;
 				case "scenery":
 					SceneryObject scenery = transform.GetComponent<SceneryObject>(); //get scenery component
 					if (scenery != null) { //if component was there
 						temp = new Entity(scenery.HarvestedItemID, scenery.HarvestCount,
-							scenery.AllowStructureCollision, transform.position, scenery.GetTextureName()); //create entity object
+							scenery.AllowStructureCollision, transform.position, scenery.GetTextureName(), scenery.LastUpdated); //create entity object
 					}
 					break;
 				case "furniture":
@@ -208,7 +208,7 @@ namespace internal_Area {
 						} else {
 							containerID = -1;
 						}
-						temp = new Entity(f.transform.position, containerID, f.GetTextureName());
+						temp = new Entity(f.transform.position, containerID, f.GetTextureName(), f.LastUpdated);
 					}
 					break;
 				default:

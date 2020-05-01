@@ -70,11 +70,20 @@ public class SceneryObject : Interactable { //convert to Interactable; store ite
 		base.InteractInternal();
 	}
 
-	public void Load(Texture2D Texture, int HarvestedItemID = -int.MaxValue, int HarvestCount = 0, bool AllowCollisionWithStructures = false) {
+	public void Load(Texture2D Texture, int HarvestedItemID = -int.MaxValue, int HarvestCount = 0, bool AllowCollisionWithStructures = false, float LastUpdated = 0) {
 		harvestedItemID = HarvestedItemID == -int.MaxValue ? GetHarvestedItemID(Texture.name) : HarvestedItemID;
 		harvestCount = HarvestCount; //ensure not to display interaction
 		allowStructureCollision = AllowCollisionWithStructures;
+		lastUpdated = LastUpdated;
 		SetSprite(Texture);
+
+		if (GameManager.instance.ElapsedGameTime - lastUpdated > 120) {
+			if (harvestCount < 1) {
+				harvestCount = 1;
+				lastUpdated = GameManager.instance.ElapsedGameTime;
+			}
+		}
+
 		loaded = true;
 	}
 
