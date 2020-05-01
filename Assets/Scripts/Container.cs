@@ -172,7 +172,6 @@ public class Container : Interactable {
 
 			if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
 				Populate();
-				lastUpdated = GameManager.instance.ElapsedGameTime;
 			}
 		}
 	}
@@ -188,9 +187,10 @@ public class Container : Interactable {
 				dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
 				AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
 					containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
-					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
+					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: GameManager.instance.ElapsedGameTime); //instantiate the item -- the item will add itself to this container
 			}
 		}
+		lastUpdated = GameManager.instance.ElapsedGameTime;
 	}
 
 	protected void RefreshDisplay() {
