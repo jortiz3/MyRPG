@@ -226,7 +226,6 @@ public class GameManager : MonoBehaviour {
 			if (!File.Exists(filePath + playerName + fileName)) { //if the file doesn't exist, then we can create it
 				WorldManager.instance.GenerateWorldAreas(playerName, worldName); //generate the world
 				currDifficulty = difficulty; //set the difficulty
-				MenuScript.instance.ChangeState(""); //hide the menus
 				Player.instance.TeleportToPos(Vector3.zero); //move the player to center
 				SaveGame(); //create a save file
 				state_gameInitialized = true; //flag game as initialized

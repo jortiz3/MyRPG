@@ -181,13 +181,15 @@ public class Container : Interactable {
 		SelfDestruct(destroySelf: false); //ensure there are no items in the container
 
 		int numItems = UnityEngine.Random.Range(5, 15); //determine how many times items will be instantiated into the chest
-		ItemInfo[] dropTable = ItemDatabase.GetDropTable(GetTextureName().Split('_')); //determine which items can be spawned in this container -- determined by texture name (i.e. "chest_default")
-		int dropTableIndex; //the currently selected item to add
-		for (int i = 0; i < numItems; i++) {
-			dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
-			AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
-				containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
-				textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
+		ItemInfo[] dropTable = ItemDatabase.GetDropTable(transform.name.Split('_')); //determine which items can be spawned in this container -- determined by texture name (i.e. "chest_default")
+		if (dropTable != null && dropTable.Length > 0) {
+			int dropTableIndex; //the currently selected item to add
+			for (int i = 0; i < numItems; i++) {
+				dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
+				AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
+					containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
+					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
+			}
 		}
 	}
 
