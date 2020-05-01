@@ -57,6 +57,16 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	public void DeleteSaveGame(Transform uiObj) {
+		if (!AreaManager.instance.SaveOrLoadInProgress) { //prevent multiple loading sequences
+			if (Directory.Exists(filePath + uiObj.name)) { //if the savegame exists
+				Directory.Delete(filePath + uiObj.name, true); //delete all save files
+			}
+			Destroy(uiObj.gameObject); //remove ui element from the scene
+			ResizeLoadUI();
+		}
+	}
+
 	private void FixedUpdate() {
 		if (state_play) {
 			elapsedGameTime += Time.fixedDeltaTime;
@@ -99,8 +109,6 @@ public class GameManager : MonoBehaviour {
 		Transform temp; //current ui for savegame
 		Text textComponent; //text component for current ui
 
-		float scrollContentHeight = 0; //total height for scroll view content
-		float prefabHeight = loadPrefab.GetComponent<RectTransform>().sizeDelta.y; //get the height for each prefab
 		foreach (DirectoryInfo f in info) { //for each folder (savegame)
 			temp = loadParent.Find(f.Name); //check to see if it has been checked already
 
@@ -110,12 +118,9 @@ public class GameManager : MonoBehaviour {
 
 			textComponent = temp.GetChild(0).GetComponent<Text>(); //get the text component
 			textComponent.text = GetSaveDetails(f.Name); //get save details and display relevant text
-
-			scrollContentHeight += prefabHeight; //adjust total scroll view height
 		}
-		
-		RectTransform parentRect = loadParent.GetComponent<RectTransform>(); //get the parent rect once all prefabs instantiated
-		parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, scrollContentHeight); //adjust the size so it fits appropriately
+
+		ResizeLoadUI();
 	}
 
 	private void LoadGame() {
@@ -172,6 +177,12 @@ public class GameManager : MonoBehaviour {
 		state_play = false;
 		state_paused = false;
 		MenuScript.instance.ChangeState("Main Menu");
+	}
+
+	private void ResizeLoadUI() {
+		float prefabHeight = loadPrefab.GetComponent<RectTransform>().sizeDelta.y; //get the height for each prefab
+		RectTransform parentRect = loadParent.GetComponent<RectTransform>(); //get the parent rect once all prefabs instantiated
+		parentRect.sizeDelta = new Vector2(parentRect.sizeDelta.x, parentRect.childCount * prefabHeight); //adjust the size so it fits appropriately
 	}
 
 	/// <summary>

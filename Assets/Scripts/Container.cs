@@ -167,7 +167,7 @@ public class Container : Interactable {
 		if (InstanceID > 0) {
 			instanceID = InstanceID;
 			if (instanceID >= nextInstanceID) {
-				nextInstanceID = instanceID;
+				nextInstanceID = instanceID; //ensure current instanceIDs do not get overwritten
 			}
 
 			if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
