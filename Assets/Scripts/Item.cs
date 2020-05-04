@@ -180,14 +180,12 @@ public class Item : Interactable {
 		transform.parent = AreaManager.GetEntityParent("Item");
 		gameObject.tag = "item";
 
-		if (containerID == Inventory.instance.InstanceID) { //if this item belongs to player's inventory
-			Inventory.instance.Add(this); //add to inventory
-		} else if (0 < containerID) { //else if usable container ID
+		if (containerID != 0) { //if a container is supposed to track this item
 			Container c = Container.GetContainer(containerID); //try to find container
 			if (c != null) { //if container found
 				c.Add(this); //add to container
-			} else { //container no longer exists
-				containerID = 0; //reset container ID
+			} else { //if container not found
+				containerID = 0; //reset the id
 			}
 		}
 

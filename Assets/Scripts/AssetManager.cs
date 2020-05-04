@@ -63,7 +63,7 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string textureName = "chest_default", float lastUpdated = 0) {
+	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string owner = "", string textureName = "chest_default", float lastUpdated = 0) {
 		string prefabKey = "furniture";
 		GameObject spawnedPrefab = null;
 
@@ -78,7 +78,7 @@ public class AssetManager : MonoBehaviour {
 						TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
 						Texture2D curr_texture_reference = furniture[textureName]; //get texture2d from dictionary
 						if (curr_texture_reference != null) { //if texture retrieved
-							spawnedFurniture.Load(curr_texture_reference, parentStructure, lastUpdated);
+							spawnedFurniture.Load(curr_texture_reference, parentStructure, owner, lastUpdated);
 						}
 						if (position != null) { //if given valid position
 							spawnedFurniture.transform.position = position; //set the position of the object

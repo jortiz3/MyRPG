@@ -75,13 +75,18 @@ public class Furniture : Interactable {
 		base.Initialize();
 	}
 
-	public void Load(Texture2D texture, Structure parentStructure = null, float LastUpdated = 0) {
+	public void Load(Texture2D texture, Structure parentStructure = null, string Owner = "", float LastUpdated = 0) {
+		owner = Owner;
 		lastUpdated = LastUpdated;
 
 		SetSprite(texture);
 
 		if (parentStructure != null) {
 			parentStructure.RegisterFurniture(this);
+
+			if (Owner.Equals("")) {
+				owner = parentStructure.Owner;
+			}
 		}
 	}
 

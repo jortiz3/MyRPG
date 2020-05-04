@@ -82,7 +82,9 @@ public class Container : Interactable {
 	}
 
 	public static Container GetContainer(int instanceID) {
-		if (instanceID >= 0) {
+		if (instanceID == Inventory.instance.instanceID) {
+			return Inventory.instance;
+		} else if (instanceID >= 0) {
 			Transform furnitureParent = AreaManager.GetEntityParent("furniture");
 			string[] currNameInfo;
 			foreach (Transform child in furnitureParent) {
@@ -161,7 +163,8 @@ public class Container : Interactable {
 		base.InteractInternal(); //finish interaction
 	}
 
-	public void Load(int InstanceID, float LastUpdated) {
+	public void Load(int InstanceID, string Owner, float LastUpdated) {
+		owner = Owner;
 		lastUpdated = LastUpdated;
 
 		if (InstanceID > 0) {
@@ -170,8 +173,10 @@ public class Container : Interactable {
 				nextInstanceID = instanceID; //ensure current instanceIDs do not get overwritten
 			}
 
-			if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
-				Populate();
+			if (!owner.Equals("Player")) { //if not player's chest
+				if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
+					Populate(); //repopulate chest
+				}
 			}
 		}
 	}

@@ -11,8 +11,11 @@ public class Interactable : MonoBehaviour {
 	private bool disabled;
 	protected float lastUpdated;
 	protected SpriteRenderer sprite;
+	protected string owner;
 
+	public string Owner { get { return owner; } }
 	public float LastUpdated { get { return lastUpdated; } set { lastUpdated = value; } }
+	
 
 	/// <summary>
 	/// Disables the capability for the player to interact with this object.

@@ -14,7 +14,7 @@ namespace internal_Area {
 		private string[] textures; //textures to assign
 		private int id; //itemID, harvestItemID, containerID
 		private int quantity; //harvestCount
-		private string uniqueString_0; //prefix, structure dimensions
+		private string uniqueString_0; //prefix, structure dimensions, furniture owner
 		private string uniqueString_1; //suffix, structure owner
 		private string uniqueString_2; //container info, structure preset
 		private bool uniqueBool_0; //allow structure collision, instantiate furniture on first instantiate
@@ -90,12 +90,12 @@ namespace internal_Area {
 		/// <summary>
 		/// Creates entity data for furniture.
 		/// </summary>
-		public Entity(Vector3 position, int containerID = -1, string Texture = "chest_default", float LastUpdated = 0) {
+		public Entity(Vector3 position, int containerID = -1, string owner = "", string Texture = "chest_default", float LastUpdated = 0) {
 			type = "furniture";
 			textures = new string[] { Texture };
 			id = containerID;
 			quantity = 0;
-			uniqueString_0 = "";
+			uniqueString_0 = owner;
 			uniqueString_1 = "";
 			uniqueString_2 = "";
 			uniqueBool_0 = false;
@@ -151,11 +151,11 @@ namespace internal_Area {
 					}
 					break;
 				case "furniture":
-					Furniture f = AssetManager.instance.InstantiateFurniture(position, textureName: textures[0], lastUpdated: lastUpdated);
+					Furniture f = AssetManager.instance.InstantiateFurniture(position, owner: uniqueString_0, textureName: textures[0], lastUpdated: lastUpdated);
 					if (f != null) {
 						Container c = f.GetComponent<Container>();
 						if (c != null) {
-							c.Load(id, lastUpdated);
+							c.Load(id, uniqueString_0, lastUpdated);
 						}
 						return true;
 					}
@@ -206,7 +206,7 @@ namespace internal_Area {
 						} else {
 							containerID = -1;
 						}
-						temp = new Entity(f.transform.position, containerID, f.GetTextureName(), f.LastUpdated);
+						temp = new Entity(f.transform.position, containerID, f.GetTextureName(), f.Owner, f.LastUpdated);
 					}
 					break;
 				default:
