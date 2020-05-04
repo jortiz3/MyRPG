@@ -6,10 +6,10 @@ TagManager:
   tags:
   - structure
   - background
-  - inventory
   - item
   - scenery
   - furniture
+  - uielement_container
   layers:
   - Default
   - TransparentFX

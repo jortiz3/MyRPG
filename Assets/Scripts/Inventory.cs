@@ -12,24 +12,12 @@ public class Inventory : Container {
 			Destroy(gameObject);
 		} else {
 			instance = this;
-			gameObject.tag = "inventory";
 		}
 	}
 
 	public override void Display() {
 		SetContainerActive(false); //since this container will not be opened via interacting, we must hide the other container on display
 		base.Display(); //otherwise, display like normal container
-	}
-
-	public void Drop(Item item) {
-		if (nonplayerContainer != null) {
-			Transfer(item, nonplayerContainer);
-		} else {
-			item.transform.position = Player.instance.transform.position + InputManager.ConvertDirectionToVector3(Player.instance.LookDirection);
-			item.ContainerID = 0;
-			item.SetInteractionActive();
-		}
-		item.LastUpdated = GameManager.instance.ElapsedGameTime;
 	}
 
 	protected override void Initialize() {

@@ -81,6 +81,20 @@ public class Container : Interactable {
 		MenuScript.instance.ChangeState("Inventory");
 	}
 
+	protected virtual void Drop(Item item, int quantity) {
+		if (item != null) {
+			Vector3 dropPosition = Player.instance.transform.position + InputManager.ConvertDirectionToVector3(Player.instance.LookDirection);
+			if (item.Quantity - quantity > 0) {
+				item.Quantity -= quantity;
+				AssetManager.instance.InstantiateItem(dropPosition, item.ID, 0, item.Prefix, item.BaseName, item.Suffix, quantity, item.GetTextureName(), GameManager.instance.ElapsedGameTime);
+			} else {
+				item.transform.position = dropPosition;
+				item.ContainerID = 0;
+				item.SetInteractionActive();
+			}
+		}
+	}
+
 	public static Container GetContainer(int instanceID) {
 		if (instanceID == Inventory.instance.instanceID) {
 			return Inventory.instance;
@@ -317,16 +331,5 @@ public class Container : Interactable {
 
 	protected virtual void UseItem(Item item) { //if an item is used in any other container
 		Transfer(item, Inventory.instance); //transfer this item to player's inventory if possible
-	}
-
-	/// <summary>
-	/// Tells displayed container to use this item. Called by button via inspector.
-	/// </summary>
-	/// <param name="element">The button being pressed.</param>
-	public void UseUIElement(Transform element) {
-		if (displayedContainer != null) {
-			Item currentItem = displayedContainer.GetItem(element.name);
-			displayedContainer.UseItem(currentItem);
-		}
 	}
 }
