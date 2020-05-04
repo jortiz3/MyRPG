@@ -18,9 +18,7 @@ namespace internal_Items {
 		public bool equipable;
 		public bool slottable;
 		public bool consumable;
-		public bool crafting_material;
-		public bool weapon;
-		public bool armor;
+		public string texture_default;
 		public string[] tags;
 
 		public ItemInfo() {
@@ -36,9 +34,7 @@ namespace internal_Items {
 			equipable = false;
 			slottable = false;
 			consumable = false;
-			crafting_material = false;
-			weapon = false;
-			armor = false;
+			texture_default = "Log";
 			tags = null;
 		}
 
@@ -55,9 +51,7 @@ namespace internal_Items {
 			equipable = copy.equipable;
 			slottable = copy.slottable;
 			consumable = copy.consumable;
-			crafting_material = copy.crafting_material;
-			weapon = copy.weapon;
-			armor = copy.armor;
+			texture_default = copy.texture_default;
 			tags = copy.tags;
 		}
 
@@ -74,15 +68,12 @@ namespace internal_Items {
 			equipable = item.Equipable;
 			slottable = item.Slottable;
 			consumable = item.Consumable;
-			crafting_material = item.isCraftingMaterial;
-			weapon = item.isWeapon;
-			armor = item.isArmor;
+			texture_default = item.GetTextureName();
 			tags = item.GetTags();
 		}
 
 		public ItemInfo(int ID, string Prefix, string Name, string Suffix, int Stat_Magic, int Stat_Physical, int Currency_Value,
-			int Quality_Value, float Weight, bool Equipable, bool Slottable, bool Consumable, bool isCraftingMaterial, bool isWeapon,
-			bool isArmor, string[] Tags) {
+			int Quality_Value, float Weight, bool Equipable, bool Slottable, bool Consumable, string[] Tags, string Texture = "") {
 			id = ID;
 			baseName = Name;
 			prefix = Prefix;
@@ -95,9 +86,11 @@ namespace internal_Items {
 			equipable = Equipable;
 			slottable = Slottable;
 			consumable = Consumable;
-			crafting_material = isCraftingMaterial;
-			weapon = isWeapon;
-			armor = isArmor;
+			if (Texture.Equals("")) {
+				texture_default = Name;
+			} else {
+				texture_default = Texture;
+			}
 			tags = Tags;
 		}
 

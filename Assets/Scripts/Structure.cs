@@ -15,11 +15,13 @@ public class Structure : MonoBehaviour {
 	private string preset;
 	private List<Furniture> furniture;
 	private bool registeredToManager;
+	private float lastUpdated;
 
 	public Vector2Int Dimensions { get { return dimensions; } }
 	public string Owner { get { return owner; } }
 	public string Preset { get { return preset; } }
 	public bool Registered { get { return registeredToManager; } set { registeredToManager = value; } }
+	public float LastUpdated { get { return lastUpdated; } }
 
 	private void Awake() {
 		Initialize();
@@ -100,10 +102,11 @@ public class Structure : MonoBehaviour {
 	/// <summary>
 	/// Passes required information to an already-instantiated structure.
 	/// </summary>
-	public void Load(Vector2Int Dimensions, string Owner = "Player", string Preset = "default", bool instantiateFurniture = false, Texture2D[] textures = null) {
+	public void Load(Vector2Int Dimensions, string Owner = "Player", string Preset = "default", bool instantiateFurniture = false, Texture2D[] textures = null, float LastUpdated = 0) {
 		dimensions = Dimensions;
 		owner = Owner;
 		preset = Preset;
+		lastUpdated = LastUpdated; //replace owner after certain time
 
 		if (instantiateFurniture) {
 			StartCoroutine(GenerateFurniture());

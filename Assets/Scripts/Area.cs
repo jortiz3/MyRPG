@@ -26,8 +26,6 @@ namespace internal_Area {
 		[JsonProperty]
 		private List<Entity> entities;
 		[JsonProperty]
-		private List<ContainerSaveData> containers;
-		[JsonProperty]
 		private Vector2IntS position;
 		[JsonProperty]
 		private bool discovered;
@@ -45,7 +43,6 @@ namespace internal_Area {
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			owner = "none";
 			entities = new List<Entity>();
-			containers = new List<ContainerSaveData>();
 		}
 
 		public Area(Vector2Int Position) {
@@ -54,7 +51,6 @@ namespace internal_Area {
 			typeName = AreaTypeManager.GetAreaType(0).name;
 			owner = "none";
 			entities = new List<Entity>();
-			containers = new List<ContainerSaveData>();
 		}
 
 		public Area(Vector2Int Position, string AreaTypeName, string Owner = "none") {
@@ -63,7 +59,6 @@ namespace internal_Area {
 			typeName = AreaTypeName;
 			owner = Owner;
 			entities = new List<Entity>();
-			containers = new List<ContainerSaveData>();
 		}
 
 		public void AssignType(string TypeName) {
@@ -72,9 +67,10 @@ namespace internal_Area {
 
 		private void InstantiateEntities() {
 			if (entities != null) {
-				for (int i = entities.Count - 1; i >= 0; i--) {
+				for (int i = 0; i < entities.Count; i++) {
 					if (!entities[i].Instantiate()) { //try instantiate entity
 						entities.RemoveAt(i); //if failed, remove from list
+						i--; //counteract the shifting of elements
 					}
 				}
 			}
@@ -87,9 +83,9 @@ namespace internal_Area {
 			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 2f; //get remaining progress, divide by how many load sections
 
 			string bgFileName = "Backgrounds/";
-			if (typeName.Contains("City")) {
+			if (typeName.Contains("city")) {
 				bgFileName += "City";
-			} else if (typeName.Contains("Camp")) {
+			} else if (typeName.Contains("camp")) {
 				bgFileName += "Camp";
 			} else {
 				bgFileName += typeName;
@@ -111,7 +107,10 @@ namespace internal_Area {
 				yield return new WaitForEndOfFrame();
 			}
 
+			discovered = true;
+
 			LoadingScreen.instance.SetProgress(1f);
+			AreaManager.instance.SaveOrLoadInProgress = false;
 			yield return new WaitForSeconds(0.5f);
 			LoadingScreen.instance.Hide();
 		}
@@ -245,8 +244,6 @@ namespace internal_Area {
 				}
 				yield return new WaitForEndOfFrame(); //add time between iterations
 			}
-			Debug.Log(position.ToString() + " count:" + entities.Count);
-
 			Save();
 		}
 
@@ -258,30 +255,13 @@ namespace internal_Area {
 			writer.Close(); //close the file
 		}
 
-		private void Save(List<Entity> Entities) {
-			UpdateEntities(Entities);
-			Save();
-		}
-
-		public void Save(List<Container> Containers, List<Entity> Entities) {
-			UpdateContainers(Containers);
+		public void Save(List<Entity> Entities) {
 			UpdateEntities(Entities);
 			Save();
 		}
 
 		public void SetPosition(Vector2Int newPosition) {
 			position = new Vector2IntS(newPosition);
-		}
-
-		private void UpdateContainers(List<Container> Containers) {
-			containers.Clear();
-			foreach (Container c in Containers) {
-				containers.Add(new ContainerSaveData(c));
-			}
-		}
-
-		private void UpdateContainers(List<ContainerSaveData> Containers) {
-			containers = Containers; //set the new reference
 		}
 
 		private void UpdateEntities(List<Entity> Entities) {

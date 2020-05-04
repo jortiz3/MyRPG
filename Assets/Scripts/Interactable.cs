@@ -9,20 +9,25 @@ public class Interactable : MonoBehaviour {
 	private string interactMessage;
 	private bool interactable;
 	private bool disabled;
-
+	protected float lastUpdated;
 	protected SpriteRenderer sprite;
+	protected string owner;
+
+	public string Owner { get { return owner; } }
+	public float LastUpdated { get { return lastUpdated; } set { lastUpdated = value; } }
+	
 
 	/// <summary>
 	/// Disables the capability for the player to interact with this object.
 	/// </summary>
-	public virtual void DisableInteraction() {
-		disabled = true; //change to enable/disable box collider
+	protected virtual void DisableInteraction() {
+		disabled = true;
 	}
 
 	/// <summary>
 	/// Enables the capability for the player to interact with this object.
 	/// </summary>
-	public virtual void EnableInteraction() {
+	protected virtual void EnableInteraction() {
 		disabled = false;
 	}
 
@@ -86,6 +91,16 @@ public class Interactable : MonoBehaviour {
 		}
 	}
 
+	public virtual void SetInteractionActive(bool enabled = true) {
+		if (enabled) {
+			EnableInteraction();
+		} else {
+			DisableInteraction();
+		}
+
+		SetSpriteActive(enabled);
+	}
+
 	/// <summary>
 	/// Updates the message that is displayed once the player enters the interaction range.
 	/// </summary>
@@ -96,7 +111,7 @@ public class Interactable : MonoBehaviour {
 
 	protected void SetSprite(Texture2D texture) {
 		if (texture != null) {
-			if (sprite == null) { //if this is the first time the sprite is changed
+			if (sprite == null) { //if the sprite has not been assigned yet -- sometimes called prior to initialize
 				sprite = gameObject.GetComponent<SpriteRenderer>(); //get the sprite component
 			} //no else bc we still want to try to set sprite
 
@@ -104,6 +119,16 @@ public class Interactable : MonoBehaviour {
 				sprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 16f); //create sprite using given texture
 				gameObject.name = texture.name;
 			}
+		}
+	}
+
+	protected virtual void SetSpriteActive(bool active = true) {
+		if (sprite == null) { //if the sprite has not been assigned yet -- sometimes called prior to initialize
+			sprite = gameObject.GetComponent<SpriteRenderer>(); //get the sprite component
+		}
+
+		if (sprite != null) {
+			sprite.enabled = active;
 		}
 	}
 

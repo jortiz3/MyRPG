@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 7029436614918645932}
   m_Layer: 14
   m_Name: furniture
-  m_TagString: Untagged
+  m_TagString: furniture
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -140,4 +140,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57af863213c6c9641bcce49ee6488f22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  items: []

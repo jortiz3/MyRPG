@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using internal_Items;
 
 /// <summary>
 /// Stores a list of items and displays them to the screen. Written by Justin Ortiz
@@ -13,26 +14,41 @@ public class Container : Interactable {
 	private static Toggle containerTab;
 	private static Transform containerParent;
 	private static Transform containerElementPrefab;
+	private static int nextInstanceID;
 
-	[SerializeField] //remove later
 	protected List<Item> items;
-	protected Transform currParent;
+	protected Transform currDisplayParent;
 	private float totalWeight;
 	protected float maxWeight;
+	protected int instanceID; //never 0 or less than
+	protected bool optout_populateItems;
 
 	public List<Item> Items { get { return items; } }
 	public float TotalWeight { get { return totalWeight; } }
 	public float MaxWeight { get { return maxWeight; } }
+	public int InstanceID { get { return instanceID; } }
 
 	public bool Add(Item item) {
-		if (totalWeight + item.GetWeight() <= maxWeight) {
-			if (items.Contains(item)) { //container has some of this item already
-				items[items.IndexOf(item)].Quantity += item.Quantity;
-			} else {
-				items.Add(item);
-				CreateContainerElement(item); //ensure there's a ui element for the item
+		if (item != null) {
+			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated) { //if container not updated recently OR updated recently >> attempting to add recently updated item
+				if (totalWeight + item.GetWeight() <= maxWeight) { //if weight remains in limits with adding new item's weight
+					int itemIndex = IndexOf(item); //attempt to get index of same item inside this container
+					if (itemIndex >= 0) { //container has some of this item already
+						items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
+						Destroy(item.gameObject); //remove item from scene
+						items[itemIndex].LastUpdated = GameManager.instance.ElapsedGameTime;
+					} else { //first time this item is added
+						items.Add(item); //store item in list
+						item.ContainerID = instanceID; //ensure the item knows which container it is in
+						CreateContainerElement(item); //ensure there's a ui element for the item
+						item.SetInteractionActive(false); //hide the item from world space
+						item.LastUpdated = GameManager.instance.ElapsedGameTime;
+					}
+					return true;
+				}
+			} else { //container just updated, item is old
+				Destroy(item.gameObject); //destroy old item
 			}
-			return true;
 		}
 		return false;
 	}
@@ -52,9 +68,9 @@ public class Container : Interactable {
 	/// <param name="i">The item to be added to or found in the UI.</param>
 	/// <returns>Reference to the created or found transform.</returns>
 	private Transform CreateContainerElement(Item i) {
-		Transform temp = currParent.Find(i.ToString());
+		Transform temp = currDisplayParent.Find(i.ToString());
 		if (temp == null) {
-			temp = Instantiate(containerElementPrefab, currParent).transform;
+			temp = Instantiate(containerElementPrefab, currDisplayParent).transform;
 			temp.name = i.ToString();
 		}
 		return temp;
@@ -63,6 +79,24 @@ public class Container : Interactable {
 	public virtual void Display() {
 		RefreshDisplay();
 		MenuScript.instance.ChangeState("Inventory");
+	}
+
+	public static Container GetContainer(int instanceID) {
+		if (instanceID == Inventory.instance.instanceID) {
+			return Inventory.instance;
+		} else if (instanceID >= 0) {
+			Transform furnitureParent = AreaManager.GetEntityParent("furniture");
+			string[] currNameInfo;
+			foreach (Transform child in furnitureParent) {
+				if (child.name.Contains("container")) {
+					currNameInfo = child.name.Split('_');
+					if (currNameInfo[currNameInfo.Length - 1].Equals(instanceID.ToString())) {
+						return child.GetComponent<Container>();
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	protected Item GetItem(string fullItemName) {
@@ -74,6 +108,19 @@ public class Container : Interactable {
 		return null;
 	}
 
+	protected int GetNextInstanceID() {
+		return ++nextInstanceID; //increment id then return it
+	}
+
+	private int IndexOf(Item item) {
+		for (int i = 0; i < items.Count; i++) {
+			if (items[i].Equals(item)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	protected override void Initialize() {
 		if (containerParent == null) {
 			containerParent = GameObject.Find("Inventory_Container_Other_Content").transform; //update object name
@@ -83,14 +130,29 @@ public class Container : Interactable {
 
 			containerTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
 		}
-		currParent = containerParent;
-		gameObject.tag = "container";
+
+		if (currDisplayParent == null) {
+			currDisplayParent = containerParent;
+		}
 
 		if (items == null) {
 			items = new List<Item>();
 			totalWeight = 0;
 		}
-		maxWeight = 1000.0f;
+
+		if (maxWeight <= 0) {
+			maxWeight = 1000.0f;
+		}
+
+		if (!optout_populateItems) { //only player inventory opts out of autopopulating
+			if (instanceID <= 0) {
+				instanceID = GetNextInstanceID();
+				Populate();
+			}
+		}
+
+		gameObject.name += "_container_" + instanceID.ToString();
+
 		base.Initialize();
 	}
 
@@ -101,12 +163,44 @@ public class Container : Interactable {
 		base.InteractInternal(); //finish interaction
 	}
 
-	public void Load(ContainerSaveData data) {
-		items = data.GetItems();
+	public void Load(int InstanceID, string Owner, float LastUpdated) {
+		owner = Owner;
+		lastUpdated = LastUpdated;
+
+		if (InstanceID > 0) {
+			instanceID = InstanceID;
+			if (instanceID >= nextInstanceID) {
+				nextInstanceID = instanceID; //ensure current instanceIDs do not get overwritten
+			}
+
+			if (!owner.Equals("Player")) { //if not player's chest
+				if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
+					Populate(); //repopulate chest
+				}
+			}
+		}
+	}
+
+	protected void Populate() {
+		SelfDestruct(destroySelf: false); //ensure there are no items in the container
+
+		lastUpdated = GameManager.instance.ElapsedGameTime; //mark this moment as the point of updating
+
+		int numItems = UnityEngine.Random.Range(5, 15); //determine how many times items will be instantiated into the chest
+		ItemInfo[] dropTable = ItemDatabase.GetDropTable(transform.name.Split('_')); //determine which items can be spawned in this container -- determined by texture name (i.e. "chest_default")
+		if (dropTable != null && dropTable.Length > 0) {
+			int dropTableIndex; //the currently selected item to add
+			for (int i = 0; i < numItems; i++) {
+				dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
+				AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
+					containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
+					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
+			}
+		}
 	}
 
 	protected void RefreshDisplay() {
-		StartCoroutine(RefreshDisplay(currParent));
+		StartCoroutine(RefreshDisplay(currDisplayParent));
 	}
 
 	/// <summary>
@@ -128,7 +222,7 @@ public class Container : Interactable {
 
 		//resize the container slide area
 		float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
-		RectTransform currParentRect = currParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
+		RectTransform currParentRect = currDisplayParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
 		currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
 
 		displayedContainer = this;
@@ -137,7 +231,7 @@ public class Container : Interactable {
 	private void RefreshUIElement(Item item) {
 		Transform element = CreateContainerElement(item);
 		Text text;
-		foreach(Transform child in element) {
+		foreach (Transform child in element) {
 			text = child.GetComponent<Text>();
 
 			if (text != null) {
@@ -154,7 +248,7 @@ public class Container : Interactable {
 				} else if (child.name.Contains("Weight")) {
 					text.text = item.GetWeight().ToString(); //display weight
 				} else if (child.name.Contains("Currency")) {
-					text.text = item.BaseValue.ToString(); //display currency value
+					text.text = item.GetValue().ToString(); //display currency value
 				} else if (child.name.Contains("ItemType")) {
 					text.text = item.GetItemType(); //display the item type
 				}
@@ -183,18 +277,29 @@ public class Container : Interactable {
 	}
 
 	private void RemoveUIElement(Item item) {
-		Destroy(currParent.Find(item.ToString()).gameObject);
+		Destroy(currDisplayParent.Find(item.ToString()).gameObject);
+	}
+
+	public static void ResetInstanceIDs() {
+		nextInstanceID = 0;
 	}
 
 	/// <summary>
 	/// Removes all contained items from the scene, then destroys itself.
 	/// </summary>
-	public virtual void SelfDestruct() {
+	public virtual void SelfDestruct(bool destroyItems = true, bool destroySelf = true) {
 		for (int i = items.Count - 1; i >= 0; i--) {
-			RemoveUIElement(items[i]);
-			Destroy(items[i].gameObject);
+			RemoveUIElement(items[i]); //either way, remove ui element
+			if (destroyItems) { //if we are destroying the items
+				Destroy(items[i].gameObject); //destroy item game object to remove all item info
+			} else if (destroySelf) { //if !destroyItems, but destroying self
+				items[i].ContainerID = -1; //remove link to containerID
+			}
 		}
-		Destroy(gameObject);
+
+		if (destroySelf) {
+			Destroy(gameObject);
+		}
 	}
 
 	protected void SetContainerActive(bool active) {

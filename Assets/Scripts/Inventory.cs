@@ -26,25 +26,29 @@ public class Inventory : Container {
 			Transfer(item, nonplayerContainer);
 		} else {
 			item.transform.position = Player.instance.transform.position + InputManager.ConvertDirectionToVector3(Player.instance.LookDirection);
-			item.EnableInteraction();
+			item.ContainerID = 0;
+			item.SetInteractionActive();
 		}
+		item.LastUpdated = GameManager.instance.ElapsedGameTime;
 	}
 
 	protected override void Initialize() {
-		DisableInteraction(); //ensure the player doesn't interact with their own inventory
-		base.Initialize(); //base sets currparent
-		currParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get new parent
+		currDisplayParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get new parent
 		playerInfo = GameObject.Find("Inventory_Player_Info").transform; //get the player info
 		maxWeight = 100.0f;
+		instanceID = -777; //no other container will have <1 id
+		optout_populateItems = true; //prevents items being populated & auto assign of instanceID
+		DisableInteraction(); //ensure the player doesn't interact with their own inventory
+		base.Initialize(); //initialize base container attributes
 	}
 
 	protected override void RefreshWeightElement() {
 		playerInfo.Find("Inventory_Player_TotalWeight").GetComponent<Text>().text = "Weight: " + TotalWeight + "/" + MaxWeight+ " kg"; //display the total weight
 	}
 
-	public override void SelfDestruct() {
+	public override void SelfDestruct(bool destroyItems = true, bool destroySelf = false) {
 		if (!GameManager.instance.State_Play) { //if the call to self destruct isn't during gameplay (i.e. loading areas)
-			base.SelfDestruct();
+			base.SelfDestruct(destroyItems, destroySelf);
 		}
 	}
 

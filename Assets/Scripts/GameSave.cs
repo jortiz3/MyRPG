@@ -23,8 +23,6 @@ public class GameSave {
 	private float player_position_x;
 	[SerializeField]
 	private float player_position_y;
-	[SerializeField]
-	private ContainerSaveData inventory;
 
 	public string Date { get { return date; } }
 	public string Version { get { return version; } }
@@ -32,7 +30,6 @@ public class GameSave {
 	public string WorldName { get { return worldName; } }
 	public int Difficulty { get { return currDifficulty; } }
 	public float ElapsedGameTime { get { return elapsedGameTime; } }
-	public ContainerSaveData Inventory_Player { get { return inventory; } }
 
 	public GameSave() {
 		date = DateTime.Now.Date.ToString();
@@ -41,7 +38,6 @@ public class GameSave {
 		worldName = GameManager.instance.WorldName;
 		currDifficulty = GameManager.instance.Difficulty;
 		elapsedGameTime = GameManager.instance.ElapsedGameTime;
-		inventory = new ContainerSaveData(Inventory.instance);
 
 		//save area position
 		area_position_x = AreaManager.instance.Position.x;

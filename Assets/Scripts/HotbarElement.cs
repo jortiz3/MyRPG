@@ -13,7 +13,7 @@ namespace HUD_Elements {
 			if (i.Slottable) {
 				i.transform.position = transform.position;
 				i.transform.parent = transform;
-				i.SetSpriteActive(true);
+				i.SetInteractionActive(true);
 				item = i;
 
 				//remove skill
