@@ -75,7 +75,7 @@ namespace internal_Items {
 		/// </summary>
 		public static void Initialize() {
 			db = new List<ItemInfo>();
-			db.Add(new ItemInfo(db.Count, "", "Log", "", 0, 0, 15, -1, 50.0f, false, false, false, new string[] { "material", "chest" }));
+			db.Add(new ItemInfo(db.Count, "", "Log", "", 0, 0, 15, -1, 50.0f, false, false, false, new string[] { "material", "chest" }, Texture: "log"));
 			initialized = true;
 		}
 	}

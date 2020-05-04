@@ -30,15 +30,15 @@ public class Container : Interactable {
 
 	public bool Add(Item item) {
 		if (item != null) {
-			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated) { //if container not updated recently, and item attempting to add is new
-				if (totalWeight + item.GetWeight() <= maxWeight) {
-					int itemIndex = IndexOf(item);
+			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated) { //if container not updated recently OR updated recently >> attempting to add recently updated item
+				if (totalWeight + item.GetWeight() <= maxWeight) { //if weight remains in limits with adding new item's weight
+					int itemIndex = IndexOf(item); //attempt to get index of same item inside this container
 					if (itemIndex >= 0) { //container has some of this item already
 						items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
 						Destroy(item.gameObject); //remove item from scene
 						items[itemIndex].LastUpdated = GameManager.instance.ElapsedGameTime;
 					} else { //first time this item is added
-						items.Add(item);
+						items.Add(item); //store item in list
 						item.ContainerID = instanceID; //ensure the item knows which container it is in
 						CreateContainerElement(item); //ensure there's a ui element for the item
 						item.SetInteractionActive(false); //hide the item from world space
@@ -46,7 +46,7 @@ public class Container : Interactable {
 					}
 					return true;
 				}
-			} else { //container is attempting to repopulate
+			} else { //container just updated, item is old
 				Destroy(item.gameObject); //destroy old item
 			}
 		}
@@ -179,6 +179,8 @@ public class Container : Interactable {
 	protected void Populate() {
 		SelfDestruct(destroySelf: false); //ensure there are no items in the container
 
+		lastUpdated = GameManager.instance.ElapsedGameTime; //mark this moment as the point of updating
+
 		int numItems = UnityEngine.Random.Range(5, 15); //determine how many times items will be instantiated into the chest
 		ItemInfo[] dropTable = ItemDatabase.GetDropTable(transform.name.Split('_')); //determine which items can be spawned in this container -- determined by texture name (i.e. "chest_default")
 		if (dropTable != null && dropTable.Length > 0) {
@@ -187,10 +189,9 @@ public class Container : Interactable {
 				dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
 				AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
 					containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
-					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: GameManager.instance.ElapsedGameTime); //instantiate the item -- the item will add itself to this container
+					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
 			}
 		}
-		lastUpdated = GameManager.instance.ElapsedGameTime;
 	}
 
 	protected void RefreshDisplay() {

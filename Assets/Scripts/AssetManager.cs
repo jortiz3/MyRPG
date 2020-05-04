@@ -113,7 +113,7 @@ public class AssetManager : MonoBehaviour {
 						TrimGameObjectName(currItem.gameObject);
 						currItem.transform.position = position;
 						currItem.Load(ID: itemID, ContainerID: containerID, Prefix: itemPrefix, BaseName: itemBaseName, Suffix: itemSuffix,
-							Quantity: quantity, Texture: curr_texture_reference); //pass item info and texture
+							Quantity: quantity, Texture: curr_texture_reference, LastUpdated: lastUpdated); //pass item info and texture
 						return currItem;
 					}
 				}
