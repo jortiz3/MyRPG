@@ -161,14 +161,11 @@ namespace internal_Area {
 					}
 					break;
 				default:
-					GameObject temp = Resources.Load<GameObject>("Prefabs/" + type);
-					if (temp != null) { //if the prefab is found
-						temp = GameObject.Instantiate(temp); //instantiate
-						temp.transform.position = position; //set position
-						return true; //return entity was instantiated
-					} else { //prefab not found
-						break; //exit switch
+					GameObject spawned = AssetManager.instance.InstantiatePrefab(position, type);
+					if (spawned != null) {
+						return true;
 					}
+					break;
 			}
 			return false; //entity not instantiated
 		}

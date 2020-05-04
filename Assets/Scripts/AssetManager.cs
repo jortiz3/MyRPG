@@ -125,6 +125,15 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
+	public GameObject InstantiatePrefab(Vector3 position, string prefabName) {
+		if (prefabs.ContainsKey(prefabName)) {
+			GameObject spawnedPrefab = Instantiate(prefabs[prefabName], position, Quaternion.identity);
+			TrimGameObjectName(spawnedPrefab);
+			return spawnedPrefab;
+		}
+		return null;
+	}
+
 	public SceneryObject InstantiateSceneryObject(Vector3 position, string textureName = "bush_0",
 		int harvestedItemID = -int.MaxValue, int sceneryObjectHP = 3, bool allowStructureCollision = false, float lastUpdated = 0) {
 		string prefabKey = "scenery_" + SceneryObject.GetSceneryType(textureName.Split('_')[0]);
