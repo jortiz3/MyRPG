@@ -8,7 +8,7 @@ using internal_Items;
 /// Stores a list of items and displays them to the screen. Written by Justin Ortiz
 /// </summary>
 public class Container : Interactable {
-	protected static Container nonplayerContainer; //non-player-inventory container
+	protected static Container nonplayerContainer; //container the player is currently interacting with
 	protected static Container displayedContainer;
 
 	private static Toggle containerTab;
@@ -30,7 +30,7 @@ public class Container : Interactable {
 
 	public bool Add(Item item) {
 		if (item != null) {
-			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated) { //if container not updated recently OR updated recently >> attempting to add recently updated item
+			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated || optout_populateItems) { //if container not updated recently OR updated recently  OR does not populate items automatically
 				if (totalWeight + item.GetWeight() <= maxWeight) { //if weight remains in limits with adding new item's weight
 					int itemIndex = IndexOf(item); //attempt to get index of same item inside this container
 					if (itemIndex >= 0) { //container has some of this item already
@@ -41,7 +41,6 @@ public class Container : Interactable {
 						items.Add(item); //store item in list
 						item.ContainerID = instanceID; //ensure the item knows which container it is in
 						CreateContainerElement(item); //ensure there's a ui element for the item
-						item.SetInteractionActive(false); //hide the item from world space
 						item.LastUpdated = GameManager.instance.ElapsedGameTime;
 					}
 					return true;
@@ -95,6 +94,12 @@ public class Container : Interactable {
 		}
 	}
 
+	public static void Drop(string itemFullName, int quantity) {
+		if (displayedContainer != null) {
+			displayedContainer.Drop(displayedContainer.GetItem(itemFullName), quantity);
+		}
+	}
+
 	public static Container GetContainer(int instanceID) {
 		if (instanceID == Inventory.instance.instanceID) {
 			return Inventory.instance;
@@ -113,9 +118,16 @@ public class Container : Interactable {
 		return null;
 	}
 
-	protected Item GetItem(string fullItemName) {
+	public static Item GetDisplayedItem(string itemFullName) {
+		if (displayedContainer != null) {
+			return displayedContainer.GetItem(itemFullName);
+		}
+		return null;
+	}
+
+	public Item GetItem(string itemFullName) {
 		for (int i = 0; i < items.Count; i++) {
-			if (items[i].ToString().Equals(fullItemName)) {
+			if (items[i].ToString().Equals(itemFullName)) {
 				return items[i];
 			}
 		}
@@ -124,6 +136,10 @@ public class Container : Interactable {
 
 	protected int GetNextInstanceID() {
 		return ++nextInstanceID; //increment id then return it
+	}
+
+	public static bool GetTransferAvailable() {
+		return nonplayerContainer != null ? true : false; //if interacting with container, return true
 	}
 
 	private int IndexOf(Item item) {
@@ -177,6 +193,32 @@ public class Container : Interactable {
 		base.InteractInternal(); //finish interaction
 	}
 
+	public static bool Item_Equip(string itemFullName) {
+		if (displayedContainer != null) { //ensure a container is displayed
+			Item item = displayedContainer.GetItem(itemFullName); //get the item from displayed container
+			if (item.Equipable) {
+				if (displayedContainer != Inventory.instance) { //if looking at npc container
+					if (!displayedContainer.Transfer(item, item.Quantity, Inventory.instance)) { //item must be in player's inventory to equip, so try transfer
+						return false; //if wasn't able to transfer, return failed equip
+					}
+				}
+				Player.instance.Equip(item); //equip the item to the player
+				return true; //return successful equip
+			}
+		}
+		return false; //return failed equip
+	}
+
+	public static bool Item_Use(string itemFullName) {
+		Item item = displayedContainer.GetItem(itemFullName); //retrieve the item from displayed container
+		if (item != null) { //if retrieved
+			item.Use(); //use the item -- potentially affecting quantity or other stats
+			displayedContainer.RefreshUIElement(item); //refresh the display for the item
+			return true;
+		}
+		return false;
+	}
+
 	public void Load(int InstanceID, string Owner, float LastUpdated) {
 		owner = Owner;
 		lastUpdated = LastUpdated;
@@ -207,7 +249,7 @@ public class Container : Interactable {
 			for (int i = 0; i < numItems; i++) {
 				dropTableIndex = UnityEngine.Random.Range(0, dropTable.Length); //get one of the items from the drop table
 				AssetManager.instance.InstantiateItem(position: transform.position, itemID: dropTable[dropTableIndex].id,
-					containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, itemSuffix: dropTable[dropTableIndex].suffix,
+					containerID: this.instanceID, itemPrefix: dropTable[dropTableIndex].prefix, quantity: 1, itemSuffix: dropTable[dropTableIndex].suffix,
 					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
 			}
 		}
@@ -323,13 +365,30 @@ public class Container : Interactable {
 		nonplayerContainer = active ? this : null; //if the container is active, then we need to assign this container to static reference
 	}
 
-	protected void Transfer(Item item, Container other) {
+	protected bool Transfer(Item item, int quantity, Container other) {
+		//incorporate quantity
 		if (other.Add(item)) { //try to move item to other container
 			Remove(item); //if the item was added, remove from the container
+			return true;
 		}
+		return false;
+	}
+
+	public static bool Transfer(string itemFullName, int quantity) {
+		if (nonplayerContainer != null) { //player is currently interacting with a container
+			Container other;
+			if (displayedContainer == Inventory.instance) {
+				other = nonplayerContainer;
+			} else {
+				other = Inventory.instance;
+			}
+
+			return displayedContainer.Transfer(displayedContainer.GetItem(itemFullName), quantity, other);
+		}
+		return false;
 	}
 
 	protected virtual void UseItem(Item item) { //if an item is used in any other container
-		Transfer(item, Inventory.instance); //transfer this item to player's inventory if possible
+		Transfer(item, 1, Inventory.instance); //transfer this item to player's inventory if possible
 	}
 }

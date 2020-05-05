@@ -206,7 +206,7 @@ namespace internal_Area {
 						} else {
 							containerID = -1;
 						}
-						temp = new Entity(f.transform.position, containerID, f.GetTextureName(), f.Owner, f.LastUpdated);
+						temp = new Entity(f.transform.position, containerID, f.Owner, f.GetTextureName(), f.LastUpdated);
 					}
 					break;
 				default:

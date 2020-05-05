@@ -63,7 +63,7 @@ public class HUD : MonoBehaviour {
 		if (0 <= slotNum && slotNum < hotbar.childCount) {
 			HotbarElement element = hotbar.Find("Hotbar_Slot_" + slotNum).GetComponent<HotbarElement>();
 			if (element != null) {
-				element.Use();
+				element.Select();
 			}
 		}
 	}

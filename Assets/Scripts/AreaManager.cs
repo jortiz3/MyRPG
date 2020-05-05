@@ -268,7 +268,7 @@ public class AreaManager : MonoBehaviour {
 						if (!parent.name.Equals("Area Exits")) { //do not process items(yet) or area exits
 							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
 								child = parent.GetChild(index);
-								if (!child.CompareTag("Player") && !child.CompareTag("inventory")) { //if the object isn't the player or inventory; ensure not destroyed
+								if (!child.CompareTag("Player")) { //if the object isn't the player; ensure not destroyed
 									if (!child.CompareTag("background")) { //if it is not a background, then continue check for save
 										destroyChild = false;
 

@@ -5,6 +5,8 @@ using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class Character : MonoBehaviour {
+	private int instanceID; //is this necessary for item load?
+
 	//attributes
 	private int hp;
 	[SerializeField]
@@ -49,6 +51,10 @@ public class Character : MonoBehaviour {
 
 	private void Awake() {
 		Initialize();
+	}
+
+	public void Equip(Item item) {
+
 	}
 
 	private void FixedUpdate() {

@@ -20,7 +20,6 @@ public class Item : Interactable {
 	private int quantity;
 	private float weight;
 	private bool equippable;
-	private bool equipped;
 	private bool slottable;
 	private bool consumable;
 	private string[] tags; //used for sorting the item in the inventory screen
@@ -37,7 +36,6 @@ public class Item : Interactable {
 	public int Quantity { get { return quantity; } set { quantity = value; } }
 	public float BaseWeight { get { return weight; } }
 	public bool Equipable { get { return equippable; } }
-	public bool Equipped { get { return equipped; } set { equipped = value; } }
 	public bool Slottable { get { return slottable; } }
 	public bool Consumable { get { return consumable; } }
 
@@ -193,8 +191,9 @@ public class Item : Interactable {
 	}
 
 	protected override void InteractInternal() {
-		DisableInteraction(); //ensure the player doesn't interact w/ the object more than once
-		Inventory.instance.Add(this); //add this item to player's inventory >>
+		if (Inventory.instance.Add(this)) { //if this item is added to player inventory
+			SetInteractionActive(false); //hide item and disable interaction
+		}
 		base.InteractInternal();
 	}
 
@@ -280,9 +279,7 @@ public class Item : Interactable {
 	}
 
 	public virtual void Use() {
-		if (equippable) {
-			//Player.instance.Equip(this);
-		} else if (consumable) {
+		if (consumable) {
 			//Player.instance.Consume(this);
 		}
 	}

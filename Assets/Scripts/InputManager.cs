@@ -281,10 +281,18 @@ public class InputManager : MonoBehaviour {
 			}
 
 			if (Input.GetKeyDown(keyBindings["Attack_Special"])) {
-				if (GameManager.instance.State_Play) {
-					//call player attack special
-				} else {
-					CheckForCancel();
+				if (GameManager.instance.State_Play) { //game is active
+					if (MenuScript.instance.CurrentState.Equals("")) { //no menus open
+						//call player attack special
+					}
+				}
+			}
+
+			if (Input.GetKeyDown(KeyCode.Mouse1)) { //if RMB down; hardcoded
+				if (GameManager.instance.State_Play) { //came is active
+					if (!MenuScript.instance.CurrentState.Equals("")) { //menu is open
+						ContextManager.instance.CheckContextMenu(); //check to display context menu
+					}
 				}
 			}
 
