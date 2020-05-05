@@ -30,7 +30,7 @@ public class StructureGridManager : MonoBehaviour {
 	public bool GridInitialized { get { return gridInitialized; } }
 	public bool EditEnabled { get { return editEnabled; } }
 	public bool EditFinalizing { get { return editFinalizing; } }
-	public bool RegisteringStructure { get { return registeringStructure; } }
+	public bool RegisteringStructures { get { return registerQueue != null ? registerQueue.Count > 0 : false; } }
 
 	private void Awake() {
 		if (instance != null) { //if another instance exists
@@ -269,7 +269,7 @@ public class StructureGridManager : MonoBehaviour {
 				StructureCell sc = Instantiate(cellTemplate, transform).GetComponent<StructureCell>(); //instantiate template, ensure transform remains parent
 				sc.SetChildIndex(i); //store the cell's index for later use
 
-				if (i % 10 == 0) { //every 5 cells
+				if (i % 15 == 0) {
 					yield return new WaitForSeconds(0.01f); //insert pause
 				}
 			}

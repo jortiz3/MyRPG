@@ -288,6 +288,14 @@ public class InputManager : MonoBehaviour {
 				}
 			}
 
+			if (Input.GetKeyUp(KeyCode.Mouse0)) { //if LMB up; hardcoded
+				if (GameManager.instance.State_Play) { //came is active
+					if (!MenuScript.instance.CurrentState.Equals("")) { //menu is open
+						ContextManager.instance.CheckSelectElement(); //check to select either item or skill
+					}
+				}
+			}
+
 			if (Input.GetKeyDown(KeyCode.Mouse1)) { //if RMB down; hardcoded
 				if (GameManager.instance.State_Play) { //came is active
 					if (!MenuScript.instance.CurrentState.Equals("")) { //menu is open

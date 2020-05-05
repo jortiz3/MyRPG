@@ -35,6 +35,20 @@ public class ContextManager : MonoBehaviour {
 	}
 
 	public void CheckContextMenu() {
+		if (currFocus == null) {
+			GameObject hit = CheckUIRaycast();
+
+			if (hit != null) {
+				Show(hit);
+			} else {
+				Hide();
+			}
+		} else {
+			Show(currFocus.gameObject);
+		}
+	}
+
+	private GameObject CheckUIRaycast() {
 		if (eventSystem != null && grc != null) {
 			PointerEventData eventData = new PointerEventData(eventSystem);
 			List<RaycastResult> results = new List<RaycastResult>();
@@ -42,16 +56,22 @@ public class ContextManager : MonoBehaviour {
 
 			if (results.Count > 0) { //if anything was hit
 				foreach (RaycastResult result in results) { //go through each hit
-					if (!result.gameObject.tag.Equals("")) { //if the hit was meaningful
-						Show(result.gameObject); //show the first hit
-						break; //exit loop
+					if (!result.gameObject.tag.Equals("Untagged")) { //if the hit was meaningful
+						return result.gameObject; //return the hit object
 					}
 				}
-			} else if (currFocus != null) {
-				Show(currFocus.gameObject);
-			} else {
-				Hide();
 			}
+		}
+		return null; //return nothing
+	}
+
+	public void CheckSelectElement() {
+		GameObject hit = CheckUIRaycast();
+
+		if (hit != null) {
+			Select(hit.transform);
+		} else {
+			Hide();
 		}
 	}
 
@@ -96,8 +116,8 @@ public class ContextManager : MonoBehaviour {
 		Hide();
 	}
 
-	private void Show(GameObject newFocus) {
-		switch (newFocus.tag) {
+	private void Show(GameObject focus) {
+		switch (focus.tag) {
 			case "uielement_container":
 				if (context_item != null) {
 					Vector3 menuPos = Input.mousePosition; //get starting pos for menu
@@ -114,7 +134,7 @@ public class ContextManager : MonoBehaviour {
 					GameObject use = context_item.Find("button_use").gameObject;
 					GameObject equip = context_item.Find("button_equip").gameObject;
 
-					Item currItem = Container.GetDisplayedItem(newFocus.name);
+					Item currItem = Container.GetDisplayedItem(focus.name);
 					if (currItem != null) {
 						if (currItem.Equipable) {
 							use.SetActive(false);
@@ -134,7 +154,8 @@ public class ContextManager : MonoBehaviour {
 							drop.SetActive(true);
 						}
 						QuantityManager.instance.SetQuantityRange(currItem.Quantity);
-						currFocus = newFocus.transform;
+						context_item.Find("text_header_context_container").GetComponent<Text>().text = currItem.ToString();
+						currFocus = focus.transform;
 						context_item.gameObject.SetActive(true);
 					} else {
 						currFocus = null;

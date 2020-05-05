@@ -6,6 +6,8 @@ using UnityEngine;
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
 public class Structure : MonoBehaviour {
+	private static int numStructuresToPopulate; //used to track how many structures need to instantiate furniture
+
 	private Color[] defaultColors;
 	[SerializeField, Tooltip("All of the sprites that make up the structure.")]
 	private SpriteRenderer[] sprites;
@@ -17,6 +19,7 @@ public class Structure : MonoBehaviour {
 	private bool registeredToManager;
 	private float lastUpdated;
 
+	public static bool PopulationInProgress { get { return numStructuresToPopulate > 0; } }
 	public Vector2Int Dimensions { get { return dimensions; } }
 	public string Owner { get { return owner; } }
 	public string Preset { get { return preset; } }
@@ -28,6 +31,8 @@ public class Structure : MonoBehaviour {
 	}
 
 	public IEnumerator GenerateFurniture() {
+		numStructuresToPopulate++;
+
 		while (!registeredToManager) {
 			yield return new WaitForEndOfFrame();
 		}
@@ -60,6 +65,7 @@ public class Structure : MonoBehaviour {
 				AssetManager.instance.InstantiateFurniture(furniturePositions[i], this, furniturePrefixes[i] + preset);
 			}
 		}
+		numStructuresToPopulate--;
 	}
 
 	public static string GetDimensionSize(Vector2Int dimensions) {

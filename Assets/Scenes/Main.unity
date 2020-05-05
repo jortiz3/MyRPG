@@ -4757,7 +4757,7 @@ GameObject:
   - component: {fileID: 376944028}
   - component: {fileID: 376944029}
   m_Layer: 5
-  m_Name: ContextMenu
+  m_Name: ContextManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6708,8 +6708,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_EventMask:
     serializedVersion: 2
-    m_Bits: 4294967295
-  m_MaxRayIntersections: 0
+    m_Bits: 32
+  m_MaxRayIntersections: 15
 --- !u!1 &524716930
 GameObject:
   m_ObjectHideFlags: 0
@@ -7805,7 +7805,7 @@ GameObject:
   - component: {fileID: 680775796}
   - component: {fileID: 680775795}
   m_Layer: 5
-  m_Name: text_header
+  m_Name: text_header_context_container
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10191,7 +10191,7 @@ GameObject:
   - component: {fileID: 986171494}
   - component: {fileID: 986171493}
   m_Layer: 5
-  m_Name: text_header_qty
+  m_Name: text_header_context_qty
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19329,7 +19329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 1
+  m_BlockingObjects: 3
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 33

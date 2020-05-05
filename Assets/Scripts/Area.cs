@@ -77,10 +77,15 @@ namespace internal_Area {
 		}
 
 		public IEnumerator LoadToScene(NavMeshSurface navMesh) {
-			LoadingScreen.instance.SetText("Loading area..");
+			LoadingScreen.instance.SetText("Loading prerequisites..");
 			LoadingScreen.instance.Show();
 
-			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 2f; //get remaining progress, divide by how many load sections
+			while (!StructureGridManager.instance.GridInitialized) { //in case grid manager needs more time
+				yield return new WaitForEndOfFrame();
+			}
+
+			LoadingScreen.instance.SetText("Loading area..");
+			float loadingIncrement = (1f - LoadingScreen.instance.GetProgress()) / 4f; //get remaining progress, divide by how many load sections
 
 			string bgFileName = "Backgrounds/";
 			if (typeName.Contains("city")) {
@@ -99,11 +104,23 @@ namespace internal_Area {
 			}
 			yield return new WaitForSeconds(0.2f);
 
+			
+
+			LoadingScreen.instance.SetText("Loading entities..");
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
 			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
 			InstantiateEntities(); //begin instantiating entities
 			yield return new WaitForSeconds(2f);
-			while (!StructureGridManager.instance.GridInitialized || StructureGridManager.instance.RegisteringStructure) { //in case structures need more time
+
+			LoadingScreen.instance.SetText("Populating structures..");
+			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
+			while (StructureGridManager.instance.RegisteringStructures || Structure.PopulationInProgress) {
+				yield return new WaitForEndOfFrame();
+			}
+
+			LoadingScreen.instance.SetText("Populating containers..");
+			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
+			while (Container.PopulationInProgress) {
 				yield return new WaitForEndOfFrame();
 			}
 

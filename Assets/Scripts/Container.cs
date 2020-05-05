@@ -10,6 +10,7 @@ using internal_Items;
 public class Container : Interactable {
 	protected static Container nonplayerContainer; //container the player is currently interacting with
 	protected static Container displayedContainer;
+	private static int numContainersToPopulate;
 
 	private static Toggle containerTab;
 	private static Transform containerParent;
@@ -23,12 +24,13 @@ public class Container : Interactable {
 	protected int instanceID; //never 0 or less than
 	protected bool optout_populateItems;
 
+	public static bool PopulationInProgress { get { return numContainersToPopulate > 0; } }
 	public List<Item> Items { get { return items; } }
 	public float TotalWeight { get { return totalWeight; } }
 	public float MaxWeight { get { return maxWeight; } }
 	public int InstanceID { get { return instanceID; } }
 
-	public bool Add(Item item) {
+	public bool Add(Item item) { //not adding to correct ui for player inventory
 		if (item != null) {
 			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated || optout_populateItems) { //if container not updated recently OR updated recently  OR does not populate items automatically
 				if (totalWeight + item.GetWeight() <= maxWeight) { //if weight remains in limits with adding new item's weight
@@ -231,13 +233,19 @@ public class Container : Interactable {
 
 			if (!owner.Equals("Player")) { //if not player's chest
 				if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
-					Populate(); //repopulate chest
+					StartCoroutine(Populate()); //repopulate chest
 				}
 			}
 		}
 	}
 
-	protected void Populate() {
+	protected IEnumerator Populate() {
+		numContainersToPopulate++;
+
+		if (!StructureGridManager.instance.GridInitialized || StructureGridManager.instance.RegisteringStructures) {
+			yield return new WaitForEndOfFrame();
+		}
+
 		SelfDestruct(destroySelf: false); //ensure there are no items in the container
 
 		lastUpdated = GameManager.instance.ElapsedGameTime; //mark this moment as the point of updating
@@ -253,6 +261,8 @@ public class Container : Interactable {
 					textureName: dropTable[dropTableIndex].texture_default, lastUpdated: lastUpdated); //instantiate the item -- the item will add itself to this container
 			}
 		}
+
+		numContainersToPopulate--;
 	}
 
 	protected void RefreshDisplay() {

@@ -175,13 +175,15 @@ public class Item : Interactable {
 
 	protected override void Initialize() {
 		SetInteractMessage("to pick up " + ToString() + ".");
-		transform.parent = AreaManager.GetEntityParent("Item");
+		transform.SetParent(AreaManager.GetEntityParent("Item"), true);
 		gameObject.tag = "item";
 
 		if (containerID != 0) { //if a container is supposed to track this item
 			Container c = Container.GetContainer(containerID); //try to find container
 			if (c != null) { //if container found
-				c.Add(this); //add to container
+				if (c.Add(this)) { //add to container
+					SetInteractionActive(false);
+				}
 			} else { //if container not found
 				containerID = 0; //reset the id
 			}
