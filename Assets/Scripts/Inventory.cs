@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class Inventory : Container {
 	public static Inventory instance;
 
+	private static Transform parent;
 	private static Transform playerInfo;
 
 	private void Awake() {
@@ -16,12 +17,11 @@ public class Inventory : Container {
 	}
 
 	public override void Display() {
-		SetContainerActive(false); //since this container will not be opened via interacting, we must hide the other container on display
-		base.Display(); //otherwise, display like normal container
+		StartCoroutine(RefreshDisplay(parent));
 	}
 
 	protected override void Initialize() {
-		currDisplayParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get new parent
+		parent = GameObject.Find("Inventory_Container_Player_Content").transform; //get new parent
 		playerInfo = GameObject.Find("Inventory_Player_Info").transform; //get the player info
 		maxWeight = 100.0f;
 		instanceID = -777; //no other container will have <1 id

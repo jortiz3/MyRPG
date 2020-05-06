@@ -10,15 +10,16 @@ using internal_Items;
 public class Container : Interactable {
 	protected static Container nonplayerContainer; //container the player is currently interacting with
 	protected static Container displayedContainer;
+	protected static Transform currDisplayParent;
 	private static int numContainersToPopulate;
 
-	private static Toggle containerTab;
-	private static Transform containerParent;
+	private static Toggle npcTab; //non-player container tab
+	private static Text npcTabText; //text displayed on non-player container tab -- to display the name of container
+	private static Transform npcParent; //non-player container parent
 	private static Transform containerElementPrefab;
 	private static int nextInstanceID;
 
 	protected List<Item> items;
-	protected Transform currDisplayParent;
 	private float totalWeight;
 	protected float maxWeight;
 	protected int instanceID; //never 0 or less than
@@ -30,7 +31,7 @@ public class Container : Interactable {
 	public float MaxWeight { get { return maxWeight; } }
 	public int InstanceID { get { return instanceID; } }
 
-	public bool Add(Item item) { //not adding to correct ui for player inventory
+	public bool Add(Item item) {
 		if (item != null) {
 			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated || optout_populateItems) { //if container not updated recently OR updated recently  OR does not populate items automatically
 				if (totalWeight + item.GetWeight() <= maxWeight) { //if weight remains in limits with adding new item's weight
@@ -78,8 +79,7 @@ public class Container : Interactable {
 	}
 
 	public virtual void Display() {
-		RefreshDisplay();
-		MenuScript.instance.ChangeState("Inventory");
+		StartCoroutine(RefreshDisplay(npcParent));
 	}
 
 	protected virtual void Drop(Item item, int quantity) {
@@ -154,17 +154,18 @@ public class Container : Interactable {
 	}
 
 	protected override void Initialize() {
-		if (containerParent == null) {
-			containerParent = GameObject.Find("Inventory_Container_Other_Content").transform; //update object name
+		if (npcParent == null) {
+			npcParent = GameObject.Find("Inventory_Container_Other_Content").transform; //update object name
 
 			containerElementPrefab = GameObject.Find("Inventory_Container_Element_Prefab").transform; //update object name
 			containerElementPrefab.gameObject.SetActive(false);
 
-			containerTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
+			npcTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
+			npcTabText = npcTab.transform.Find("Label_Toggle_Inventory_Other").GetComponent<Text>();
 		}
 
 		if (currDisplayParent == null) {
-			currDisplayParent = containerParent;
+			currDisplayParent = npcParent;
 		}
 
 		if (items == null) {
@@ -189,8 +190,6 @@ public class Container : Interactable {
 	}
 
 	protected override void InteractInternal() { //player walks up to interact
-		SetContainerActive(true); //display the other container(this)
-		Inventory.instance.RefreshDisplay(); //refresh player's inventory
 		Display(); //display this
 		base.InteractInternal(); //finish interaction
 	}
@@ -265,15 +264,26 @@ public class Container : Interactable {
 		numContainersToPopulate--;
 	}
 
-	protected void RefreshDisplay() {
-		StartCoroutine(RefreshDisplay(currDisplayParent));
-	}
-
 	/// <summary>
 	/// Iterates through all elements available for containers in the scene and only shows the elements for this container.
 	/// </summary>
-	private IEnumerator RefreshDisplay(Transform parent) {
-		foreach (Transform child in parent) {
+	protected IEnumerator RefreshDisplay(Transform parent) {
+		if (parent != currDisplayParent) { //if a different display is being refreshed
+			currDisplayParent.gameObject.SetActive(false); //hide previous display
+			currDisplayParent = parent; //set the new current display
+		}
+
+		bool npcActive = false; //default to false
+		if (currDisplayParent == npcParent) { //if switching to non-player container
+			npcActive = true; //mark true
+		}
+
+		npcTab.gameObject.SetActive(npcActive); //show/hide non-player container tab
+		npcTab.isOn = npcActive; //ensures the container is shown if enabled
+		npcTabText.text = npcActive ? CustomFormatting.Capitalize(gameObject.name.Split('_')[0]) : "null";
+		nonplayerContainer = npcActive ? this : null; //if the container is active, then we need to assign this container to static reference
+
+		foreach (Transform child in currDisplayParent) {
 			child.gameObject.SetActive(false);
 		}
 		yield return new WaitForEndOfFrame();
@@ -292,6 +302,8 @@ public class Container : Interactable {
 		currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
 
 		displayedContainer = this;
+		currDisplayParent.gameObject.SetActive(true);
+		MenuScript.instance.ChangeState("Inventory");
 	}
 
 	private void RefreshUIElement(Item item) {
@@ -366,13 +378,6 @@ public class Container : Interactable {
 		if (destroySelf) {
 			Destroy(gameObject);
 		}
-	}
-
-	protected void SetContainerActive(bool active) {
-		containerParent.gameObject.SetActive(active); //show/hide the container scroll rect
-		containerTab.gameObject.SetActive(active); //show/hide tab
-		containerTab.isOn = active; //ensures the container is shown if enabled
-		nonplayerContainer = active ? this : null; //if the container is active, then we need to assign this container to static reference
 	}
 
 	protected bool Transfer(Item item, int quantity, Container other) {
