@@ -13,9 +13,10 @@ GameObject:
   - component: {fileID: 4607333297435519870}
   - component: {fileID: -6607899772497738407}
   - component: {fileID: 4607333297435519871}
+  - component: {fileID: -9070954322602763031}
   m_Layer: 14
-  m_Name: furniture
-  m_TagString: furniture
+  m_Name: container
+  m_TagString: container
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -127,3 +128,15 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-9070954322602763031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4607333297435519858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57af863213c6c9641bcce49ee6488f22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

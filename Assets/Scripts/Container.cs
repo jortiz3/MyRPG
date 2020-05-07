@@ -26,7 +26,6 @@ public class Container : Interactable {
 	protected bool optout_populateItems;
 
 	public static bool PopulationInProgress { get { return numContainersToPopulate > 0; } }
-	public List<Item> Items { get { return items; } }
 	public float TotalWeight { get { return totalWeight; } }
 	public float MaxWeight { get { return maxWeight; } }
 	public int InstanceID { get { return instanceID; } }
@@ -231,7 +230,7 @@ public class Container : Interactable {
 		return false;
 	}
 
-	public void Load(int InstanceID, string Owner, float LastUpdated) {
+	public void Load(int InstanceID = 0, string Owner = "", float LastUpdated = -float.MaxValue, Texture2D Texture = null) {
 		owner = Owner;
 		lastUpdated = LastUpdated;
 
@@ -247,10 +246,19 @@ public class Container : Interactable {
 				}
 			}
 		}
+
+		SetSprite(Texture);
+
+		Furniture furniture = GetComponent<Furniture>(); //check for furniture component
+		if (furniture != null) { //if component retrieved
+			furniture.Load(Owner: owner, LastUpdated: LastUpdated); //load necessary aspects
+		}
 	}
 
 	protected IEnumerator Populate() {
 		numContainersToPopulate++;
+
+		Debug.Log(instanceID + " populated");
 
 		if (!StructureGridManager.instance.GridInitialized || StructureGridManager.instance.RegisteringStructures) {
 			yield return new WaitForEndOfFrame();
