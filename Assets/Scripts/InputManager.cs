@@ -31,9 +31,9 @@ public class InputManager : MonoBehaviour {
 			keyCodes = Enum.GetValues(typeof(KeyCode)) as KeyCode[];
 			keyBindingsFilePath = Application.persistentDataPath + "/data/kb.dat";
 
-			bool loadKeybindings = File.Exists(keyBindingsFilePath); //if there is file, load it
+			bool loadKeybindings = Application.isEditor ? false : File.Exists(keyBindingsFilePath); //if there is file, load it
 
-			if (false) {//loadKeybindings) {
+			if (loadKeybindings) {//loadKeybindings) {
 				LoadKeyBindings();
 			} else {
 				InitializeDefaultKeyBindings();
@@ -302,10 +302,7 @@ public class InputManager : MonoBehaviour {
 				WorldManager.instance.LoadAdjacentArea(Directions.down);
 			}
 
-			if (Input.GetKeyDown(KeyCode.N)) {
-				GameManager.instance.StartNewGame(0);
-			}
-			if (Input.GetKeyDown(KeyCode.Comma)) {
+			/*if (Input.GetKeyDown(KeyCode.Comma)) {
 				StructureGridManager.instance.BeginStructureCreate("City_CPR_0");
 			}
 			if (Input.GetKeyDown(KeyCode.Period)) {
@@ -314,7 +311,7 @@ public class InputManager : MonoBehaviour {
 			if (Input.GetKeyDown(KeyCode.F)) {
 				Furniture.Create("Chest_0", null);
 				//Furniture.Create("Chest_0", AreaManagerNS.AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
-			}
+			}*/
 #endif
 		} else { //player is trying to rebind a key
 			if (Input.anyKeyDown) { //if any key was pressed
