@@ -78,6 +78,15 @@ public class Container : Interactable {
 		return temp;
 	}
 
+	private bool DeleteContainerElement(Item i) {
+		Transform temp = currDisplayParent.Find(i.ToString());
+		if (temp != null) {
+			Destroy(temp.gameObject);
+			return true;
+		}
+		return false;
+	}
+
 	public virtual void Display() {
 		StartCoroutine(RefreshDisplay(npcParent));
 	}
@@ -85,13 +94,15 @@ public class Container : Interactable {
 	protected virtual void Drop(Item item, int quantity) {
 		if (item != null) {
 			Vector3 dropPosition = Player.instance.transform.position + InputManager.ConvertDirectionToVector3(Player.instance.LookDirection);
-			if (item.Quantity - quantity > 0) {
-				item.Quantity -= quantity;
-				AssetManager.instance.InstantiateItem(dropPosition, item.ID, 0, item.Prefix, item.BaseName, item.Suffix, quantity, item.GetTextureName(), GameManager.instance.ElapsedGameTime);
+			if (item.Quantity - quantity > 0) { //if dropping less than max quantity
+				item.Quantity -= quantity; //update item quantity
+				AssetManager.instance.InstantiateItem(dropPosition, item.ID, 0, item.Prefix, item.BaseName, item.Suffix, quantity, item.GetTextureName(), GameManager.instance.ElapsedGameTime); //drop the provided quantity
+				RefreshUIElement(item); //update the quantity in UI
 			} else {
-				item.transform.position = dropPosition;
-				item.ContainerID = 0;
-				item.SetInteractionActive();
+				item.transform.position = dropPosition; //update item position
+				item.ContainerID = 0; //remove link to this container
+				item.SetInteractionActive(); //show the item to the player
+				DeleteContainerElement(item); //remove the ui element
 			}
 		}
 	}
@@ -268,42 +279,47 @@ public class Container : Interactable {
 	/// Iterates through all elements available for containers in the scene and only shows the elements for this container.
 	/// </summary>
 	protected IEnumerator RefreshDisplay(Transform parent) {
-		if (parent != currDisplayParent) { //if a different display is being refreshed
-			currDisplayParent.gameObject.SetActive(false); //hide previous display
-			currDisplayParent = parent; //set the new current display
+		MenuScript.instance.ChangeState("Inventory"); //try to change to inventory state
+
+		if (!MenuScript.instance.CurrentState.Equals("")) { //if successfully changed
+			if (parent != currDisplayParent) { //if a different display is being refreshed
+				currDisplayParent.gameObject.SetActive(false); //hide previous display
+				currDisplayParent = parent; //set the new current display
+			}
+
+			bool npcActive = false; //default to false
+			if (currDisplayParent == npcParent) { //if switching to non-player container
+				npcActive = true; //mark true
+			}
+
+			npcTab.gameObject.SetActive(npcActive); //show/hide non-player container tab
+			npcTab.isOn = npcActive; //ensures the container is shown if enabled
+			npcTabText.text = npcActive ? CustomFormatting.Capitalize(gameObject.name.Split('_')[0]) : "null";
+			nonplayerContainer = npcActive ? this : null; //if the container is active, then we need to assign this container to static reference
+
+			foreach (Transform child in currDisplayParent) {
+				child.gameObject.SetActive(false);
+			}
+			yield return new WaitForEndOfFrame();
+
+			totalWeight = 0;
+			for (int i = 0; i < items.Count; i++) { //loop through all items
+				RefreshUIElement(items[i]); //refresh the ui element for the item
+				totalWeight += items[i].GetWeight(); //increase total weight
+				yield return new WaitForEndOfFrame(); //wait a frame
+			}
+			RefreshWeightElement(); //display the total weight
+
+			//resize the container slide area
+			float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
+			RectTransform currParentRect = currDisplayParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
+			currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
+
+			displayedContainer = this;
+			currDisplayParent.gameObject.SetActive(true);
+		} else { //closing inventory
+			ContextManager.instance.Hide(); //ensure any displayed context menus are hidden
 		}
-
-		bool npcActive = false; //default to false
-		if (currDisplayParent == npcParent) { //if switching to non-player container
-			npcActive = true; //mark true
-		}
-
-		npcTab.gameObject.SetActive(npcActive); //show/hide non-player container tab
-		npcTab.isOn = npcActive; //ensures the container is shown if enabled
-		npcTabText.text = npcActive ? CustomFormatting.Capitalize(gameObject.name.Split('_')[0]) : "null";
-		nonplayerContainer = npcActive ? this : null; //if the container is active, then we need to assign this container to static reference
-
-		foreach (Transform child in currDisplayParent) {
-			child.gameObject.SetActive(false);
-		}
-		yield return new WaitForEndOfFrame();
-
-		totalWeight = 0;
-		for (int i = 0; i < items.Count; i++) { //loop through all items
-			RefreshUIElement(items[i]); //refresh the ui element for the item
-			totalWeight += items[i].GetWeight(); //increase total weight
-			yield return new WaitForEndOfFrame(); //wait a frame
-		}
-		RefreshWeightElement(); //display the total weight
-
-		//resize the container slide area
-		float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
-		RectTransform currParentRect = currDisplayParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
-		currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
-
-		displayedContainer = this;
-		currDisplayParent.gameObject.SetActive(true);
-		MenuScript.instance.ChangeState("Inventory");
 	}
 
 	private void RefreshUIElement(Item item) {

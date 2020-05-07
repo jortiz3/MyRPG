@@ -10,9 +10,6 @@ using HUD_Elements;
 public class ContextManager : MonoBehaviour {
 	public static ContextManager instance;
 
-	private static EventSystem eventSystem;
-	private static GraphicRaycaster grc;
-
 	private Transform currFocus;
 	private Transform context_item;
 
@@ -20,8 +17,6 @@ public class ContextManager : MonoBehaviour {
 
 	private void Awake() {
 		if (instance == null) {
-			eventSystem = GameManager.instance.GetComponent<EventSystem>();
-			grc = MenuScript.instance.GetComponent<GraphicRaycaster>();
 			context_item = transform.Find("context_container");
 
 			if (context_item != null) {
@@ -31,47 +26,6 @@ public class ContextManager : MonoBehaviour {
 			instance = this;
 		} else {
 			Destroy(gameObject);
-		}
-	}
-
-	public void CheckContextMenu() {
-		if (currFocus == null) {
-			GameObject hit = CheckUIRaycast();
-
-			if (hit != null) {
-				Show(hit);
-			} else {
-				Hide();
-			}
-		} else {
-			Show(currFocus.gameObject);
-		}
-	}
-
-	private GameObject CheckUIRaycast() {
-		if (eventSystem != null && grc != null) {
-			PointerEventData eventData = new PointerEventData(eventSystem);
-			List<RaycastResult> results = new List<RaycastResult>();
-			grc.Raycast(eventData, results);
-
-			if (results.Count > 0) { //if anything was hit
-				foreach (RaycastResult result in results) { //go through each hit
-					if (!result.gameObject.tag.Equals("Untagged")) { //if the hit was meaningful
-						return result.gameObject; //return the hit object
-					}
-				}
-			}
-		}
-		return null; //return nothing
-	}
-
-	public void CheckSelectElement() {
-		GameObject hit = CheckUIRaycast();
-
-		if (hit != null) {
-			Select(hit.transform);
-		} else {
-			Hide();
 		}
 	}
 
@@ -91,32 +45,35 @@ public class ContextManager : MonoBehaviour {
 		Container.Item_Use(currFocus.name);
 	}
 
-	private void Hide() {
+	public void Hide() {
 		context_item.gameObject.SetActive(false);
+		QuantityManager.instance.Hide();
 	}
 
 	public void Select(Transform newFocus) {
 		currFocus = null; //start focus as null
 
-		if (!MenuScript.instance.CurrentState.Equals("")) { //if a menu is opened
-			bool used = false;
-			if (MenuScript.instance.CurrentState.Equals("Inventory")) {
+		bool used = false;
+		switch (newFocus.tag) {
+			case "uielement_container":
 				if (HotbarElement.selected != null) {
 					if (HotbarElement.selected.Assign(Container.GetDisplayedItem(newFocus.name))) {
 						used = true;
 					}
 				}
-			}
+				break;
+			default:
+				break;
+		}
 
-			if (!used) {
-				currFocus = newFocus;
-			}
+		if (!used) {
+			currFocus = newFocus;
 		}
 
 		Hide();
 	}
 
-	private void Show(GameObject focus) {
+	public void Show(Transform focus) {
 		switch (focus.tag) {
 			case "uielement_container":
 				if (context_item != null) {
@@ -155,7 +112,7 @@ public class ContextManager : MonoBehaviour {
 						}
 						QuantityManager.instance.SetQuantityRange(currItem.Quantity);
 						context_item.Find("text_header_context_container").GetComponent<Text>().text = currItem.ToString();
-						currFocus = focus.transform;
+						currFocus = focus;
 						context_item.gameObject.SetActive(true);
 					} else {
 						currFocus = null;

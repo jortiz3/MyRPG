@@ -13,9 +13,20 @@ public class QuantityManager : MonoBehaviour {
 		if (instance == null) {
 			instance = this;
 			gameObject.SetActive(false);
+
+			if (slider != null) {
+				slider.onValueChanged.AddListener(UpdateQuantity);
+			}
+			if (inputField != null) {
+				inputField.onEndEdit.AddListener(UpdateQuantity);
+			}
 		} else {
 			Destroy(gameObject);
 		}
+	}
+
+	public void Hide() {
+		gameObject.SetActive(false);
 	}
 
 	public void SetQuantityRange(float maxValue, float minValue = 1f) {
@@ -33,17 +44,21 @@ public class QuantityManager : MonoBehaviour {
 		}
 
 		if (inputField != null) {
-			inputField.text = value.ToString();
+			inputField.text = ((int)value).ToString();
 		}
 	}
 
 	public void UpdateQuantity(string value) { //called by button in inspector
+		float fValue;
+		float.TryParse(value, out fValue);
+
 		if (slider != null) {
-			slider.value = float.Parse(value);
+			fValue = Mathf.Clamp(fValue, slider.minValue, slider.maxValue);
+			slider.value = fValue;
 		}
 
 		if (inputField != null) {
-			inputField.text = value;
+			inputField.text = ((int)fValue).ToString();
 		}
 	}
 }
