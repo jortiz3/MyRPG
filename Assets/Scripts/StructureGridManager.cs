@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Manages the grid with which structure positions are conformed to. Written by Justin Ortiz
@@ -20,6 +21,7 @@ public class StructureGridManager : MonoBehaviour {
 	private bool usePlayerResources;
 	private bool registeringStructure;
 
+	private Vector2 cellSize;
 	private StructureCell currCell;
 	private StructureCell originalCell; //the cell in which the edit began (pre-existing structure edit)
 	private Structure currEditStructure;
@@ -27,6 +29,8 @@ public class StructureGridManager : MonoBehaviour {
 
 	private CanvasGroup canvasGroup;
 
+	public float CellWidth { get { return cellSize.x; } }
+	public float CellHeight { get { return cellSize.y; } }
 	public bool GridInitialized { get { return gridInitialized; } }
 	public bool EditEnabled { get { return editEnabled; } }
 	public bool EditFinalizing { get { return editFinalizing; } }
@@ -43,6 +47,11 @@ public class StructureGridManager : MonoBehaviour {
 			}
 			if (rows <= 0) { //verify rows assigned
 				rows = 10;
+			}
+
+			GridLayoutGroup group = GetComponent<GridLayoutGroup>();
+			if (group != null) {
+				cellSize = group.cellSize;
 			}
 
 			editEnabled = false;

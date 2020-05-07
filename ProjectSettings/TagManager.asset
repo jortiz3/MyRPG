@@ -10,6 +10,7 @@ TagManager:
   - scenery
   - furniture
   - uielement_container
+  - container
   layers:
   - Default
   - TransparentFX
