@@ -18,6 +18,7 @@ namespace internal_Area {
 
 		private static int boundaryRadius = 100; //square boundary; distance (worldspace) from center to edge
 		private static int cityRadius = 50;
+		private static int numAreasToPopulate;
 
 		[JsonProperty]
 		private string typeName;
@@ -32,6 +33,7 @@ namespace internal_Area {
 		[JsonProperty]
 		private int lastUpdated;
 
+		public static bool PopulationInProgress { get { return numAreasToPopulate > 0; } }
 		public Vector2IntS MapPosition { get { return position; } }
 		public bool Discovered { get { return discovered; } }
 		public int LastUpdated { get { return lastUpdated; } }
@@ -138,6 +140,8 @@ namespace internal_Area {
 		/// <param name="charactersOnly">To be used when repopulating dead characters</param>
 		/// <returns></returns>
 		public IEnumerator Populate(bool charactersOnly) {
+			numAreasToPopulate++;
+
 			bool isInhabited = false;
 			bool isDungeon = false;
 
@@ -262,6 +266,7 @@ namespace internal_Area {
 				yield return new WaitForEndOfFrame(); //add time between iterations
 			}
 			Save();
+			numAreasToPopulate--;
 		}
 
 		private void Save() {

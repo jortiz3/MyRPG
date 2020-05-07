@@ -74,7 +74,7 @@ public class AreaManager : MonoBehaviour {
 
 	public IEnumerator GenerateAllAreas(string playerName, string worldName, Vector2Int startPos) {
 		LoadingScreen.instance.ResetProgress();
-		LoadingScreen.instance.SetText("Generating world..");
+		LoadingScreen.instance.SetText("Generating world areas..");
 		LoadingScreen.instance.Show();
 		save_load = true;
 
@@ -138,6 +138,15 @@ public class AreaManager : MonoBehaviour {
 				yield return new WaitForEndOfFrame(); //allow for time between each row
 			} //x for loop
 		}
+
+		LoadingScreen.instance.SetText("Populating world areas..");
+
+		while (Area.PopulationInProgress) {
+			yield return new WaitForEndOfFrame();
+		}
+
+		LoadingScreen.instance.SetProgress(0.5f);
+
 		currentAreaPos = new Vector2Int(-1, -1); //reset the currentArea in case a game was loaded previously
 		LoadArea(position: startPos, saveEntities: false, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
 	}
@@ -345,6 +354,8 @@ public class AreaManager : MonoBehaviour {
 					//to do: prompt to regenerate entire world or cancel
 					//StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero)); //generate everything again
 					Debug.Log("Save Data Error: AreaManager.LoadAreasFromSave(...) => filename: " + currFilePath);
+					LoadingScreen.instance.Hide();
+					GameManager.instance.QuitToMainMenu();
 					yield break; //give up on loading
 				} else {
 					StreamReader reader = new StreamReader(File.Open(currFilePath, FileMode.Open));
