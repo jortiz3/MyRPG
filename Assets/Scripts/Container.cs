@@ -10,12 +10,13 @@ using internal_Items;
 public class Container : Interactable {
 	protected static Container nonplayerContainer; //container the player is currently interacting with
 	protected static Container displayedContainer;
+	protected static Toggle currTab;
 	protected static Transform currDisplayParent;
 	private static int numContainersToPopulate;
 
 	private static Toggle npcTab; //non-player container tab
-	private static Text npcTabText; //text displayed on non-player container tab -- to display the name of container
 	private static Transform npcParent; //non-player container parent
+	private static Text npcTabText; //text displayed on non-player container tab -- to display the name of container
 	private static Transform containerElementPrefab;
 	private static int nextInstanceID;
 
@@ -86,8 +87,8 @@ public class Container : Interactable {
 		return false;
 	}
 
-	public virtual void Display() {
-		StartCoroutine(RefreshDisplay(npcParent));
+	public virtual void Display(bool changeState = true) {
+		StartCoroutine(RefreshDisplay(npcTab, npcParent, changeState));
 	}
 
 	protected virtual void Drop(Item item, int quantity) {
@@ -172,9 +173,7 @@ public class Container : Interactable {
 
 			npcTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
 			npcTabText = npcTab.transform.Find("Label_Toggle_Inventory_Other").GetComponent<Text>();
-		}
 
-		if (currDisplayParent == null) {
 			currDisplayParent = npcParent;
 		}
 
@@ -190,7 +189,7 @@ public class Container : Interactable {
 		if (!optout_populateItems) { //only player inventory opts out of autopopulating
 			if (instanceID <= 0) {
 				instanceID = GetNextInstanceID();
-				Populate();
+				StartCoroutine(Populate());
 			}
 		}
 
@@ -241,7 +240,7 @@ public class Container : Interactable {
 			}
 
 			if (!owner.Equals("Player")) { //if not player's chest
-				if (GameManager.instance.ElapsedGameTime - lastUpdated > 600) { //10 mins since last update?
+				if (Mathf.Abs(GameManager.instance.ElapsedGameTime - lastUpdated) > 600) { //10 mins since last update?
 					StartCoroutine(Populate()); //repopulate chest
 				}
 			}
@@ -257,8 +256,6 @@ public class Container : Interactable {
 
 	protected IEnumerator Populate() {
 		numContainersToPopulate++;
-
-		Debug.Log(instanceID + " populated");
 
 		if (!StructureGridManager.instance.GridInitialized || StructureGridManager.instance.RegisteringStructures) {
 			yield return new WaitForEndOfFrame();
@@ -286,29 +283,33 @@ public class Container : Interactable {
 	/// <summary>
 	/// Iterates through all elements available for containers in the scene and only shows the elements for this container.
 	/// </summary>
-	protected IEnumerator RefreshDisplay(Transform parent) {
-		MenuScript.instance.ChangeState("Inventory"); //try to change to inventory state
+	protected IEnumerator RefreshDisplay(Toggle tab, Transform uiParent, bool changeState) {
+		if (changeState) { //only toggle state when necessary
+			MenuScript.instance.ChangeState("Inventory"); //try to change to inventory state
+		}
 
 		if (!MenuScript.instance.CurrentState.Equals("")) { //if successfully changed
-			if (parent != currDisplayParent) { //if a different display is being refreshed
-				currDisplayParent.gameObject.SetActive(false); //hide previous display
-				currDisplayParent = parent; //set the new current display
+			if (changeState) { //only change view of container when necessary
+				if (tab != currTab) { //if a different display is being refreshed
+					currTab = tab; //set the new current display parent
+
+					bool npcActive = false; //default to false
+					if (currTab == npcTab) { //if switching to non-player container
+						npcActive = true; //mark true
+					}
+
+					npcTab.gameObject.SetActive(npcActive); //show/hide non-player container tab
+					npcTabText.text = npcActive ? CustomFormatting.Capitalize(gameObject.name.Split('_')[0]) : "null"; //show the name of the container
+					nonplayerContainer = npcActive ? this : null; //if the container is active, then we need to assign this container to static reference
+					currDisplayParent = uiParent;
+					currTab.isOn = false;
+				}
 			}
 
-			bool npcActive = false; //default to false
-			if (currDisplayParent == npcParent) { //if switching to non-player container
-				npcActive = true; //mark true
+			foreach (Transform child in currDisplayParent) { //go through all children
+				child.gameObject.SetActive(false); //hide them
 			}
-
-			npcTab.gameObject.SetActive(npcActive); //show/hide non-player container tab
-			npcTab.isOn = npcActive; //ensures the container is shown if enabled
-			npcTabText.text = npcActive ? CustomFormatting.Capitalize(gameObject.name.Split('_')[0]) : "null";
-			nonplayerContainer = npcActive ? this : null; //if the container is active, then we need to assign this container to static reference
-
-			foreach (Transform child in currDisplayParent) {
-				child.gameObject.SetActive(false);
-			}
-			yield return new WaitForEndOfFrame();
+			yield return new WaitForEndOfFrame(); //pause
 
 			totalWeight = 0;
 			for (int i = 0; i < items.Count; i++) { //loop through all items
@@ -323,8 +324,8 @@ public class Container : Interactable {
 			RectTransform currParentRect = currDisplayParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
 			currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
 
-			displayedContainer = this;
-			currDisplayParent.gameObject.SetActive(true);
+			displayedContainer = this; //since displaying is complete, store reference to this container
+			currTab.isOn = true; //ensure the ui parents are hidden and displayed properly
 		} else { //closing inventory
 			ContextManager.instance.Hide(); //ensure any displayed context menus are hidden
 		}
@@ -405,12 +406,26 @@ public class Container : Interactable {
 	}
 
 	protected bool Transfer(Item item, int quantity, Container other) {
-		//incorporate quantity
-		if (other.Add(item)) { //try to move item to other container
-			Remove(item); //if the item was added, remove from the container
-			return true;
+		bool transferred = false;
+		if (item.Quantity - quantity <= 0) {
+			if (other.Add(item)) { //try to move item to other container
+				Remove(item); //if the item was added, remove from the container
+				transferred = true;
+			}
+		} else {
+			if (other.Add(AssetManager.instance.InstantiateItem(position: other.transform.position, itemID: item.ID, containerID: other.instanceID,
+				quantity: quantity, textureName: item.GetTextureName(), lastUpdated: GameManager.instance.ElapsedGameTime))) {
+				item.Quantity -= quantity;
+				transferred = false;
+			}
 		}
-		return false;
+
+		if (transferred) {
+			Display(false);
+			other.Display(false);
+		}
+
+		return transferred;
 	}
 
 	public static bool Transfer(string itemFullName, int quantity) {

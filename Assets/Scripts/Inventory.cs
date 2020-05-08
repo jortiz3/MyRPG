@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class Inventory : Container {
 	public static Inventory instance;
 
+	private static Toggle tab;
 	private static Transform parent;
 	private static Transform playerInfo;
 
@@ -16,12 +17,13 @@ public class Inventory : Container {
 		}
 	}
 
-	public override void Display() {
-		StartCoroutine(RefreshDisplay(parent));
+	public override void Display(bool changeState = true) {
+		StartCoroutine(RefreshDisplay(tab, parent, changeState));
 	}
 
 	protected override void Initialize() {
-		parent = GameObject.Find("Inventory_Container_Player_Content").transform; //get new parent
+		parent = GameObject.Find("Inventory_Container_Player_Content").transform; //get ui parent for player inventory
+		tab = GameObject.Find("Toggle_Inventory_Player").GetComponent<Toggle>();
 		playerInfo = GameObject.Find("Inventory_Player_Info").transform; //get the player info
 		maxWeight = 100.0f;
 		instanceID = -777; //no other container will have <1 id

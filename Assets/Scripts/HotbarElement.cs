@@ -4,14 +4,19 @@ using UnityEngine.UI;
 
 namespace HUD_Elements {
 	public class HotbarElement : MonoBehaviour {
-		public static HotbarElement selected;
+		public static HotbarElement selected_hotkey;
 
+		private static Item selected_item;
+		private static Color color_default = Color.white;
+		private static Color color_highlight = Color.yellow;
+
+		private Image image;
 		private Button button;
 		private Text keybind_display;
 		private Item item;
 
 		public bool Assign(Item i) {
-			selected = null; //remove selected on each attempt to assign
+			selected_hotkey = null; //remove selected on each attempt to assign
 
 			if (i != null) {
 				if (i.Slottable) {
@@ -31,20 +36,26 @@ namespace HUD_Elements {
 		}
 
 		private void Awake() {
+			image = GetComponent<Image>();
 			button = GetComponent<Button>();
 			keybind_display = transform.GetChild(0).GetComponent<Text>();
+		}
+
+		private void SetHighlightActive(bool active) {
+			if (image != null) {
+				image.color = active ? color_highlight : color_default;
+			}
 		}
 
 		public void Select() {
 			if (MenuScript.instance.CurrentState.Equals("")) {
 				Use();
 			} else {
-				if (ContextManager.instance.Focus != null) {
-					//Assign();
-					selected = null;
-				} else {
-					selected = this;
+				if (selected_hotkey != null) {
+					selected_hotkey.SetHighlightActive(false);
 				}
+				SetHighlightActive(true);
+				selected_hotkey = this;
 			}
 		}
 

@@ -60,7 +60,7 @@ public class HUD : MonoBehaviour {
 	/// </summary>
 	/// <param name="slotNum">The slot number as defined by keybindings. [1, 10(0)]</param>
 	public void UseHotbarSlot(int slotNum) {
-		if (0 <= slotNum && slotNum < hotbar.childCount) {
+		if (1 <= slotNum && slotNum < hotbar.childCount + 1) {
 			HotbarElement element = hotbar.Find("Hotbar_Slot_" + slotNum).GetComponent<HotbarElement>();
 			if (element != null) {
 				element.Select();

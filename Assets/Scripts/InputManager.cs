@@ -243,8 +243,8 @@ public class InputManager : MonoBehaviour {
 					GameManager.instance.QuickLoadGame();
 				}
 
-				for (int slot_index = 0; slot_index < 10; slot_index++) { //check all quick (item/spell) use slots
-					if (Input.GetKeyDown(keyBindings["Slot_" + (slot_index + 1)])) {
+				for (int slot_index = 1; slot_index < 11; slot_index++) { //check all quick (item/spell) use slots
+					if (Input.GetKeyDown(keyBindings["Slot_" + slot_index])) {
 						HUD.instance.UseHotbarSlot(slot_index);
 					}
 				}

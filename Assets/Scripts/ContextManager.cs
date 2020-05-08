@@ -56,8 +56,8 @@ public class ContextManager : MonoBehaviour {
 		bool used = false;
 		switch (newFocus.tag) {
 			case "uielement_container":
-				if (HotbarElement.selected != null) {
-					if (HotbarElement.selected.Assign(Container.GetDisplayedItem(newFocus.name))) {
+				if (HotbarElement.selected_hotkey != null) {
+					if (HotbarElement.selected_hotkey.Assign(Container.GetDisplayedItem(newFocus.name))) {
 						used = true;
 					}
 				}
@@ -77,39 +77,52 @@ public class ContextManager : MonoBehaviour {
 		switch (focus.tag) {
 			case "uielement_container":
 				if (context_item != null) {
-					Vector3 menuPos = Input.mousePosition; //get starting pos for menu
-					Vector2 menuSize = context_item.GetComponent<RectTransform>().sizeDelta; //get size of context menu
-					if (menuPos.y - menuSize.y < 0) { //if the menu will go off screen vertically
-						menuPos.y += menuSize.y; //adjust pos y
-					}
-					if (menuPos.x + menuSize.x > Screen.width) { //if the menu will go off screen horizontally
-						menuPos.x -= menuSize.x; //adjust pos x
-					}
-
-					context_item.position = menuPos; //set the position of the context menu
-
-					GameObject use = context_item.Find("button_use").gameObject;
-					GameObject equip = context_item.Find("button_equip").gameObject;
-
 					Item currItem = Container.GetDisplayedItem(focus.name);
-					if (currItem != null) {
-						if (currItem.Equipable) {
-							use.SetActive(false);
+					if (currItem != null) { //if item info obtained
+						GameObject use = context_item.Find("button_use").gameObject;
+						GameObject equip = context_item.Find("button_equip").gameObject;
+						
+						if (currItem.Equipable) { //if equipable
+							use.SetActive(false); //show 'equip' instead of 'use'
 							equip.SetActive(true);
-						} else {
-							use.SetActive(true);
+						} else { //if not equipable
+							use.SetActive(true); //show 'use' instead of 'equip'
 							equip.SetActive(false);
 						}
 
 						GameObject transfer = context_item.Find("button_transfer").gameObject;
 						GameObject drop = context_item.Find("button_drop").gameObject;
-						if (Container.GetTransferAvailable()) {
-							transfer.SetActive(true);
+						if (Container.GetTransferAvailable()) { //if player is interacting with container
+							transfer.SetActive(true); //show 'transfer' instead of 'drop'
 							drop.SetActive(false);
-						} else {
-							transfer.SetActive(false);
+						} else { //player is not interacting with container
+							transfer.SetActive(false); //show 'drop' instead of 'transfer'
 							drop.SetActive(true);
 						}
+
+						GameObject assign = context_item.Find("button_assign").gameObject;
+						RectTransform menuRect = context_item.GetComponent<RectTransform>(); //store reference to rect transform
+						Vector2 menuSize = menuRect.sizeDelta; //get the initial size (mainly for width)
+						menuSize.y = assign.GetComponent<RectTransform>().sizeDelta.y; //set size to size of 1 element
+						if (currItem.Slottable) { //if the item is slottable
+							assign.SetActive(true); //display assign button
+							menuSize.y *= 4; //adjust the size of the menu
+						} else { //item not slottable
+							assign.SetActive(false); //hide the assign button
+							menuSize.y *= 3; //adjust the size of the menu
+						}
+						menuRect.sizeDelta = menuSize; //set the size
+
+						
+						Vector3 menuPos = Input.mousePosition; //get starting pos for menu
+						if (menuPos.y - menuSize.y < 0) { //if the menu will go off screen vertically
+							menuPos.y += menuSize.y; //adjust pos y
+						}
+						if (menuPos.x + menuSize.x > Screen.width) { //if the menu will go off screen horizontally
+							menuPos.x -= menuSize.x; //adjust pos x
+						}
+						context_item.position = menuPos; //set the position of the context menu
+
 						QuantityManager.instance.SetQuantityRange(currItem.Quantity);
 						context_item.Find("text_header_context_container").GetComponent<Text>().text = currItem.ToString();
 						currFocus = focus;

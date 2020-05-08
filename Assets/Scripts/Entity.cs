@@ -108,7 +108,7 @@ namespace internal_Area {
 		/// Creates entity data for containers.
 		/// </summary>
 		public Entity(Vector3 position, int containerID = -1, string owner = "", string Texture = "chest_default", float LastUpdated = 0) {
-			type = "furniture";
+			type = "container";
 			textures = new string[] { Texture };
 			id = containerID;
 			quantity = 0;
