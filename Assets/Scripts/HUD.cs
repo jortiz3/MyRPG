@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using HUD_Elements;
 
@@ -9,7 +10,7 @@ public class HUD : MonoBehaviour {
 	public static HUD instance;
 
 	private Text interactionText;
-	private Transform hotbar;
+	private List<HotbarElement> hotbar;
 
 	private void Awake() {
 		if (instance != null) {
@@ -20,7 +21,7 @@ public class HUD : MonoBehaviour {
 			interactionText = transform.Find("Interaction").GetComponent<Text>();
 			HideInteractionText();
 
-			hotbar = transform.Find("Hotbar");
+			hotbar = new List<HotbarElement>();
 		}
 	}
 
@@ -32,17 +33,42 @@ public class HUD : MonoBehaviour {
 		}
 	}
 
+	public void RegisterHotbarElement(HotbarElement element) {
+		if (hotbar != null) {
+			if (element != null) {
+				hotbar.Add(element);
+			}
+		}
+	}
+
+	public bool SelectItem(Item item) {
+		if (HotbarElement.HotkeyAssignmentActive) {
+			SetHotbarAssignmentActive(false);
+			HotbarElement.EndHotkeyAssignment(item);
+			return true;
+		} else {
+
+		}
+		return false;
+	}
+
+	private void SetHotbarAssignmentActive(bool active) {
+		if (active) { //if activating
+			HotbarElement.BeginHotkeyAssignment(); //begin assignment detection
+		}
+
+		foreach (HotbarElement element in hotbar) {
+			element.SetHighlightActive(active); //highlight all hotbar elements
+		}
+	}
+
 	/// <summary>
 	/// To be used when changing settings.
 	/// </summary>
 	/// <param name="interactable">Buttons should be clickable (True/False).</param>
 	public void SetHotbarInteractable(bool interactable) {
-		HotbarElement currElement;
-		for (int i = 0; i < hotbar.childCount; i++) {
-			currElement = hotbar.GetChild(i).GetComponent<HotbarElement>();
-			if (currElement != null) {
-				currElement.SetButtonInteractable(interactable);
-			}
+		foreach (HotbarElement element in hotbar) {
+			element.SetButtonInteractable(interactable);
 		}
 	}
 
@@ -58,12 +84,11 @@ public class HUD : MonoBehaviour {
 	/// <summary>
 	/// Called by InputManager.cs.
 	/// </summary>
-	/// <param name="slotNum">The slot number as defined by keybindings. [1, 10(0)]</param>
-	public void UseHotbarSlot(int slotNum) {
-		if (1 <= slotNum && slotNum < hotbar.childCount + 1) {
-			HotbarElement element = hotbar.Find("Hotbar_Slot_" + slotNum).GetComponent<HotbarElement>();
-			if (element != null) {
+	public void UseHotbarSlot(string slotName) {
+		foreach (HotbarElement element in hotbar) {
+			if (element.transform.name.Equals(slotName)) {
 				element.Select();
+				break;
 			}
 		}
 	}

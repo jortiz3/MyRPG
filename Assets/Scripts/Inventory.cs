@@ -6,7 +6,6 @@ public class Inventory : Container {
 	public static Inventory instance;
 
 	private static Toggle tab;
-	private static Transform parent;
 	private static Transform playerInfo;
 
 	private void Awake() {
@@ -18,11 +17,11 @@ public class Inventory : Container {
 	}
 
 	public override void Display(bool changeState = true) {
-		StartCoroutine(RefreshDisplay(tab, parent, changeState));
+		StartCoroutine(RefreshDisplay(tab, changeState));
 	}
 
 	protected override void Initialize() {
-		parent = GameObject.Find("Inventory_Container_Player_Content").transform; //get ui parent for player inventory
+		displayParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get ui parent for player inventory
 		tab = GameObject.Find("Toggle_Inventory_Player").GetComponent<Toggle>();
 		playerInfo = GameObject.Find("Inventory_Player_Info").transform; //get the player info
 		maxWeight = 100.0f;

@@ -174,7 +174,7 @@ namespace internal_Area {
 					}
 					break;
 				case "container":
-					Container c = AssetManager.instance.InstantiateContainer(position, owner: uniqueString_0, textureName: textures[0], lastUpdated: lastUpdated);
+					Container c = AssetManager.instance.InstantiateContainer(position, containerID: id, owner: uniqueString_0, textureName: textures[0], lastUpdated: lastUpdated);
 					if (c != null) {
 						return true;
 					}

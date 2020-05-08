@@ -11,11 +11,9 @@ public class Container : Interactable {
 	protected static Container nonplayerContainer; //container the player is currently interacting with
 	protected static Container displayedContainer;
 	protected static Toggle currTab;
-	protected static Transform currDisplayParent;
 	private static int numContainersToPopulate;
 
 	private static Toggle npcTab; //non-player container tab
-	private static Transform npcParent; //non-player container parent
 	private static Text npcTabText; //text displayed on non-player container tab -- to display the name of container
 	private static Transform containerElementPrefab;
 	private static int nextInstanceID;
@@ -25,6 +23,7 @@ public class Container : Interactable {
 	protected float maxWeight;
 	protected int instanceID; //never 0 or less than
 	protected bool optout_populateItems;
+	protected Transform displayParent; //the parent for this container's ui elements
 
 	public static bool PopulationInProgress { get { return numContainersToPopulate > 0; } }
 	public float TotalWeight { get { return totalWeight; } }
@@ -43,7 +42,6 @@ public class Container : Interactable {
 					} else { //first time this item is added
 						items.Add(item); //store item in list
 						item.ContainerID = instanceID; //ensure the item knows which container it is in
-						CreateContainerElement(item); //ensure there's a ui element for the item
 						item.LastUpdated = GameManager.instance.ElapsedGameTime;
 					}
 					return true;
@@ -70,16 +68,17 @@ public class Container : Interactable {
 	/// <param name="i">The item to be added to or found in the UI.</param>
 	/// <returns>Reference to the created or found transform.</returns>
 	private Transform CreateContainerElement(Item i) {
-		Transform temp = currDisplayParent.Find(i.ToString());
+		string elementName = GetElementName(i);
+		Transform temp = displayParent.Find(elementName);
 		if (temp == null) {
-			temp = Instantiate(containerElementPrefab, currDisplayParent).transform;
-			temp.name = i.ToString();
+			temp = Instantiate(containerElementPrefab, displayParent).transform;
+			temp.name = elementName;
 		}
 		return temp;
 	}
 
 	private bool DeleteContainerElement(Item i) {
-		Transform temp = currDisplayParent.Find(i.ToString());
+		Transform temp = displayParent.Find(i.ToString());
 		if (temp != null) {
 			Destroy(temp.gameObject);
 			return true;
@@ -88,7 +87,7 @@ public class Container : Interactable {
 	}
 
 	public virtual void Display(bool changeState = true) {
-		StartCoroutine(RefreshDisplay(npcTab, npcParent, changeState));
+		StartCoroutine(RefreshDisplay(npcTab, changeState));
 	}
 
 	protected virtual void Drop(Item item, int quantity) {
@@ -131,11 +130,16 @@ public class Container : Interactable {
 		return null;
 	}
 
-	public static Item GetDisplayedItem(string itemFullName) {
+	public static Item GetDisplayedItem(string elementName) {
 		if (displayedContainer != null) {
-			return displayedContainer.GetItem(itemFullName);
+			elementName = elementName.Split('_')[0];
+			return displayedContainer.GetItem(elementName);
 		}
 		return null;
+	}
+
+	private string GetElementName(Item item) {
+		return item.ToString() + "_" + instanceID;
 	}
 
 	public Item GetItem(string itemFullName) {
@@ -165,16 +169,16 @@ public class Container : Interactable {
 	}
 
 	protected override void Initialize() {
-		if (npcParent == null) {
-			npcParent = GameObject.Find("Inventory_Container_Other_Content").transform; //update object name
-
+		if (npcTab == null) {
 			containerElementPrefab = GameObject.Find("Inventory_Container_Element_Prefab").transform; //update object name
 			containerElementPrefab.gameObject.SetActive(false);
 
 			npcTab = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
 			npcTabText = npcTab.transform.Find("Label_Toggle_Inventory_Other").GetComponent<Text>();
+		}
 
-			currDisplayParent = npcParent;
+		if (displayParent == null) {
+			displayParent = GameObject.Find("Inventory_Container_Other_Content").transform;
 		}
 
 		if (items == null) {
@@ -283,7 +287,7 @@ public class Container : Interactable {
 	/// <summary>
 	/// Iterates through all elements available for containers in the scene and only shows the elements for this container.
 	/// </summary>
-	protected IEnumerator RefreshDisplay(Toggle tab, Transform uiParent, bool changeState) {
+	protected IEnumerator RefreshDisplay(Toggle tab, bool changeState) {
 		if (changeState) { //only toggle state when necessary
 			MenuScript.instance.ChangeState("Inventory"); //try to change to inventory state
 		}
@@ -301,12 +305,11 @@ public class Container : Interactable {
 					npcTab.gameObject.SetActive(npcActive); //show/hide non-player container tab
 					npcTabText.text = npcActive ? CustomFormatting.Capitalize(gameObject.name.Split('_')[0]) : "null"; //show the name of the container
 					nonplayerContainer = npcActive ? this : null; //if the container is active, then we need to assign this container to static reference
-					currDisplayParent = uiParent;
 					currTab.isOn = false;
 				}
 			}
 
-			foreach (Transform child in currDisplayParent) { //go through all children
+			foreach (Transform child in displayParent) { //go through all children
 				child.gameObject.SetActive(false); //hide them
 			}
 			yield return new WaitForEndOfFrame(); //pause
@@ -321,7 +324,7 @@ public class Container : Interactable {
 
 			//resize the container slide area
 			float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
-			RectTransform currParentRect = currDisplayParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
+			RectTransform currParentRect = displayParent.GetComponent<RectTransform>(); //we reference 2 times, so store in variable
 			currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
 
 			displayedContainer = this; //since displaying is complete, store reference to this container
@@ -380,7 +383,10 @@ public class Container : Interactable {
 	}
 
 	private void RemoveUIElement(Item item) {
-		Destroy(currDisplayParent.Find(item.ToString()).gameObject);
+		Transform element = displayParent.Find(GetElementName(item));
+		if (element != null) {
+			Destroy(element.gameObject);
+		}
 	}
 
 	public static void ResetInstanceIDs() {
@@ -416,7 +422,7 @@ public class Container : Interactable {
 			if (other.Add(AssetManager.instance.InstantiateItem(position: other.transform.position, itemID: item.ID, containerID: other.instanceID,
 				quantity: quantity, textureName: item.GetTextureName(), lastUpdated: GameManager.instance.ElapsedGameTime))) {
 				item.Quantity -= quantity;
-				transferred = false;
+				transferred = true;
 			}
 		}
 
@@ -428,7 +434,7 @@ public class Container : Interactable {
 		return transferred;
 	}
 
-	public static bool Transfer(string itemFullName, int quantity) {
+	public static bool Transfer(string elementName, int quantity) {
 		if (nonplayerContainer != null) { //player is currently interacting with a container
 			Container other;
 			if (displayedContainer == Inventory.instance) {
@@ -437,7 +443,7 @@ public class Container : Interactable {
 				other = Inventory.instance;
 			}
 
-			return displayedContainer.Transfer(displayedContainer.GetItem(itemFullName), quantity, other);
+			return displayedContainer.Transfer(GetDisplayedItem(elementName), quantity, other);
 		}
 		return false;
 	}

@@ -2,7 +2,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using HUD_Elements;
 
 /// <summary>
 /// Displays the context menu with the appropriate buttons/info, and works with HotbarElement.cs to assign things to the hotbar. Written by Justin Ortiz
@@ -51,23 +50,19 @@ public class ContextManager : MonoBehaviour {
 	}
 
 	public void Select(Transform newFocus) {
-		currFocus = null; //start focus as null
+		currFocus = null;
 
-		bool used = false;
 		switch (newFocus.tag) {
 			case "uielement_container":
-				if (HotbarElement.selected_hotkey != null) {
-					if (HotbarElement.selected_hotkey.Assign(Container.GetDisplayedItem(newFocus.name))) {
-						used = true;
+				Item item = Container.GetDisplayedItem(newFocus.name);
+				if (item != null) {
+					if (!HUD.instance.SelectItem(item)) {
+						currFocus = newFocus;
 					}
 				}
 				break;
 			default:
 				break;
-		}
-
-		if (!used) {
-			currFocus = newFocus;
 		}
 
 		Hide();

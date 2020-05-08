@@ -2723,7 +2723,7 @@ GameObject:
   - component: {fileID: 204904119}
   - component: {fileID: 204904118}
   m_Layer: 5
-  m_Name: Hotbar_Slot_4
+  m_Name: Hotbar_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3517,7 +3517,7 @@ GameObject:
   - component: {fileID: 247146986}
   - component: {fileID: 247146985}
   m_Layer: 5
-  m_Name: Hotbar_Slot_5
+  m_Name: Hotbar_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7209,7 +7209,7 @@ GameObject:
   - component: {fileID: 572282653}
   - component: {fileID: 572282652}
   m_Layer: 5
-  m_Name: Hotbar_Slot_1
+  m_Name: Hotbar_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10393,7 +10393,7 @@ GameObject:
   - component: {fileID: 1037498934}
   - component: {fileID: 1037498933}
   m_Layer: 5
-  m_Name: Hotbar_Slot_3
+  m_Name: Hotbar_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10997,7 +10997,7 @@ GameObject:
   - component: {fileID: 1096043946}
   - component: {fileID: 1096043945}
   m_Layer: 5
-  m_Name: Hotbar_Slot_7
+  m_Name: Hotbar_7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15722,7 +15722,7 @@ GameObject:
   - component: {fileID: 1664306477}
   - component: {fileID: 1664306476}
   m_Layer: 5
-  m_Name: Hotbar_Slot_9
+  m_Name: Hotbar_9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17302,7 +17302,7 @@ GameObject:
   - component: {fileID: 1781662049}
   - component: {fileID: 1781662048}
   m_Layer: 5
-  m_Name: Hotbar_Slot_2
+  m_Name: Hotbar_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18021,7 +18021,7 @@ GameObject:
   - component: {fileID: 1836716888}
   - component: {fileID: 1836716887}
   m_Layer: 5
-  m_Name: Hotbar_Slot_6
+  m_Name: Hotbar_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19510,7 +19510,7 @@ GameObject:
   - component: {fileID: 2074989054}
   - component: {fileID: 2074989053}
   m_Layer: 5
-  m_Name: Hotbar_Slot_10
+  m_Name: Hotbar_10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -20129,7 +20129,7 @@ GameObject:
   - component: {fileID: 2136533752}
   - component: {fileID: 2136533751}
   m_Layer: 5
-  m_Name: Hotbar_Slot_8
+  m_Name: Hotbar_8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

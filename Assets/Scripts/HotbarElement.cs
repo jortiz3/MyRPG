@@ -6,16 +6,18 @@ namespace HUD_Elements {
 	public class HotbarElement : MonoBehaviour {
 		public static HotbarElement selected_hotkey;
 
-		private static Item selected_item;
 		private static Color color_default = Color.white;
 		private static Color color_highlight = Color.yellow;
+		private static bool hotkeyAssignmentActive;
 
 		private Image image;
 		private Button button;
 		private Text keybind_display;
 		private Item item;
 
-		public bool Assign(Item i) {
+		public static bool HotkeyAssignmentActive { get { return hotkeyAssignmentActive; } }
+
+		private bool Assign(Item i) {
 			selected_hotkey = null; //remove selected on each attempt to assign
 
 			if (i != null) {
@@ -39,21 +41,34 @@ namespace HUD_Elements {
 			image = GetComponent<Image>();
 			button = GetComponent<Button>();
 			keybind_display = transform.GetChild(0).GetComponent<Text>();
+			HUD.instance.RegisterHotbarElement(this);
 		}
 
-		private void SetHighlightActive(bool active) {
-			if (image != null) {
-				image.color = active ? color_highlight : color_default;
+		public static void BeginHotkeyAssignment() {
+			hotkeyAssignmentActive = true;
+		}
+
+		public static void EndHotkeyAssignment(Item item) {
+			if (hotkeyAssignmentActive) {
+				if (item != null) {
+
+				}
+			}
+			hotkeyAssignmentActive = false;
+		}
+
+		public static void UnselectHotkey() {
+			if (selected_hotkey != null) {
+				selected_hotkey.SetHighlightActive(false);
+				selected_hotkey = null;
 			}
 		}
 
 		public void Select() {
-			if (MenuScript.instance.CurrentState.Equals("")) {
-				Use();
-			} else {
-				if (selected_hotkey != null) {
-					selected_hotkey.SetHighlightActive(false);
-				}
+			if (MenuScript.instance.CurrentState.Equals("")) { //if game is underway
+				Use(); //use what is in the slot
+			} else { //viewing inventory
+				UnselectHotkey();
 				SetHighlightActive(true);
 				selected_hotkey = this;
 			}
@@ -65,9 +80,15 @@ namespace HUD_Elements {
 			}
 		}
 
+		public void SetHighlightActive(bool active) {
+			if (image != null) {
+				image.color = active ? color_highlight : color_default;
+			}
+		}
+
 		private void Start() {
 			if (keybind_display != null) {
-				keybind_display.text = InputManager.instance.GetKeyCodeName(transform.name.Replace("Hotbar_", ""));
+				keybind_display.text = InputManager.instance.GetKeyCodeName(transform.name);
 			}
 		}
 
