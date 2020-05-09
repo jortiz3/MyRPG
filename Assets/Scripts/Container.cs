@@ -31,31 +31,33 @@ public class Container : Interactable {
 	public int InstanceID { get { return instanceID; } }
 
 	public bool Add(Item item) {
-		if (item != null) {
-			if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated || optout_populateItems) { //if container not updated recently OR updated recently  OR does not populate items automatically
-				if (totalWeight + item.GetWeight() <= maxWeight) { //if weight remains in limits with adding new item's weight
-					int itemIndex = IndexOf(item); //attempt to get index of same item inside this container
-					if (itemIndex >= 0) { //container has some of this item already
-						items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
-						Destroy(item.gameObject); //remove item from scene
-						items[itemIndex].LastUpdated = GameManager.instance.ElapsedGameTime;
-					} else { //first time this item is added
-						items.Add(item); //store item in list
-						item.ContainerID = instanceID; //ensure the item knows which container it is in
-						item.LastUpdated = GameManager.instance.ElapsedGameTime;
+		if (item != null) { //if given valid reference
+			if (!Contains(item)) { //if the same item (in memory) is being stored
+				if (GameManager.instance.ElapsedGameTime - lastUpdated > 2 || item.LastUpdated >= lastUpdated || optout_populateItems) { //if container not updated recently OR updated recently  OR does not populate items automatically
+					if (totalWeight + item.GetWeight() <= maxWeight) { //if weight remains in limits with adding new item's weight
+						int itemIndex = IndexOf(item); //attempt to get index of same item (database-wise) inside this container
+						if (itemIndex >= 0) { //container has some of this item already
+							items[itemIndex].Quantity += item.Quantity; //increase the quantity of the item already in container
+							Destroy(item.gameObject); //remove item from scene
+							items[itemIndex].LastUpdated = GameManager.instance.ElapsedGameTime;
+						} else { //first time this item is added
+							items.Add(item); //store item in list
+							item.ContainerID = instanceID; //ensure the item knows which container it is in
+							item.LastUpdated = GameManager.instance.ElapsedGameTime;
+						}
+						return true;
 					}
-					return true;
+				} else { //container just updated, item is old
+					Destroy(item.gameObject); //destroy old item
 				}
-			} else { //container just updated, item is old
-				Destroy(item.gameObject); //destroy old item
 			}
 		}
 		return false;
 	}
 
-	public bool Contains(string fullItemName) {
+	public bool Contains(Item item) {
 		for (int i = 0; i < items.Count; i++) {
-			if (items[i].ToString().Equals(fullItemName)) {
+			if (items[i].Equals(item)) { //if they are the same object in memory
 				return true;
 			}
 		}
@@ -161,7 +163,7 @@ public class Container : Interactable {
 
 	private int IndexOf(Item item) {
 		for (int i = 0; i < items.Count; i++) {
-			if (items[i].Equals(item)) {
+			if (items[i].Equals(item, false)) { //if they are the same item within the database
 				return i;
 			}
 		}
@@ -413,6 +415,7 @@ public class Container : Interactable {
 
 	protected bool Transfer(Item item, int quantity, Container other) {
 		bool transferred = false;
+		quantity = Mathf.Clamp(quantity, 0, item.Quantity); //ensure the quantity is never bigger than item quantity
 		if (item.Quantity - quantity <= 0) {
 			if (other.Add(item)) { //try to move item to other container
 				Remove(item); //if the item was added, remove from the container

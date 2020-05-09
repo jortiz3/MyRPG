@@ -45,20 +45,15 @@ public class Item : Interactable {
 		}
 	}
 
-	public override bool Equals(object other) {
-		if (other.GetType() == typeof(Item)) { //if the other object is an item
-			Item temp = (Item)other; //store/cast to item to access attributes
-			if (ToString().Equals(temp.ToString())) { //both items have same prefix, base name, & suffix
-				if (id == temp.id) { //both items have the same item ID
+	public bool Equals(Item other, bool reqDiffContainerID) {
+		if (ToString().Equals(other.ToString())) { //both items have same prefix, base name, & suffix
+			if (id == other.id) { //both items have the same item ID
+				if (!reqDiffContainerID || other.ContainerID != containerID) { //if difference not needed OR they have different containers
 					return true;
 				}
 			}
 		}
-		return base.Equals(other); //returns whether it's the same object in memory
-	}
-
-	public override int GetHashCode() {
-		return base.GetHashCode();
+		return false;
 	}
 
 	public string GetItemType() {
@@ -67,7 +62,8 @@ public class Item : Interactable {
 			temp = "W";
 		} else if (armor) {
 			temp = "A";
-		} else*/ if (consumable) {
+		} else*/
+		if (consumable) {
 			temp = "C";
 		}
 		return temp;
@@ -251,7 +247,7 @@ public class Item : Interactable {
 			}
 		}
 
-		LoadDBInfo(ID: ID, BaseName: BaseName, Quantity: Quantity);
+		LoadDBInfo(ID: ID, Prefix: Prefix, BaseName: BaseName, Suffix: Suffix, Quantity: Quantity);
 		SetSprite(Texture);
 	}
 
