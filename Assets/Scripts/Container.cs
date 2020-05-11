@@ -292,6 +292,7 @@ public class Container : Interactable {
 	protected IEnumerator RefreshDisplay(Toggle tab, bool changeState) {
 		if (changeState) { //only toggle state when necessary
 			MenuScript.instance.ChangeState("Inventory"); //try to change to inventory state
+			HUD.instance.RefreshSettings();
 		}
 
 		if (!MenuScript.instance.CurrentState.Equals("")) { //if successfully changed

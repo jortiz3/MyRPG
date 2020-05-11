@@ -9,11 +9,11 @@ using HUD_Elements;
 public class HUD : MonoBehaviour {
 	public static HUD instance;
 
+	private static string setting_clickSelectKey = "HUD_Hotkey Bar Click Enabled";
 	private static bool setting_clickSelectEnabled; //this determines whether the player can click hotbar elements during play to use them
 
 	private Text interactionText;
 	private List<HotbarElement> hotbar;
-
 	public static bool Setting_ClickSelectEnabled { get { return setting_clickSelectEnabled; } }
 
 	private void Awake() {
@@ -26,6 +26,12 @@ public class HUD : MonoBehaviour {
 			HideInteractionText();
 
 			hotbar = new List<HotbarElement>();
+
+			if (PlayerPrefs.HasKey(setting_clickSelectKey)) {
+				setting_clickSelectEnabled =  PlayerPrefs.GetInt(setting_clickSelectKey) == 1 ? true : false;
+			}
+
+			//get settings toggles, etc; onvaluechanged.addlistener()
 		}
 	}
 
@@ -81,6 +87,10 @@ public class HUD : MonoBehaviour {
 		}
 	}
 
+	public static void SaveSettings() {
+		PlayerPrefs.SetInt(setting_clickSelectKey, setting_clickSelectEnabled ? 1 : 0);
+	}
+
 	public bool SelectItem(Item item) {
 		if (HotbarElement.HotkeySelected) {
 			Item tempItem = GetValidAssignment(item);
@@ -110,7 +120,13 @@ public class HUD : MonoBehaviour {
 	/// To be used when changing settings.
 	/// </summary>
 	/// <param name="interactable">Buttons should be clickable (True/False).</param>
-	public void SetHotbarInteractable(bool interactable) {
+	public void RefreshSettings() {
+		//hotbar settings
+		bool interactable = true; //default to true
+		if (MenuScript.instance.CurrentState.Equals("") || LoadingScreen.instance.isActive()) { //if no menu displayed
+			interactable = setting_clickSelectEnabled; //change interactable based on setting
+		}
+
 		foreach (HotbarElement element in hotbar) {
 			element.SetButtonInteractable(interactable);
 		}

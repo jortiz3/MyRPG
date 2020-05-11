@@ -138,6 +138,7 @@ public class GameManager : MonoBehaviour {
 					WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
 					Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
 					CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
+					RefreshSettings();
 					state_gameInitialized = true; //flag game as initialized
 				}
 			}
@@ -157,6 +158,7 @@ public class GameManager : MonoBehaviour {
 		state_paused = !state_paused;
 		string menuState = state_paused ? "Pause" : "";
 		MenuScript.instance.ChangeState(menuState);
+		RefreshSettings();
 	}
 
 	/// <summary>
@@ -177,6 +179,10 @@ public class GameManager : MonoBehaviour {
 		state_play = false;
 		state_paused = false;
 		MenuScript.instance.ChangeState("Main Menu");
+	}
+
+	public void RefreshSettings() {
+		HUD.instance.RefreshSettings();
 	}
 
 	private void ResizeLoadUI() {
@@ -203,6 +209,8 @@ public class GameManager : MonoBehaviour {
 
 	public void SaveSettings() {
 		InputManager.instance.SaveKeyBindings();
+		HUD.SaveSettings();
+		PlayerPrefs.Save();
 	}
 
 	public void SelectPlayer(string name) {
@@ -228,6 +236,7 @@ public class GameManager : MonoBehaviour {
 				currDifficulty = difficulty; //set the difficulty
 				Player.instance.TeleportToPos(Vector3.zero); //move the player to center
 				SaveGame(); //create a save file
+				RefreshSettings();
 				state_gameInitialized = true; //flag game as initialized
 			}
 		} else {
