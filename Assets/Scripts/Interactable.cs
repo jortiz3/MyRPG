@@ -31,6 +31,13 @@ public class Interactable : MonoBehaviour {
 		disabled = false;
 	}
 
+	public Sprite GetSprite() {
+		if (sprite != null) {
+			return sprite.sprite;
+		}
+		return null;
+	}
+
 	public string GetTextureName() {
 		if (sprite != null) {
 			if (sprite.sprite != null) {
@@ -91,14 +98,14 @@ public class Interactable : MonoBehaviour {
 		}
 	}
 
-	public virtual void SetInteractionActive(bool enabled = true) {
-		if (enabled) {
+	public virtual void SetActive(bool interactive = true, bool visible = true) {
+		if (interactive) {
 			EnableInteraction();
 		} else {
 			DisableInteraction();
 		}
 
-		SetSpriteActive(enabled);
+		SetSpriteActive(visible);
 	}
 
 	/// <summary>

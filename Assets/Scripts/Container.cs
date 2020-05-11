@@ -102,7 +102,7 @@ public class Container : Interactable {
 			} else {
 				item.transform.position = dropPosition; //update item position
 				item.ContainerID = 0; //remove link to this container
-				item.SetInteractionActive(); //show the item to the player
+				item.SetActive(); //show the item to the player
 				DeleteContainerElement(item); //remove the ui element
 			}
 		}
@@ -415,23 +415,25 @@ public class Container : Interactable {
 
 	protected bool Transfer(Item item, int quantity, Container other) {
 		bool transferred = false;
-		quantity = Mathf.Clamp(quantity, 0, item.Quantity); //ensure the quantity is never bigger than item quantity
-		if (item.Quantity - quantity <= 0) {
-			if (other.Add(item)) { //try to move item to other container
-				Remove(item); //if the item was added, remove from the container
-				transferred = true;
+		if (!other.Equals(this)) {
+			quantity = Mathf.Clamp(quantity, 0, item.Quantity); //ensure the quantity is never bigger than item quantity
+			if (item.Quantity - quantity <= 0) {
+				if (other.Add(item)) { //try to move item to other container
+					Remove(item); //if the item was added, remove from the container
+					transferred = true;
+				}
+			} else {
+				if (other.Add(AssetManager.instance.InstantiateItem(position: other.transform.position, itemID: item.ID, containerID: other.instanceID,
+					quantity: quantity, textureName: item.GetTextureName(), lastUpdated: GameManager.instance.ElapsedGameTime))) {
+					item.Quantity -= quantity;
+					transferred = true;
+				}
 			}
-		} else {
-			if (other.Add(AssetManager.instance.InstantiateItem(position: other.transform.position, itemID: item.ID, containerID: other.instanceID,
-				quantity: quantity, textureName: item.GetTextureName(), lastUpdated: GameManager.instance.ElapsedGameTime))) {
-				item.Quantity -= quantity;
-				transferred = true;
-			}
-		}
 
-		if (transferred) {
-			Display(false);
-			other.Display(false);
+			if (transferred) {
+				other.Display(false); //display other first
+				Display(false); //display this to overwrite displayedContainer
+			}
 		}
 
 		return transferred;
@@ -449,6 +451,26 @@ public class Container : Interactable {
 			return displayedContainer.Transfer(GetDisplayedItem(elementName), quantity, other);
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// Attempts to transfer an item, then returns a reference to the transferred item.
+	/// </summary>
+	/// <returns>'null' if unable to transfer.</returns>
+	public static Item Transfer(Item item, int quantity) {
+		if (nonplayerContainer != null) { //player is currently interacting with a container
+			Container other;
+			if (displayedContainer == Inventory.instance) {
+				other = nonplayerContainer;
+			} else {
+				other = Inventory.instance;
+			}
+
+			if (displayedContainer.Transfer(item, quantity, other)) { //if successfully transferred
+				return other.GetItem(item.ToString());
+			}
+		}
+		return null;
 	}
 
 	protected virtual void UseItem(Item item) { //if an item is used in any other container

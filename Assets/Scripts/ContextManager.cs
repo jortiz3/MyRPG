@@ -49,6 +49,10 @@ public class ContextManager : MonoBehaviour {
 		QuantityManager.instance.Hide();
 	}
 
+	public void HUD_BeginHotkeyAssignment() {
+		HUD.instance.BeginHotkeyAssignment(Container.GetDisplayedItem(currFocus.name));
+	}
+
 	public void Select(Transform newFocus) {
 		currFocus = null;
 

@@ -178,7 +178,7 @@ public class Item : Interactable {
 			Container c = Container.GetContainer(containerID); //try to find container
 			if (c != null) { //if container found
 				if (c.Add(this)) { //add to container
-					SetInteractionActive(false);
+					SetActive(false, false);
 				}
 			} else { //if container not found
 				containerID = 0; //reset the id
@@ -190,7 +190,7 @@ public class Item : Interactable {
 
 	protected override void InteractInternal() {
 		if (Inventory.instance.Add(this)) { //if this item is added to player inventory
-			SetInteractionActive(false); //hide item and disable interaction
+			SetActive(false, false); //hide item and disable interaction
 		}
 		base.InteractInternal();
 	}

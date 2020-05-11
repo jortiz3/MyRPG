@@ -23,6 +23,8 @@ public class GameSave {
 	private float player_position_x;
 	[SerializeField]
 	private float player_position_y;
+	[SerializeField]
+	private bool setting_hudClickSelect;
 
 	public string Date { get { return date; } }
 	public string Version { get { return version; } }
@@ -46,6 +48,9 @@ public class GameSave {
 		//save player position
 		player_position_x = Player.instance.transform.position.x;
 		player_position_y = Player.instance.transform.position.y;
+
+		//save settings
+		setting_hudClickSelect = HUD.Setting_ClickSelectEnabled;
 	}
 
 	public Vector2Int GetAreaPosition() {
@@ -54,5 +59,9 @@ public class GameSave {
 
 	public Vector3 GetPlayerPosition() {
 		return new Vector3(player_position_x, player_position_y, 0);
+	}
+
+	public void LoadSettings() {
+		HUD.SetClickSelectSetting(setting_hudClickSelect);
 	}
 }
