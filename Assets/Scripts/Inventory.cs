@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class Inventory : Container {
 	public static Inventory instance;
 
+	private static Toggle tab;
 	private static Transform playerInfo;
 
 	private void Awake() {
@@ -12,28 +13,16 @@ public class Inventory : Container {
 			Destroy(gameObject);
 		} else {
 			instance = this;
-			gameObject.tag = "inventory";
 		}
 	}
 
-	public override void Display() {
-		SetContainerActive(false); //since this container will not be opened via interacting, we must hide the other container on display
-		base.Display(); //otherwise, display like normal container
-	}
-
-	public void Drop(Item item) {
-		if (nonplayerContainer != null) {
-			Transfer(item, nonplayerContainer);
-		} else {
-			item.transform.position = Player.instance.transform.position + InputManager.ConvertDirectionToVector3(Player.instance.LookDirection);
-			item.ContainerID = 0;
-			item.SetInteractionActive();
-		}
-		item.LastUpdated = GameManager.instance.ElapsedGameTime;
+	public override void Display(bool changeState = true) {
+		StartCoroutine(RefreshDisplay(tab, changeState));
 	}
 
 	protected override void Initialize() {
-		currDisplayParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get new parent
+		displayParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get ui parent for player inventory
+		tab = GameObject.Find("Toggle_Inventory_Player").GetComponent<Toggle>();
 		playerInfo = GameObject.Find("Inventory_Player_Info").transform; //get the player info
 		maxWeight = 100.0f;
 		instanceID = -777; //no other container will have <1 id
@@ -42,7 +31,8 @@ public class Inventory : Container {
 		base.Initialize(); //initialize base container attributes
 	}
 
-	protected override void RefreshWeightElement() {
+	protected override void RefreshWeight() {
+		base.RefreshWeight(); //ensure the weight is accurate
 		playerInfo.Find("Inventory_Player_TotalWeight").GetComponent<Text>().text = "Weight: " + TotalWeight + "/" + MaxWeight+ " kg"; //display the total weight
 	}
 

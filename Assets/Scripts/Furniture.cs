@@ -62,7 +62,7 @@ public class Furniture : Interactable {
 		if (parent != null) {
 			return parent.Owner;
 		}
-		return "";
+		return owner;
 	}
 
 	protected override void Initialize() {
@@ -75,7 +75,7 @@ public class Furniture : Interactable {
 		base.Initialize();
 	}
 
-	public void Load(Texture2D texture, Structure parentStructure = null, string Owner = "", float LastUpdated = 0) {
+	public void Load(Texture2D texture = null, Structure parentStructure = null, string Owner = "", float LastUpdated = -float.MaxValue) {
 		owner = Owner;
 		lastUpdated = LastUpdated;
 

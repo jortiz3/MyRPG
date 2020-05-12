@@ -31,9 +31,9 @@ public class InputManager : MonoBehaviour {
 			keyCodes = Enum.GetValues(typeof(KeyCode)) as KeyCode[];
 			keyBindingsFilePath = Application.persistentDataPath + "/data/kb.dat";
 
-			bool loadKeybindings = File.Exists(keyBindingsFilePath); //if there is file, load it
+			bool loadKeybindings = Application.isEditor ? false : File.Exists(keyBindingsFilePath); //if there is file, load it
 
-			if (false) {//loadKeybindings) {
+			if (loadKeybindings) {//loadKeybindings) {
 				LoadKeyBindings();
 			} else {
 				InitializeDefaultKeyBindings();
@@ -91,13 +91,16 @@ public class InputManager : MonoBehaviour {
 	}
 
 	public string GetKeyCodeName(string axisName) {
-		string keyCodeName = keyBindings[axisName].ToString();
-		keyCodeName = keyCodeName.Replace("Escape", "Esc");
-		keyCodeName = keyCodeName.Replace("Alpha", "");
-		keyCodeName = keyCodeName.Replace("Mouse0", "LMB");
-		keyCodeName = keyCodeName.Replace("Mouse1", "RMB");
-		keyCodeName = keyCodeName.Replace("Mouse2", "MMB");
-		return keyCodeName;
+		if (keyBindings.ContainsKey(axisName)) {
+			string keyCodeName = keyBindings[axisName].ToString();
+			keyCodeName = keyCodeName.Replace("Escape", "Esc");
+			keyCodeName = keyCodeName.Replace("Alpha", "");
+			keyCodeName = keyCodeName.Replace("Mouse0", "LMB");
+			keyCodeName = keyCodeName.Replace("Mouse1", "RMB");
+			keyCodeName = keyCodeName.Replace("Mouse2", "MMB");
+			return keyCodeName;
+		}
+		return "null";
 	}
 
 	private void InitializeControlsUI() {
@@ -137,16 +140,16 @@ public class InputManager : MonoBehaviour {
 		keyBindings.Add("Movement_Right", KeyCode.D);
 		keyBindings.Add("Movement_Sprint", KeyCode.LeftShift);
 		keyBindings.Add("Movement_Dodge", KeyCode.Space);
-		keyBindings.Add("Slot_1", KeyCode.Alpha1);
-		keyBindings.Add("Slot_2", KeyCode.Alpha2);
-		keyBindings.Add("Slot_3", KeyCode.Alpha3);
-		keyBindings.Add("Slot_4", KeyCode.Alpha4);
-		keyBindings.Add("Slot_5", KeyCode.Alpha5);
-		keyBindings.Add("Slot_6", KeyCode.Alpha6);
-		keyBindings.Add("Slot_7", KeyCode.Alpha7);
-		keyBindings.Add("Slot_8", KeyCode.Alpha8);
-		keyBindings.Add("Slot_9", KeyCode.Alpha9);
-		keyBindings.Add("Slot_10", KeyCode.Alpha0);
+		keyBindings.Add("Hotbar_1", KeyCode.Alpha1);
+		keyBindings.Add("Hotbar_2", KeyCode.Alpha2);
+		keyBindings.Add("Hotbar_3", KeyCode.Alpha3);
+		keyBindings.Add("Hotbar_4", KeyCode.Alpha4);
+		keyBindings.Add("Hotbar_5", KeyCode.Alpha5);
+		keyBindings.Add("Hotbar_6", KeyCode.Alpha6);
+		keyBindings.Add("Hotbar_7", KeyCode.Alpha7);
+		keyBindings.Add("Hotbar_8", KeyCode.Alpha8);
+		keyBindings.Add("Hotbar_9", KeyCode.Alpha9);
+		keyBindings.Add("Hotbar_10", KeyCode.Alpha0);
 		keyBindings.Add("Quicksave", KeyCode.F5);
 		keyBindings.Add("Quickload", KeyCode.F9);
 	}
@@ -243,9 +246,13 @@ public class InputManager : MonoBehaviour {
 					GameManager.instance.QuickLoadGame();
 				}
 
-				for (int slot_index = 0; slot_index < 10; slot_index++) { //check all quick (item/spell) use slots
-					if (Input.GetKeyDown(keyBindings["Slot_" + (slot_index + 1)])) {
-						HUD.instance.UseHotbarSlot(slot_index);
+				string slot_name;
+				for (int slot_index = 1; slot_index < 11; slot_index++) { //check all quick (item/spell) use slots
+					slot_name = "Hotbar_" + slot_index;
+					if (keyBindings.ContainsKey(slot_name)) {
+						if (Input.GetKeyDown(keyBindings[slot_name])) {
+							HUD.instance.UseHotbarSlot(slot_name);
+						}
 					}
 				}
 
@@ -281,10 +288,10 @@ public class InputManager : MonoBehaviour {
 			}
 
 			if (Input.GetKeyDown(keyBindings["Attack_Special"])) {
-				if (GameManager.instance.State_Play) {
-					//call player attack special
-				} else {
-					CheckForCancel();
+				if (GameManager.instance.State_Play) { //game is active
+					if (MenuScript.instance.CurrentState.Equals("")) { //no menus open
+						//call player attack special
+					}
 				}
 			}
 
@@ -302,10 +309,7 @@ public class InputManager : MonoBehaviour {
 				WorldManager.instance.LoadAdjacentArea(Directions.down);
 			}
 
-			if (Input.GetKeyDown(KeyCode.N)) {
-				GameManager.instance.StartNewGame(0);
-			}
-			if (Input.GetKeyDown(KeyCode.Comma)) {
+			/*if (Input.GetKeyDown(KeyCode.Comma)) {
 				StructureGridManager.instance.BeginStructureCreate("City_CPR_0");
 			}
 			if (Input.GetKeyDown(KeyCode.Period)) {
@@ -314,7 +318,7 @@ public class InputManager : MonoBehaviour {
 			if (Input.GetKeyDown(KeyCode.F)) {
 				Furniture.Create("Chest_0", null);
 				//Furniture.Create("Chest_0", AreaManagerNS.AreaManager.GetEntityParent("Structure").GetChild(0).GetComponent<Structure>());
-			}
+			}*/
 #endif
 		} else { //player is trying to rebind a key
 			if (Input.anyKeyDown) { //if any key was pressed

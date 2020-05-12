@@ -88,10 +88,27 @@ namespace internal_Area {
 		}
 
 		/// <summary>
-		/// Creates entity data for furniture.
+		/// Creates entity data for furniture
+		/// </summary>
+		public Entity(Vector3 position, string owner = "", string Texture = "chest_default", float LastUpdated = 0) {
+			type = "furniture";
+			textures = new string[] { Texture };
+			id = 0;
+			quantity = 0;
+			uniqueString_0 = owner;
+			uniqueString_1 = "";
+			uniqueString_2 = "";
+			uniqueBool_0 = false;
+			positionX = position.x;
+			positionY = position.y;
+			lastUpdated = (int)LastUpdated;
+		}
+
+		/// <summary>
+		/// Creates entity data for containers.
 		/// </summary>
 		public Entity(Vector3 position, int containerID = -1, string owner = "", string Texture = "chest_default", float LastUpdated = 0) {
-			type = "furniture";
+			type = "container";
 			textures = new string[] { Texture };
 			id = containerID;
 			quantity = 0;
@@ -153,10 +170,12 @@ namespace internal_Area {
 				case "furniture":
 					Furniture f = AssetManager.instance.InstantiateFurniture(position, owner: uniqueString_0, textureName: textures[0], lastUpdated: lastUpdated);
 					if (f != null) {
-						Container c = f.GetComponent<Container>();
-						if (c != null) {
-							c.Load(id, uniqueString_0, lastUpdated);
-						}
+						return true;
+					}
+					break;
+				case "container":
+					Container c = AssetManager.instance.InstantiateContainer(position, containerID: id, owner: uniqueString_0, textureName: textures[0], lastUpdated: lastUpdated);
+					if (c != null) {
 						return true;
 					}
 					break;
@@ -199,14 +218,16 @@ namespace internal_Area {
 				case "furniture":
 					Furniture f = transform.GetComponent<Furniture>();
 					if (f != null) {
+						temp = new Entity(f.transform.position, f.Owner, f.GetTextureName(), f.LastUpdated);
+					}
+					break;
+				case "container":
+					Container c = transform.GetComponent<Container>();
+					if (c != null) {
 						int containerID;
-						if (f.gameObject.name.Contains("container")) {
-							string[] splitname = f.gameObject.name.Split('_');
-							int.TryParse(splitname[splitname.Length - 1], out containerID);
-						} else {
-							containerID = -1;
-						}
-						temp = new Entity(f.transform.position, containerID, f.GetTextureName(), f.Owner, f.LastUpdated);
+						string[] splitname = c.gameObject.name.Split('_');
+						int.TryParse(splitname[splitname.Length - 1], out containerID);
+						temp = new Entity(c.transform.position, containerID, c.Owner, c.GetTextureName(), c.LastUpdated);
 					}
 					break;
 				default:

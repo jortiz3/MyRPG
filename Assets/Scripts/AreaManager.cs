@@ -74,7 +74,7 @@ public class AreaManager : MonoBehaviour {
 
 	public IEnumerator GenerateAllAreas(string playerName, string worldName, Vector2Int startPos) {
 		LoadingScreen.instance.ResetProgress();
-		LoadingScreen.instance.SetText("Generating world..");
+		LoadingScreen.instance.SetText("Generating world areas..");
 		LoadingScreen.instance.Show();
 		save_load = true;
 
@@ -138,6 +138,15 @@ public class AreaManager : MonoBehaviour {
 				yield return new WaitForEndOfFrame(); //allow for time between each row
 			} //x for loop
 		}
+
+		LoadingScreen.instance.SetText("Populating world areas..");
+
+		while (Area.PopulationInProgress) {
+			yield return new WaitForEndOfFrame();
+		}
+
+		LoadingScreen.instance.SetProgress(0.5f);
+
 		currentAreaPos = new Vector2Int(-1, -1); //reset the currentArea in case a game was loaded previously
 		LoadArea(position: startPos, saveEntities: false, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
 	}
@@ -268,7 +277,7 @@ public class AreaManager : MonoBehaviour {
 						if (!parent.name.Equals("Area Exits")) { //do not process items(yet) or area exits
 							for (int index = parent.childCount - 1; index >= 0; index--) { //entity types have entities as children
 								child = parent.GetChild(index);
-								if (!child.CompareTag("Player") && !child.CompareTag("inventory")) { //if the object isn't the player or inventory; ensure not destroyed
+								if (!child.CompareTag("Player")) { //if the object isn't the player; ensure not destroyed
 									if (!child.CompareTag("background")) { //if it is not a background, then continue check for save
 										destroyChild = false;
 
@@ -345,6 +354,8 @@ public class AreaManager : MonoBehaviour {
 					//to do: prompt to regenerate entire world or cancel
 					//StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero)); //generate everything again
 					Debug.Log("Save Data Error: AreaManager.LoadAreasFromSave(...) => filename: " + currFilePath);
+					LoadingScreen.instance.Hide();
+					GameManager.instance.QuitToMainMenu();
 					yield break; //give up on loading
 				} else {
 					StreamReader reader = new StreamReader(File.Open(currFilePath, FileMode.Open));
@@ -367,34 +378,34 @@ public class AreaManager : MonoBehaviour {
 		AreaExit currExit;
 		currExit = transform.Find("Area Exits").Find("Area Exit_Left").GetChild(0).GetComponent<AreaExit>(); //get left exit
 		if (0 < position.x - 1) { //check bounds
-			currExit.SetInteractionActive(true); //enable exit
+			currExit.SetActive(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x - 1, position.y].TypeName, position + Vector2Int.left); //pass info to area exit
 		} else { //out of bounds
-			currExit.SetInteractionActive(false); //disable exit
+			currExit.SetActive(false, false); //disable exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Right").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (position.x + 1 < areas.GetLength(0)) { //check bounds
-			currExit.SetInteractionActive(true); //enable exit
+			currExit.SetActive(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x + 1, position.y].TypeName, position + Vector2Int.right); //pass info to area exit
 		} else { //out of bounds
-			currExit.SetInteractionActive(false); //disable exit
+			currExit.SetActive(false, false); //disable exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Up").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (0 < position.y - 1) { //check bounds
-			currExit.SetInteractionActive(true); //enable exit
+			currExit.SetActive(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x, position.y - 1].TypeName, position + Vector2Int.down); //pass info to area exit
 		} else { //out of bounds
-			currExit.SetInteractionActive(false); //disable exit
+			currExit.SetActive(false, false); //disable exit
 		}
 
 		currExit = transform.Find("Area Exits").Find("Area Exit_Down").GetChild(0).GetComponent<AreaExit>(); //get next exit
 		if (position.y + 1 < areas.GetLength(1)) { //check bounds
-			currExit.SetInteractionActive(true); //enable exit
+			currExit.SetActive(); //enable exit
 			currExit.SetExitInteractMessage(areas[position.x, position.y + 1].TypeName, position + Vector2Int.up); //pass info to area exit
 		} else { //out of bounds
-			currExit.SetInteractionActive(false); //disable exit
+			currExit.SetActive(false, false); //disable exit
 		}
 	}
 }

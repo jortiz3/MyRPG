@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 1594333455}
   m_Layer: 14
   m_Name: scenery_tree
-  m_TagString: Untagged
+  m_TagString: scenery
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

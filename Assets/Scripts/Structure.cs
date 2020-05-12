@@ -6,6 +6,8 @@ using UnityEngine;
 /// Buildings the player interacts with. Written by Justin Ortiz
 /// </summary>
 public class Structure : MonoBehaviour {
+	private static int numStructuresToPopulate; //used to track how many structures need to instantiate furniture
+
 	private Color[] defaultColors;
 	[SerializeField, Tooltip("All of the sprites that make up the structure.")]
 	private SpriteRenderer[] sprites;
@@ -17,6 +19,7 @@ public class Structure : MonoBehaviour {
 	private bool registeredToManager;
 	private float lastUpdated;
 
+	public static bool PopulationInProgress { get { return numStructuresToPopulate > 0; } }
 	public Vector2Int Dimensions { get { return dimensions; } }
 	public string Owner { get { return owner; } }
 	public string Preset { get { return preset; } }
@@ -28,8 +31,10 @@ public class Structure : MonoBehaviour {
 	}
 
 	public IEnumerator GenerateFurniture() {
-		while (!registeredToManager) {
-			yield return new WaitForEndOfFrame();
+		numStructuresToPopulate++;
+
+		while (StructureGridManager.instance.RegisteringStructures || !registeredToManager) { //if structures are still being registered/placed/moved
+			yield return new WaitForEndOfFrame(); //wait
 		}
 
 		string[] furniturePrefixes = null;
@@ -48,18 +53,28 @@ public class Structure : MonoBehaviour {
 				break;
 		}
 
-		AssetManager.instance.InstantiateFurniture(transform.position + new Vector3(0, (dimensions.y + 1) * 5), this, "workbench"); //ensure there is always a workbench
+		AssetManager.instance.InstantiateFurniture(transform.position, this, "workbench"); //ensure there is always a workbench
 
-		List<Vector3> furniturePositions = new List<Vector3>();
-		for (int i = 0; i < furniturePrefixes.Length; i++) {
-			furniturePositions.Add(transform.position + new Vector3(i / ((dimensions.y + 1) * 2), (i * 2.5f) % 5));
+		List<Vector3> furniturePositions = new List<Vector3>(); //the positions to spawn furniture
+		int totalPerColumn = (int)(1.5f * (dimensions.y + 1)); //There will be 2 piece of furniture per cell height; 2 * num of vertical cells
+		float spacing = StructureGridManager.instance.CellHeight / 2f;
+		Vector3 adjustment = Vector3.zero;
+		for (int i = 0; i < furniturePrefixes.Length; i++) { //for each prefix
+			adjustment.x = (i / totalPerColumn * spacing) + 1; //use integer division to align position x to columns
+			adjustment.y = (i % totalPerColumn * -spacing) - 1.5f; //use mod operator to evenly space out position y's
+			furniturePositions.Add(transform.position + adjustment); //add a position
 		}
 
-		if (furniturePrefixes.Length == furniturePositions.Count) {
-			for (int i = 0; i < furniturePrefixes.Length; i++) {
-				AssetManager.instance.InstantiateFurniture(furniturePositions[i], this, furniturePrefixes[i] + preset);
+		if (furniturePrefixes.Length == furniturePositions.Count) { //ensure array and list are same size
+			for (int i = 0; i < furniturePrefixes.Length; i++) { //go through all prefixes
+				if (furniturePrefixes[i].Contains("chest")) { //if it is a chest
+					AssetManager.instance.InstantiateContainer(furniturePositions[i], owner: owner, textureName: furniturePrefixes[i] + preset);
+				} else { //all other furniture types
+					AssetManager.instance.InstantiateFurniture(furniturePositions[i], this, furniturePrefixes[i] + preset);
+				}
 			}
 		}
+		numStructuresToPopulate--;
 	}
 
 	public static string GetDimensionSize(Vector2Int dimensions) {

@@ -5,6 +5,8 @@ using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class Character : MonoBehaviour {
+	private int instanceID; //is this necessary for item load?
+
 	//attributes
 	private int hp;
 	[SerializeField]
@@ -16,6 +18,8 @@ public class Character : MonoBehaviour {
 	private float walkSpeed;
 	[SerializeField]
 	private float sprintSpeed;
+	protected int base_resistance_physical;
+	protected int base_resistance_magic;
 
 	//status
 	private bool status_normal;
@@ -51,8 +55,16 @@ public class Character : MonoBehaviour {
 		Initialize();
 	}
 
+	public void Equip(Item item) {
+
+	}
+
 	private void FixedUpdate() {
 		//to do: update animator
+	}
+
+	public virtual int GetMagicResistance() {
+		return base_resistance_magic;
 	}
 
 	protected bool GetNextRoutineDestination() {
@@ -68,6 +80,10 @@ public class Character : MonoBehaviour {
 			}
 		}
 		return true; //always return true
+	}
+
+	public virtual int GetPhysicalResistance() {
+		return base_resistance_physical;
 	}
 
 	protected virtual void Initialize() {

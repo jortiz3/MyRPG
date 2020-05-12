@@ -63,7 +63,40 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string owner = "", string textureName = "chest_default", float lastUpdated = 0) {
+	public Container InstantiateContainer(Vector3 position, int containerID = 0, string owner = "", string textureName = "chest_default", float lastUpdated = -float.MaxValue) {
+		string prefabKey = "container";
+		GameObject spawnedPrefab = null;
+
+		if (prefabs.ContainsKey(prefabKey)) { //if furniture prefab exists
+			if (furniture.ContainsKey(textureName)) { //if texture exists
+				GameObject curr_prefab_reference = prefabs[prefabKey]; //get the prefab
+
+				if (curr_prefab_reference != null) { //shouldn't happen but just in case
+					spawnedPrefab = Instantiate(curr_prefab_reference); //spawn copy of prefab
+					Container spawnedContainer = spawnedPrefab.GetComponent<Container>(); //get furniture component
+					if (spawnedContainer != null) { //if component retrieved
+						Texture2D curr_texture_reference = furniture[textureName]; //get texture2d from dictionary
+						if (curr_texture_reference != null) { //if texture retrieved
+							TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
+							spawnedContainer.Load(InstanceID: containerID, Owner: owner, LastUpdated: lastUpdated, curr_texture_reference);
+
+							if (position != null) { //if given valid position
+								spawnedContainer.transform.position = position; //set the position of the object
+							}
+							return spawnedContainer;
+						}
+					}
+				} //endif prefab reference != null
+			} //endif furniture.containskey
+		} //endif prefabs.containskey
+
+		if (spawnedPrefab != null) { //if something didn't go right, and spawnedprefab was assigned
+			Destroy(spawnedPrefab); //remove object from scene
+		}
+		return null;
+	}
+
+	public Furniture InstantiateFurniture(Vector3 position, Structure parentStructure = null, string owner = "", string textureName = "chest_default", float lastUpdated = -float.MaxValue) {
 		string prefabKey = "furniture";
 		GameObject spawnedPrefab = null;
 
@@ -75,15 +108,15 @@ public class AssetManager : MonoBehaviour {
 					spawnedPrefab = Instantiate(curr_prefab_reference); //spawn copy of prefab
 					Furniture spawnedFurniture = spawnedPrefab.GetComponent<Furniture>(); //get furniture component
 					if (spawnedFurniture != null) { //if component retrieved
-						TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
 						Texture2D curr_texture_reference = furniture[textureName]; //get texture2d from dictionary
 						if (curr_texture_reference != null) { //if texture retrieved
+							TrimGameObjectName(spawnedPrefab); //trim off "(Clone)"
 							spawnedFurniture.Load(curr_texture_reference, parentStructure, owner, lastUpdated);
+							if (position != null) { //if given valid position
+								spawnedFurniture.transform.position = position; //set the position of the object
+							}
+							return spawnedFurniture;
 						}
-						if (position != null) { //if given valid position
-							spawnedFurniture.transform.position = position; //set the position of the object
-						}
-						return spawnedFurniture;
 					}
 				} //endif prefab reference != null
 			} //endif furniture.containskey

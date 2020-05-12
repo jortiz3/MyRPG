@@ -20,7 +20,6 @@ public class Item : Interactable {
 	private int quantity;
 	private float weight;
 	private bool equippable;
-	private bool equipped;
 	private bool slottable;
 	private bool consumable;
 	private string[] tags; //used for sorting the item in the inventory screen
@@ -37,7 +36,6 @@ public class Item : Interactable {
 	public int Quantity { get { return quantity; } set { quantity = value; } }
 	public float BaseWeight { get { return weight; } }
 	public bool Equipable { get { return equippable; } }
-	public bool Equipped { get { return equipped; } set { equipped = value; } }
 	public bool Slottable { get { return slottable; } }
 	public bool Consumable { get { return consumable; } }
 
@@ -47,20 +45,15 @@ public class Item : Interactable {
 		}
 	}
 
-	public override bool Equals(object other) {
-		if (other.GetType() == typeof(Item)) { //if the other object is an item
-			Item temp = (Item)other; //store/cast to item to access attributes
-			if (ToString().Equals(temp.ToString())) { //both items have same prefix, base name, & suffix
-				if (id == temp.id) { //both items have the same item ID
+	public bool Equals(Item other, bool reqDiffContainerID) {
+		if (ToString().Equals(other.ToString())) { //both items have same prefix, base name, & suffix
+			if (id == other.id) { //both items have the same item ID
+				if (!reqDiffContainerID || other.ContainerID != containerID) { //if difference not needed OR they have different containers
 					return true;
 				}
 			}
 		}
-		return base.Equals(other); //returns whether it's the same object in memory
-	}
-
-	public override int GetHashCode() {
-		return base.GetHashCode();
+		return false;
 	}
 
 	public string GetItemType() {
@@ -69,7 +62,8 @@ public class Item : Interactable {
 			temp = "W";
 		} else if (armor) {
 			temp = "A";
-		} else*/ if (consumable) {
+		} else*/
+		if (consumable) {
 			temp = "C";
 		}
 		return temp;
@@ -177,13 +171,15 @@ public class Item : Interactable {
 
 	protected override void Initialize() {
 		SetInteractMessage("to pick up " + ToString() + ".");
-		transform.parent = AreaManager.GetEntityParent("Item");
+		transform.SetParent(AreaManager.GetEntityParent("Item"), true);
 		gameObject.tag = "item";
 
 		if (containerID != 0) { //if a container is supposed to track this item
 			Container c = Container.GetContainer(containerID); //try to find container
 			if (c != null) { //if container found
-				c.Add(this); //add to container
+				if (c.Add(this)) { //add to container
+					SetActive(false, false);
+				}
 			} else { //if container not found
 				containerID = 0; //reset the id
 			}
@@ -193,8 +189,9 @@ public class Item : Interactable {
 	}
 
 	protected override void InteractInternal() {
-		DisableInteraction(); //ensure the player doesn't interact w/ the object more than once
-		Inventory.instance.Add(this); //add this item to player's inventory >>
+		if (Inventory.instance.Add(this)) { //if this item is added to player inventory
+			SetActive(false, false); //hide item and disable interaction
+		}
 		base.InteractInternal();
 	}
 
@@ -250,7 +247,7 @@ public class Item : Interactable {
 			}
 		}
 
-		LoadDBInfo(ID: ID, BaseName: BaseName, Quantity: Quantity);
+		LoadDBInfo(ID: ID, Prefix: Prefix, BaseName: BaseName, Suffix: Suffix, Quantity: Quantity);
 		SetSprite(Texture);
 	}
 
@@ -280,9 +277,7 @@ public class Item : Interactable {
 	}
 
 	public virtual void Use() {
-		if (equippable) {
-			//Player.instance.Equip(this);
-		} else if (consumable) {
+		if (consumable) {
 			//Player.instance.Consume(this);
 		}
 	}
