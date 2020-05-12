@@ -55,10 +55,6 @@ public class Character : MonoBehaviour {
 		Initialize();
 	}
 
-	public void Equip(Item item) {
-
-	}
-
 	private void FixedUpdate() {
 		//to do: update animator
 	}

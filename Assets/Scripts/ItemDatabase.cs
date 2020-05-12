@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace internal_Items {
 	/// <summary>
@@ -75,7 +76,8 @@ namespace internal_Items {
 		/// </summary>
 		public static void Initialize() {
 			db = new List<ItemInfo>();
-			db.Add(new ItemInfo(db.Count, "", "Log", "", 0, 0, 15, -1, 5.0f, false, true, false, new string[] { "material", "chest" }, Texture: "log"));
+			db.Add(new ItemInfo(db.Count, "", "Log", "", 0, 0, 15, -1, 5.0f, true, false, false, new string[] { "armor", "material", "chest" }, Texture: "log"));
+			db.Add(new ItemInfo(db.Count, "", "Poet's Clothes", "", 3, 1, 575, 4, 2.0f, true, false, false, new string[] { "armor", "chest" }, Texture: "poet clothes"));
 			initialized = true;
 		}
 	}

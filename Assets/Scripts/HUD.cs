@@ -95,15 +95,19 @@ public class HUD : MonoBehaviour {
 	}
 
 	public bool SelectItem(Item item) {
-		if (HotbarElement.HotkeySelected) {
-			Item tempItem = GetValidAssignment(item);
-			RemoveHotkeyAssignment(tempItem); //removes all assignments of this item
-			return HotbarElement.AssignToSelectedHotkey(tempItem); //assign item to the selected hotkey
-		} else {
-			if (item.Slottable) {
-				BeginHotkeyAssignment(item);
-			} else {
-				EndHotkeyAssignment();
+		if (item != null) { //ensure item has reference
+			if (item.Slottable) { //if item is slottable
+				if (HotbarElement.HotkeySelected) { //a hotkey was selected beforehand -- player intends to assign this item to a hotkey
+					Item tempItem = GetValidAssignment(item); //ensures the assigned item is the one inside the player's inventory
+					return HotbarElement.AssignToSelectedHotkey(tempItem); //assign item to the selected hotkey
+				} else if (item.Equippable) { //item is equipable
+					Container.Item_Equip(GetValidAssignment(item)); //default action is to equip
+					return true;
+				} else { //item not equipable, but is slottable
+					BeginHotkeyAssignment(GetValidAssignment(item)); //default action is to begin assignment
+				}
+			} else { //item not slottable
+				EndHotkeyAssignment(); //end assignment
 			}
 		}
 		return false;

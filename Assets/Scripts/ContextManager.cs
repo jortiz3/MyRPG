@@ -59,10 +59,8 @@ public class ContextManager : MonoBehaviour {
 		switch (newFocus.tag) {
 			case "uielement_container":
 				Item item = Container.GetDisplayedItem(newFocus.name);
-				if (item != null) {
-					if (!HUD.instance.SelectItem(item)) {
-						currFocus = newFocus;
-					}
+				if (!HUD.instance.SelectItem(item)) {
+					currFocus = newFocus;
 				}
 				break;
 			default:
@@ -80,8 +78,8 @@ public class ContextManager : MonoBehaviour {
 					if (currItem != null) { //if item info obtained
 						GameObject use = context_item.Find("button_use").gameObject;
 						GameObject equip = context_item.Find("button_equip").gameObject;
-						
-						if (currItem.Equipable) { //if equipable
+
+						if (currItem.Equippable) { //if equipable
 							use.SetActive(false); //show 'equip' instead of 'use'
 							equip.SetActive(true);
 						} else { //if not equipable
@@ -112,7 +110,7 @@ public class ContextManager : MonoBehaviour {
 						}
 						menuRect.sizeDelta = menuSize; //set the size
 
-						
+
 						Vector3 menuPos = Input.mousePosition; //get starting pos for menu
 						if (menuPos.y - menuSize.y < 0) { //if the menu will go off screen vertically
 							menuPos.y += menuSize.y; //adjust pos y

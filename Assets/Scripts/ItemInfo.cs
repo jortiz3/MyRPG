@@ -65,7 +65,7 @@ namespace internal_Items {
 			currency_value = item.BaseValue;
 			quality_value = item.Quality;
 			weight = item.BaseWeight;
-			equipable = item.Equipable;
+			equipable = item.Equippable;
 			slottable = item.Slottable;
 			consumable = item.Consumable;
 			texture_default = item.GetTextureName();
@@ -84,7 +84,7 @@ namespace internal_Items {
 			quality_value = Quality_Value;
 			weight = Weight;
 			equipable = Equipable;
-			slottable = Slottable;
+			slottable = Equipable ? true : Slottable; //if item is equipable, always slottable
 			consumable = Consumable;
 			if (Texture.Equals("")) {
 				texture_default = Name;
