@@ -258,6 +258,12 @@ public class Container : Interactable {
 		}
 	}
 
+	private void OnDestroy() {
+		for (int i = items.Count - 1; i >= 0; i--) {
+			Remove(items[i]);
+		}
+	}
+
 	protected IEnumerator Populate() {
 		numContainersToPopulate++;
 
@@ -387,6 +393,10 @@ public class Container : Interactable {
 	/// </summary>
 	/// <param name="item"></param>
 	public void Remove(Item item) {
+		if (item.Equipped) {
+			Player.instance.Unequip(item);
+		}
+
 		if (items.Remove(item)) { //if the item is removed
 			RefreshWeight();
 		}

@@ -89,4 +89,18 @@ public class Player : Character {
 	public override void TeleportToPos(Vector3 position) {
 		StartCoroutine(Teleport(position, true));
 	}
+
+	public void Unequip(Item item) {
+		if (item.Equals(armor)) { //if the memory reference is the same
+			//to do: clear animation
+			armor = null; //remove reference
+		} else if (item.Equals(weapon)) {
+			weapon = null;
+		} else if (item.Equals(ring)) {
+			ring = null;
+		} else if (item.Equals(necklace)) {
+			necklace = null;
+		}
+		item.Equipped = false;
+	}
 }
