@@ -106,7 +106,7 @@ namespace HUD_Elements {
 			} else { //viewing inventory
 				if (hotkeyAssignmentActive) { //player clicked slottable item, then this
 					selected_item = HUD.GetValidAssignment(selected_item);
-					HUD.instance.RemovePreviousAssignment(selected_item); //ensure no other hotbar element has this item assigned
+					HUD.instance.RemoveHotkeyAssignment(selected_item); //ensure no other hotbar element has this item assigned
 					Assign(selected_item); //assign the selected item to this hotkey
 					HUD.instance.EndHotkeyAssignment(); //inform HUD assignment should end
 				} else { //hotkey was selected first

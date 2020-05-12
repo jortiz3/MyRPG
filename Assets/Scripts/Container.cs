@@ -45,6 +45,7 @@ public class Container : Interactable {
 							item.ContainerID = instanceID; //ensure the item knows which container it is in
 							item.LastUpdated = GameManager.instance.ElapsedGameTime;
 						}
+						RefreshWeight(); //ensure the weight is accurate
 						return true;
 					}
 				} else { //container just updated, item is old
@@ -79,15 +80,6 @@ public class Container : Interactable {
 		return temp;
 	}
 
-	private bool DeleteContainerElement(Item i) {
-		Transform temp = displayParent.Find(i.ToString());
-		if (temp != null) {
-			Destroy(temp.gameObject);
-			return true;
-		}
-		return false;
-	}
-
 	public virtual void Display(bool changeState = true) {
 		StartCoroutine(RefreshDisplay(npcTab, changeState));
 	}
@@ -99,18 +91,20 @@ public class Container : Interactable {
 				item.Quantity -= quantity; //update item quantity
 				AssetManager.instance.InstantiateItem(dropPosition, item.ID, 0, item.Prefix, item.BaseName, item.Suffix, quantity, item.GetTextureName(), GameManager.instance.ElapsedGameTime); //drop the provided quantity
 				RefreshUIElement(item); //update the quantity in UI
+				RefreshWeight();
 			} else {
 				item.transform.position = dropPosition; //update item position
 				item.ContainerID = 0; //remove link to this container
 				item.SetActive(); //show the item to the player
-				DeleteContainerElement(item); //remove the ui element
+				Remove(item); //ensure reference to item is no longer stored
+				HUD.instance.RemoveHotkeyAssignment(item); //ensure the item is no longer on the hotbar
 			}
 		}
 	}
 
-	public static void Drop(string itemFullName, int quantity) {
+	public static void Drop(string elementName, int quantity) {
 		if (displayedContainer != null) {
-			displayedContainer.Drop(displayedContainer.GetItem(itemFullName), quantity);
+			displayedContainer.Drop(GetDisplayedItem(elementName), quantity);
 		}
 	}
 
@@ -317,13 +311,11 @@ public class Container : Interactable {
 			}
 			yield return new WaitForEndOfFrame(); //pause
 
-			totalWeight = 0;
 			for (int i = 0; i < items.Count; i++) { //loop through all items
-				RefreshUIElement(items[i]); //refresh the ui element for the item
-				totalWeight += items[i].GetWeight(); //increase total weight
+				RefreshUIElement(items[i]); //refresh the ui element for the ite
 				yield return new WaitForEndOfFrame(); //wait a frame
 			}
-			RefreshWeightElement(); //display the total weight
+			RefreshWeight(); //display the total weight
 
 			//resize the container slide area
 			float elementHeight = containerElementPrefab.GetComponent<RectTransform>().sizeDelta.y; //get element height
@@ -369,8 +361,11 @@ public class Container : Interactable {
 		}
 	}
 
-	protected virtual void RefreshWeightElement() {
-		//normal containers do not display their weight, but the player's inventory will.
+	protected virtual void RefreshWeight() { //recalculates the total weight; inventory class also displays the weight
+		totalWeight = 0; //reset total weight
+		for (int i = 0; i < items.Count; i++) { //go through all items
+			totalWeight += items[i].GetWeight(); //add their weight
+		}
 	}
 
 	/// <summary>
@@ -379,17 +374,18 @@ public class Container : Interactable {
 	/// <param name="item"></param>
 	public void Remove(Item item) {
 		if (items.Remove(item)) { //if the item is removed
-			totalWeight -= item.GetWeight();
-			RefreshWeightElement();
+			RefreshWeight();
 		}
 		RemoveUIElement(item);
 	}
 
-	private void RemoveUIElement(Item item) {
+	private bool RemoveUIElement(Item item) {
 		Transform element = displayParent.Find(GetElementName(item));
 		if (element != null) {
 			Destroy(element.gameObject);
+			return true;
 		}
+		return false;
 	}
 
 	public static void ResetInstanceIDs() {
@@ -419,21 +415,32 @@ public class Container : Interactable {
 		if (!other.Equals(this)) {
 			quantity = Mathf.Clamp(quantity, 0, item.Quantity); //ensure the quantity is never bigger than item quantity
 			if (item.Quantity - quantity <= 0) {
-				if (other.Add(item)) { //try to move item to other container
-					Remove(item); //if the item was added, remove from the container
+				if (other.Add(item)) { //if the item is added to the other container
+					Remove(item); //remove item from the container
+
+					if (!other.Equals(Inventory.instance)) { //if the other container is not the player's inventory
+						HUD.instance.RemoveHotkeyAssignment(item); //ensure the item is not displayed on the hotbar
+					}
+
 					transferred = true;
 				}
 			} else {
-				if (other.Add(AssetManager.instance.InstantiateItem(position: other.transform.position, itemID: item.ID, containerID: other.instanceID,
-					quantity: quantity, textureName: item.GetTextureName(), lastUpdated: GameManager.instance.ElapsedGameTime))) {
-					item.Quantity -= quantity;
+				Item spawnedItem = AssetManager.instance.InstantiateItem(position: other.transform.position, itemID: item.ID, containerID: other.instanceID,
+					quantity: quantity, textureName: item.GetTextureName(), lastUpdated: GameManager.instance.ElapsedGameTime);
+
+				if (other.Add(spawnedItem)) { //if new item added to other container
+					item.Quantity -= quantity; //reduce quantity of item in this container
+					spawnedItem.SetActive(false, false); //ensure the new item isn't visible
 					transferred = true;
+				} else { //new item wasn't added
+					Destroy(spawnedItem.gameObject); //destroy the new item
+					//play sound effect?
 				}
 			}
 
 			if (transferred) {
-				other.Display(false); //display other first
-				Display(false); //display this to overwrite displayedContainer
+				other.Display(false); //display other first to refresh ui elements
+				Display(false); //display this second to overwrite displayedContainer
 			}
 		}
 

@@ -1982,7 +1982,7 @@ GameObject:
   - component: {fileID: 146317537}
   - component: {fileID: 146317538}
   m_Layer: 5
-  m_Name: HUD
+  m_Name: Settings_HUD
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3021,8 +3021,8 @@ RectTransform:
   m_Father: {fileID: 2134157240}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.5308}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6847,7 +6847,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &503998576
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9878,7 +9878,7 @@ GameObject:
   - component: {fileID: 900203629}
   - component: {fileID: 900203630}
   m_Layer: 5
-  m_Name: Toggle_Hotbar_ClickSelect
+  m_Name: HUD_Hotkey Bar Click Enabled
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16167,10 +16167,10 @@ RectTransform:
   m_Father: {fileID: 409633642}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 198.075, y: -130}
-  m_SizeDelta: {x: 396.15, y: 60}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1517252722
 GameObject:
@@ -16787,10 +16787,10 @@ RectTransform:
   m_Father: {fileID: 409633642}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 198.075, y: -50}
-  m_SizeDelta: {x: 396.15, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1645579797
 GameObject:

@@ -29,9 +29,12 @@ public class HUD : MonoBehaviour {
 
 			if (PlayerPrefs.HasKey(setting_clickSelectKey)) {
 				setting_clickSelectEnabled =  PlayerPrefs.GetInt(setting_clickSelectKey) == 1 ? true : false;
+			} else {
+				setting_clickSelectEnabled = true;
 			}
 
-			//get settings toggles, etc; onvaluechanged.addlistener()
+			Transform settings_hud = GameObject.Find("Settings_HUD").transform; //the parent for all HUD settings
+			settings_hud.Find(setting_clickSelectKey).GetComponent<Toggle>().onValueChanged.AddListener(SetClickSelectSetting); //ensure the toggle is tied to the setting
 		}
 	}
 
@@ -75,7 +78,7 @@ public class HUD : MonoBehaviour {
 		}
 	}
 
-	public void RemovePreviousAssignment(Item item) {
+	public void RemoveHotkeyAssignment(Item item) {
 		if (item != null) {
 			foreach (HotbarElement element in hotbar) {
 				if (element.Assigned_Item != null) {
@@ -94,7 +97,7 @@ public class HUD : MonoBehaviour {
 	public bool SelectItem(Item item) {
 		if (HotbarElement.HotkeySelected) {
 			Item tempItem = GetValidAssignment(item);
-			RemovePreviousAssignment(tempItem); //removes all assignments of this item
+			RemoveHotkeyAssignment(tempItem); //removes all assignments of this item
 			return HotbarElement.AssignToSelectedHotkey(tempItem); //assign item to the selected hotkey
 		} else {
 			if (item.Slottable) {

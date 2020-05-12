@@ -31,7 +31,8 @@ public class Inventory : Container {
 		base.Initialize(); //initialize base container attributes
 	}
 
-	protected override void RefreshWeightElement() {
+	protected override void RefreshWeight() {
+		base.RefreshWeight(); //ensure the weight is accurate
 		playerInfo.Find("Inventory_Player_TotalWeight").GetComponent<Text>().text = "Weight: " + TotalWeight + "/" + MaxWeight+ " kg"; //display the total weight
 	}
 

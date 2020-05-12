@@ -18,6 +18,8 @@ public class Character : MonoBehaviour {
 	private float walkSpeed;
 	[SerializeField]
 	private float sprintSpeed;
+	protected int base_resistance_physical;
+	protected int base_resistance_magic;
 
 	//status
 	private bool status_normal;
@@ -61,6 +63,10 @@ public class Character : MonoBehaviour {
 		//to do: update animator
 	}
 
+	public virtual int GetMagicResistance() {
+		return base_resistance_magic;
+	}
+
 	protected bool GetNextRoutineDestination() {
 		if (routineDestinations != null) { //if the list is instantiated
 			if (routineDestinations.Count > 0) { //if the list has 1 or more locations
@@ -74,6 +80,10 @@ public class Character : MonoBehaviour {
 			}
 		}
 		return true; //always return true
+	}
+
+	public virtual int GetPhysicalResistance() {
+		return base_resistance_physical;
 	}
 
 	protected virtual void Initialize() {
