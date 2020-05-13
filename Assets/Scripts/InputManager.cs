@@ -24,7 +24,7 @@ public class InputManager : MonoBehaviour {
 
 	private void Awake() {
 		if (instance != null) {
-			Destroy(gameObject);
+			Destroy(this);
 		} else {
 			instance = this;
 			actionToRebind = "";

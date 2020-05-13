@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player : Character {
 	public static Player instance;
@@ -48,8 +47,8 @@ public class Player : Character {
 		return prevEquipped; //return reference to unequipped item -- to be used for updating ui
 	}
 
-	public override int GetMagicResistance() {
-		int mr = base_resistance_magic; //start with base MR
+	public override int GetStat_MagicResistance() {
+		int mr = base_magic_resistance; //start with base MR
 		if (armor != null) { //add bonuses from equipped items
 			mr += armor.GetMagicStat();
 		}
@@ -62,8 +61,8 @@ public class Player : Character {
 		return mr;
 	}
 
-	public override int GetPhysicalResistance() {
-		int pr = base_resistance_physical; //start with base PR
+	public override int GetStat_PhysicalResistance() {
+		int pr = base_physical_resistance; //start with base PR
 		if (armor != null) { //add bonuses from equipped items
 			pr += armor.GetPhysicalStat();
 		}
@@ -83,7 +82,26 @@ public class Player : Character {
 			instance = this;
 		}
 
+		walkSpeed = 1.5f;
+		sprintSpeed = 2.5f;
 		base.Initialize();
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="physicalDamage"></param>
+	/// <param name="magicalDamage"></param>
+	/// <param name="trueDamage">If true, all damage ignores resistances</param>
+	protected override void ReceiveHit(int physicalDamage, int magicalDamage, bool trueDamage = false) {
+		if (GameManager.instance.Difficulty >= 2) { //masochist
+			physicalDamage = maxHp; //ensure the hit kills player
+			trueDamage = true; //force true damage
+		} else if (GameManager.instance.Difficulty >= 1) { //hard
+			physicalDamage *= 2;
+			magicalDamage *= 2;
+		}
+		base.ReceiveHit(physicalDamage, magicalDamage, trueDamage);
 	}
 
 	public override void TeleportToPos(Vector3 position) {

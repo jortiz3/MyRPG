@@ -3,28 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+/// <summary>
+/// The base class for all characters (npc & player)
+/// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class Character : MonoBehaviour {
-	private int instanceID; //is this necessary for item load?
+	private static CharacterEvent defeated;
 
-	//attributes
+	protected static float base_stamina_regen = 0.1f; //qty per second format
+
 	private int hp;
-	[SerializeField]
-	private int maxHp;
+	protected int maxHp;
 	private float stamina;
-	[SerializeField]
-	private int maxStamina;
-	[SerializeField]
-	private float walkSpeed;
-	[SerializeField]
-	private float sprintSpeed;
-	protected int base_resistance_physical;
-	protected int base_resistance_magic;
-
+	protected int maxStamina;
+	protected float walkSpeed;
+	protected float sprintSpeed;
+	protected int base_physical_attack;
+	protected int base_physical_resistance;
+	protected int base_magic_attack;
+	protected int base_magic_resistance;
+	
 	//status
-	private bool status_normal;
-	private bool status_sprinting;
-	private bool status_inCombat;
+	protected bool status_normal;
+	protected bool status_sprinting;
+	protected bool status_inCombat;
 	private float invulnerableTimer;
 	private float flinchTimer;
 
@@ -34,14 +36,10 @@ public class Character : MonoBehaviour {
 	private Animator animator;
 
 	//navigation
-	private NavMeshAgent navAgent;
-	protected Vector3 moveDestination;
-	protected List<Vector3> routineDestinations;
-	protected int routineDestinationIndex;
+	protected NavMeshAgent navAgent;
 	private Directions lookDirection;
 
-	private delegate bool Action();
-	private List<Action> routine;
+	public static CharacterEvent Defeated { get { return defeated; } }
 
 	public int HP { get { return hp; } set { hp = value; } }
 	public int MaxHP { get { return maxHp; } set { maxHp = value; } }
@@ -59,30 +57,30 @@ public class Character : MonoBehaviour {
 		//to do: update animator
 	}
 
-	public virtual int GetMagicResistance() {
-		return base_resistance_magic;
+	public virtual int GetStat_MagicResistance() {
+		return base_magic_resistance;
 	}
 
-	protected bool GetNextRoutineDestination() {
-		if (routineDestinations != null) { //if the list is instantiated
-			if (routineDestinations.Count > 0) { //if the list has 1 or more locations
-				if (routineDestinationIndex < routineDestinations.Count) { //if the current index is within bounds
-					moveDestination = routineDestinations[routineDestinationIndex];
-					routineDestinationIndex++;
-				} else if (routineDestinationIndex >= routineDestinations.Count) {
-					routineDestinationIndex = 0;
-					return GetNextRoutineDestination();
-				}
-			}
-		}
-		return true; //always return true
+	public virtual int GetStat_PhysicalResistance() {
+		return base_physical_resistance;
 	}
 
-	public virtual int GetPhysicalResistance() {
-		return base_resistance_physical;
+	protected virtual float GetStat_StaminaRegen() {
+		return base_stamina_regen;
 	}
 
 	protected virtual void Initialize() {
+		if (defeated == null) {
+			defeated = new CharacterEvent();
+		}
+
+		if (maxHp <= 0) { //if not initialized by subclass
+			maxHp = 10; //set base
+		}
+		if (maxStamina <= 0) {
+			maxStamina = 10;
+		}
+
 		hp = maxHp;
 		stamina = maxStamina;
 
@@ -97,45 +95,15 @@ public class Character : MonoBehaviour {
 		}
 
 		navAgent = GetComponent<NavMeshAgent>();
-		routine = new List<Action>();
-		routineDestinationIndex = 0;
 
 		invulnerableTimer = 0;
 		flinchTimer = 0;
 	}
 
-	protected bool MoveNav() {
-		navAgent.SetDestination(moveDestination);
-
-		float distToDest = Vector3.Distance(moveDestination, transform.position);
-		if (distToDest < navAgent.stoppingDistance) {
-			return true;
-		}
-
-		if (status_inCombat) { //if in combat
-			if (distToDest < navAgent.stoppingDistance * 10) { //close enough to walk
-				if (status_sprinting) { //if sprinting
-					ToggleSprint();
-				}
-			} else { //too far away
-				if (!status_sprinting) {
-					ToggleSprint();
-				}
-			}
-		} else { //not in combat
-			if (status_sprinting) { //if sprinting
-				ToggleSprint(); //toggle to walking
-			}
-		}
-		return false;
-	}
-
-	public void MoveDirection(Directions direction, bool sprintEnabled) {
+	public void MoveDirection(Directions direction, bool sprintEnabled) { //mainly used by player
 		if (status_sprinting != sprintEnabled) {
 			ToggleSprint(); //toggle sprint when necessary/possible
 		}
-
-		moveDestination = transform.position + InputManager.ConvertDirectionToVector3(direction); //set the destination
 
 		if (direction != Directions.none) {
 			if (lookDirection != direction) {
@@ -143,17 +111,27 @@ public class Character : MonoBehaviour {
 			}
 		}
 
-		if (routine != null) {
-			bool insertMoveAction = true;
-			if (routine.Count > 0) {
-				if (routine[0].Method.Name.Equals("MoveNav")) {
-					insertMoveAction = false;
-				}
-			}
+		navAgent.SetDestination(transform.position + InputManager.ConvertDirectionToVector3(direction));
+	}
 
-			if (insertMoveAction) {
-				routine.Insert(0, MoveNav);
+	protected virtual void ReceiveHit(int physicalDamage, int magicalDamage, bool trueDamage = false) {
+		int totalDamage = 0;
+		if (physicalDamage > 0 || magicalDamage > 0) { //if given damage to work with
+			if (!trueDamage) { //if resistances will be taken into account
+				physicalDamage -= GetStat_PhysicalResistance(); //reduce physical by resistance
+				magicalDamage -= GetStat_MagicResistance(); //reduce magical by resistance
 			}
+			physicalDamage = Mathf.Clamp(physicalDamage, 0, int.MaxValue); //clamp values
+			magicalDamage = Mathf.Clamp(magicalDamage, 0, int.MaxValue);
+			totalDamage = physicalDamage + magicalDamage; //get total
+		}
+		totalDamage = totalDamage <= 0 ? 1 : totalDamage; //enforce dmg minimum of 1
+		hp -= totalDamage;
+
+		if (hp <= 0) {
+			defeated.Invoke(this);
+		} else {
+			flinchTimer = 0.2f;
 		}
 	}
 
@@ -175,7 +153,7 @@ public class Character : MonoBehaviour {
 		StartCoroutine(Teleport(position));
 	}
 
-	private void ToggleSprint() {
+	protected void ToggleSprint() {
 		if (status_sprinting) {
 			navAgent.speed = walkSpeed;
 			status_sprinting = false;
@@ -205,25 +183,13 @@ public class Character : MonoBehaviour {
 				}
 			} else {
 				if (stamina < maxStamina) {
-					stamina += Time.deltaTime * 0.1f;
+					stamina += Time.deltaTime * GetStat_StaminaRegen();
 				}
 
 				if (stamina > maxStamina) {
 					stamina = maxStamina;
 				}
 			}
-
-			//check animator for states
-
-			if (status_normal) { //if not flinching, not attacking/blocking
-				if (routine != null) { //if list of actions is instantiated
-					if (routine.Count > 0) { //if there is an action left to do
-						if (routine[0].Invoke()) { //call the action; if action is considered complete
-							routine.RemoveAt(0); //remove the action from the list
-						} //end if invoke
-					} //end if count
-				} //end if null
-			} //end if status
 		}
 	}
 }

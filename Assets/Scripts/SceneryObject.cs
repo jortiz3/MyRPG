@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using internal_Area;
-using internal_Items;
+using Items;
 
 /// <summary>
 /// Written by Justin Ortiz

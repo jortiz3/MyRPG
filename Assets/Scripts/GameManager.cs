@@ -52,8 +52,8 @@ public class GameManager : MonoBehaviour {
 
 			loadPrefab.SetActive(false);
 
-			internal_Items.ItemDatabase.Initialize();
-			internal_Items.ItemModifierDatabase.Initialize();
+			Items.ItemDatabase.Initialize();
+			Items.ItemModifierDatabase.Initialize();
 		}
 	}
 
