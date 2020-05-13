@@ -198,7 +198,8 @@ public class Container : Interactable {
 	}
 
 	protected override void InteractInternal() { //player walks up to interact
-		Display(); //display this
+		Display(); //display 
+		UpdateNPCTabListeners();
 		base.InteractInternal(); //finish interaction
 	}
 
@@ -258,10 +259,14 @@ public class Container : Interactable {
 		}
 	}
 
-	private void OnDestroy() {
-		for (int i = items.Count - 1; i >= 0; i--) {
-			Remove(items[i]);
+	protected void OnToggleValueChanged(bool active) {
+		if (active) {
+			displayedContainer = this;
 		}
+	}
+
+	private void OnDestroy() {
+		SelfDestruct(destroySelf: false);
 	}
 
 	protected IEnumerator Populate() {
@@ -504,6 +509,11 @@ public class Container : Interactable {
 			}
 		}
 		return null;
+	}
+
+	private void UpdateNPCTabListeners() {
+		npcTab.onValueChanged.RemoveAllListeners();
+		npcTab.onValueChanged.AddListener(OnToggleValueChanged);
 	}
 
 	protected virtual void UseItem(Item item) { //if an item is used in any other container
