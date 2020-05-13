@@ -20,6 +20,7 @@ public class Item : Interactable {
 	private int quantity;
 	private float weight;
 	private bool equippable;
+	private bool equipped;
 	private bool slottable;
 	private bool consumable;
 	private string[] tags; //used for sorting the item in the inventory screen
@@ -35,7 +36,8 @@ public class Item : Interactable {
 	public int Quality { get { return quality_value; } }
 	public int Quantity { get { return quantity; } set { quantity = value; } }
 	public float BaseWeight { get { return weight; } }
-	public bool Equipable { get { return equippable; } }
+	public bool Equippable { get { return equippable; } }
+	public bool Equipped { get { return equipped; } set { equipped = value; } }
 	public bool Slottable { get { return slottable; } }
 	public bool Consumable { get { return consumable; } }
 

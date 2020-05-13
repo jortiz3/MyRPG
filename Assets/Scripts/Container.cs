@@ -97,7 +97,6 @@ public class Container : Interactable {
 				item.ContainerID = 0; //remove link to this container
 				item.SetActive(); //show the item to the player
 				Remove(item); //ensure reference to item is no longer stored
-				HUD.instance.RemoveHotkeyAssignment(item); //ensure the item is no longer on the hotbar
 			}
 		}
 	}
@@ -199,24 +198,30 @@ public class Container : Interactable {
 	}
 
 	protected override void InteractInternal() { //player walks up to interact
-		Display(); //display this
+		Display(); //display 
+		UpdateNPCTabListeners();
 		base.InteractInternal(); //finish interaction
 	}
 
-	public static bool Item_Equip(string itemFullName) {
-		if (displayedContainer != null) { //ensure a container is displayed
-			Item item = displayedContainer.GetItem(itemFullName); //get the item from displayed container
-			if (item.Equipable) {
-				if (displayedContainer != Inventory.instance) { //if looking at npc container
-					if (!displayedContainer.Transfer(item, item.Quantity, Inventory.instance)) { //item must be in player's inventory to equip, so try transfer
-						return false; //if wasn't able to transfer, return failed equip
+	public static void Item_Equip(string elementName) { //called using input based on ui
+		Item_Equip(GetDisplayedItem(elementName)); //call other method once item is retrieved
+	}
+
+	public static Item Item_Equip(Item item) { //called using input based on ui
+		if (item != null) {
+			if (item.Equippable && !item.Equipped) {
+				if (!Inventory.instance.Contains(item)) { //if item isn't in player's inventory
+					if (!displayedContainer.Transfer(item, 1, Inventory.instance)) { //if 1 qty of item wasn't transferred to inventoy
+						return null;
 					}
 				}
-				Player.instance.Equip(item); //equip the item to the player
-				return true; //return successful equip
+				Item prevEquipped = Player.instance.Equip(item);
+				Inventory.instance.RefreshUIElement(prevEquipped, false); //refresh ui for unequipped item
+				Inventory.instance.RefreshUIElement(item, false); //refresh ui for equipped item
+				return prevEquipped;
 			}
 		}
-		return false; //return failed equip
+		return null;
 	}
 
 	public static bool Item_Use(string itemFullName) {
@@ -252,6 +257,16 @@ public class Container : Interactable {
 		if (furniture != null) { //if component retrieved
 			furniture.Load(Owner: owner, LastUpdated: LastUpdated); //load necessary aspects
 		}
+	}
+
+	protected void OnToggleValueChanged(bool active) {
+		if (active) {
+			displayedContainer = this;
+		}
+	}
+
+	private void OnDestroy() {
+		SelfDestruct(destroySelf: false);
 	}
 
 	protected IEnumerator Populate() {
@@ -329,35 +344,45 @@ public class Container : Interactable {
 		}
 	}
 
-	private void RefreshUIElement(Item item) {
-		Transform element = CreateContainerElement(item);
-		Text text;
-		foreach (Transform child in element) {
-			text = child.GetComponent<Text>();
+	private void RefreshUIElement(Item item, bool setActive = true) {
+		if (item != null) {
+			Transform element = CreateContainerElement(item); //find or create ui element
+			Text text; //reference to text component
+			Image image;
+			foreach (Transform child in element) { //go through all children of ui element
+				text = child.GetComponent<Text>(); //get the text component of the child
 
-			if (text != null) {
-				if (text.name.Contains("Name")) {
-					text.text = item.ToString(); //display item name with prefix/suffix
-					if (item.Quantity > 1) { //if there is more than 1 of this item
-						text.text += "(" + item.Quantity + ")"; //add the quantity in parenthesis >> (2)
+				if (text != null) {
+					if (text.name.Contains("Name")) {
+						text.text = item.ToString(); //display item name with prefix/suffix
+						if (item.Quantity > 1) { //if there is more than 1 of this item
+							text.text += "(" + item.Quantity + ")"; //add the quantity in parenthesis >> (2)
+						}
+						text.color = item.GetQualityColor(); //change the color of the text so the player knows how epic the item is
+					} else if (child.name.Contains("Magic")) {
+						text.text = item.GetMagicStat().ToString(); //display magic stat
+					} else if (child.name.Contains("Physical")) {
+						text.text = item.GetPhysicalStat().ToString(); //display physical stat
+					} else if (child.name.Contains("Weight")) {
+						text.text = item.GetWeight().ToString(); //display weight
+					} else if (child.name.Contains("Currency")) {
+						text.text = item.GetValue().ToString(); //display currency value
+					} else if (child.name.Contains("ItemType")) {
+						text.text = item.GetItemType(); //display the item type
 					}
-					text.color = item.GetQualityColor(); //change the color of the text so the player knows how epic the item is
-				} else if (child.name.Contains("Magic")) {
-					text.text = item.GetMagicStat().ToString(); //display magic stat
-				} else if (child.name.Contains("Physical")) {
-					text.text = item.GetPhysicalStat().ToString(); //display physical stat
-				} else if (child.name.Contains("Weight")) {
-					text.text = item.GetWeight().ToString(); //display weight
-				} else if (child.name.Contains("Currency")) {
-					text.text = item.GetValue().ToString(); //display currency value
-				} else if (child.name.Contains("ItemType")) {
-					text.text = item.GetItemType(); //display the item type
+				} else {
+					image = child.GetComponent<Image>();
+					if (image != null) {
+						if (image.name.Contains("Equipped")) {
+							image.color = item.Equipped ? Color.green : Color.clear;
+						}
+					}
 				}
 			}
-		}
 
-		if (!element.gameObject.activeSelf) {
-			element.gameObject.SetActive(true);
+			if (!element.gameObject.activeSelf) {
+				element.gameObject.SetActive(setActive);
+			}
 		}
 	}
 
@@ -373,10 +398,15 @@ public class Container : Interactable {
 	/// </summary>
 	/// <param name="item"></param>
 	public void Remove(Item item) {
+		if (item.Equipped) {
+			Player.instance.Unequip(item);
+		}
+
 		if (items.Remove(item)) { //if the item is removed
 			RefreshWeight();
 		}
 		RemoveUIElement(item);
+		HUD.instance.RemoveHotkeyAssignment(item);
 	}
 
 	private bool RemoveUIElement(Item item) {
@@ -412,7 +442,7 @@ public class Container : Interactable {
 
 	protected bool Transfer(Item item, int quantity, Container other) {
 		bool transferred = false;
-		if (!other.Equals(this)) {
+		if (!other.Equals(this)) { //if not attempting to transfer to same container
 			quantity = Mathf.Clamp(quantity, 0, item.Quantity); //ensure the quantity is never bigger than item quantity
 			if (item.Quantity - quantity <= 0) {
 				if (other.Add(item)) { //if the item is added to the other container
@@ -434,7 +464,7 @@ public class Container : Interactable {
 					transferred = true;
 				} else { //new item wasn't added
 					Destroy(spawnedItem.gameObject); //destroy the new item
-					//play sound effect?
+													 //play sound effect?
 				}
 			}
 
@@ -479,6 +509,11 @@ public class Container : Interactable {
 			}
 		}
 		return null;
+	}
+
+	private void UpdateNPCTabListeners() {
+		npcTab.onValueChanged.RemoveAllListeners();
+		npcTab.onValueChanged.AddListener(OnToggleValueChanged);
 	}
 
 	protected virtual void UseItem(Item item) { //if an item is used in any other container

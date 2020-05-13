@@ -22,13 +22,21 @@ public class Inventory : Container {
 
 	protected override void Initialize() {
 		displayParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get ui parent for player inventory
-		tab = GameObject.Find("Toggle_Inventory_Player").GetComponent<Toggle>();
 		playerInfo = GameObject.Find("Inventory_Player_Info").transform; //get the player info
+
+		tab = GameObject.Find("Toggle_Inventory_Player").GetComponent<Toggle>(); //get the tab for the player's bag
+		tab.onValueChanged.AddListener(OnToggleValueChanged); //ensure pressing the tab marks this container as displayed
+
 		maxWeight = 100.0f;
 		instanceID = -777; //no other container will have <1 id
 		optout_populateItems = true; //prevents items being populated & auto assign of instanceID
 		DisableInteraction(); //ensure the player doesn't interact with their own inventory
 		base.Initialize(); //initialize base container attributes
+	}
+
+	private void OnDestroy() {
+		SelfDestruct(destroySelf: false);
+		tab.onValueChanged.RemoveAllListeners();
 	}
 
 	protected override void RefreshWeight() {

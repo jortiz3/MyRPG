@@ -30,7 +30,7 @@ namespace HUD_Elements {
 			if (i != null) {
 				if (i.Slottable) {
 					ClearAssignment();
-					i.SetActive(false, false); //ensure the item is not visible on screen
+					HUD.instance.RemoveHotkeyAssignment(i); //ensure this item is not assigned to another hotkey
 
 					if (image_assigned != null) {
 						image_assigned.sprite = i.GetSprite();
@@ -106,7 +106,6 @@ namespace HUD_Elements {
 			} else { //viewing inventory
 				if (hotkeyAssignmentActive) { //player clicked slottable item, then this
 					selected_item = HUD.GetValidAssignment(selected_item);
-					HUD.instance.RemoveHotkeyAssignment(selected_item); //ensure no other hotbar element has this item assigned
 					Assign(selected_item); //assign the selected item to this hotkey
 					HUD.instance.EndHotkeyAssignment(); //inform HUD assignment should end
 				} else { //hotkey was selected first
@@ -145,7 +144,11 @@ namespace HUD_Elements {
 		/// </summary>
 		private void Use() {
 			if (item != null) {
-				item.Use();
+				if (item.Equippable) {
+					Assign(Container.Item_Equip(item));
+				} else {
+					item.Use();
+				}
 			} /*else if (skill != null) {
 
 			}*/
