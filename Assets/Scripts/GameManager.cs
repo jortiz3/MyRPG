@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.UI;
+using Newtonsoft.Json;
 
 [Serializable]
 public class GameManager : MonoBehaviour {
@@ -54,6 +55,7 @@ public class GameManager : MonoBehaviour {
 
 			Items.ItemDatabase.Initialize();
 			Items.ItemModifierDatabase.Initialize();
+			NPC.NPCDatabase.Initialize();
 		}
 	}
 
@@ -154,6 +156,14 @@ public class GameManager : MonoBehaviour {
 		LoadGame();
 	}
 
+	public static T LoadObject<T>(string path)
+		where T : UnityEngine.Object {
+		StreamReader reader = new StreamReader(File.Open(path, FileMode.Open));
+		T obj = JsonConvert.DeserializeObject<T>(reader.ReadToEnd());
+		reader.Close();
+		return obj;
+	}
+
 	public void PauseToggle() {
 		state_paused = !state_paused;
 		string menuState = state_paused ? "Pause" : "";
@@ -205,6 +215,13 @@ public class GameManager : MonoBehaviour {
 
 			UpdateCurrLoadElement();
 		}
+	}
+
+	public static void SaveObject(object o, string path) {
+		StreamWriter writer = new StreamWriter(File.Create(path));//initialize writer with creating/opening filepath
+		string json = JsonConvert.SerializeObject(o, Formatting.Indented);
+		writer.Write(json); //convert this object to json and write it
+		writer.Close(); //close the file
 	}
 
 	public void SaveSettings() {

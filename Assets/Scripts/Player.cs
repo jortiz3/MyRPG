@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Notes:
+/// -store list of references to NPCs currently pursuing player to determing whether in combat?
+/// Written by Justin Ortiz
+/// </summary>
 public class Player : Character {
 	public static Player instance;
 

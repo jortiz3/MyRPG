@@ -5,12 +5,13 @@ using UnityEngine;
 
 /// <summary>
 /// Notes:
-/// -
+/// -use reflection to iterate through current routine string?
 /// Written by Justin Ortiz
 /// </summary>
 namespace NPC {
 	public class NonPlayerCharacter : Character {
 		private List<string> routine; //"methodName(parameter);"
+		private Transform home; //store transform so position will update if structure moved
 
 		private void GenerateRoutine() {
 
@@ -24,6 +25,7 @@ namespace NPC {
 		private void GoTo(string locationInfo) {
 			//see if locationInfo is a character
 			//see if named location; i.e. home,
+			//vector2ints.parse().tovector3?
 		}
 
 		protected override void Initialize() {
@@ -49,6 +51,8 @@ namespace NPC {
 			if (status_normal) { //if not flinching, not attacking/blocking
 				if (!status_inCombat) { //if not in combat
 					//do routine
+				} else {
+					//do combat
 				}
 			} //end if status
 		}
