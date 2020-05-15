@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using internal_Area;
+using Areas;
 using Items;
 
 /// <summary>

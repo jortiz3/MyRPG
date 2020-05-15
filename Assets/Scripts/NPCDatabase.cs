@@ -14,6 +14,12 @@ namespace NPC {
 		private static string[] bgFamily;
 		private static string[] bgChildhood;
 
+		private static void GenerateDefaultNPCTypes() {
+			types = new List<NPCType>();
+			types.Add(new NPCType("default", 10, 10, 1.5f, 2.0f, 2, 0, 0, 0, "And now I live on my own."));
+			GameManager.SaveObject(types, folderPath + "npcTypes.json");
+		}
+
 		public static string GenerateName() {
 			string name = "";
 			if (firstNames != null && firstNames.Length > 0) {
@@ -55,8 +61,14 @@ namespace NPC {
 		}
 
 		public static void Initialize() {
-			types = new List<NPCType>();
+			LoadNPCTypes();
+		}
 
+		private static void LoadNPCTypes() {
+			types = GameManager.LoadObject<List<NPCType>>(folderPath + "npcTypes.json");
+			if (types == null || types.Count < 1) {
+				GenerateDefaultNPCTypes();
+			}
 		}
 	}
 }

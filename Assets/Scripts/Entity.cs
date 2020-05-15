@@ -2,7 +2,7 @@
 using UnityEngine;
 using Newtonsoft.Json;
 
-namespace internal_Area {
+namespace Areas {
 
 	/// <summary>
 	/// Entity: Information regarding a GameObject that may be loaded into a Scene.

@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Newtonsoft.Json;
 
-namespace internal_Area {
+namespace Areas {
 
 	/// <summary>
 	/// Area: Class that randomly populates, manages, and displays entities that belong in an area.

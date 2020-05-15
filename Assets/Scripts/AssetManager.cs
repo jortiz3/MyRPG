@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using internal_Area;
+using NPC;
 
 public class AssetManager : MonoBehaviour {
 
@@ -59,7 +59,9 @@ public class AssetManager : MonoBehaviour {
 		LoadAssets<Texture2D>(out furniture, "Textures/Furniture");
 	}
 
-	public Character InstantiateCharacter() {
+	public Character InstantiateNPC(string npcTypeName) {
+		string prefabKey = "npc";
+		
 		return null;
 	}
 

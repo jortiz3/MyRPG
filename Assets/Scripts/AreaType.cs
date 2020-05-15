@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace internal_Area {
+namespace Areas {
 	/// <summary>
 	/// AreaType: Information that details which entities belong within an Area.
 	/// Written by Justin Ortiz

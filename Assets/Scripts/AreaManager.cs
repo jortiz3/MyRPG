@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using internal_Area;
+using Areas;
 using Newtonsoft.Json;
 
 /// <summary>

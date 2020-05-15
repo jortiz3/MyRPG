@@ -9,8 +9,9 @@ using Newtonsoft.Json;
 public class GameManager : MonoBehaviour {
 	public static GameManager instance;
 
-	private static string filePath;
-	private static string fileName;
+	private static string path_data;
+	private static string path_save;
+	private static string fileName_playerSaveInfo;
 
 	private string playerName;
 	private string worldName;
@@ -22,6 +23,9 @@ public class GameManager : MonoBehaviour {
 
 	private Transform loadParent;
 	private GameObject loadPrefab;
+
+	public static string path_gameData { get { return path_data; } }
+	public static string path_saveData { get { return path_save; } }
 
 	public bool State_Play { get { return state_play; } }
 	public bool State_Paused { get { return state_paused; } }
@@ -43,11 +47,15 @@ public class GameManager : MonoBehaviour {
 			instance = this;
 			SelectWorld("Singleplayer World Data");
 
-			filePath = Application.persistentDataPath + "/saves/";
-			fileName = "/ptsd.dat";
-
 			loadParent = GameObject.Find("Load Game_ScrollContent").transform;
 			loadPrefab = loadParent.GetChild(0).gameObject;
+
+			path_data = Application.persistentDataPath + "/data/";
+			path_save = Application.persistentDataPath + "/saves/";
+			fileName_playerSaveInfo = "/ptsd.dat";
+
+			CreateDirectory(path_data); //ensure required directories are established
+			CreateDirectory(path_save);
 
 			InitializeLoadGameUI();
 
@@ -59,10 +67,16 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	private void CreateDirectory(string path) {
+		if (!Directory.Exists(path)) {
+			Directory.CreateDirectory(path);
+		}
+	}
+
 	public void DeleteSaveGame(Transform uiObj) {
 		if (!AreaManager.instance.SaveOrLoadInProgress) { //prevent multiple loading sequences
-			if (Directory.Exists(filePath + uiObj.name)) { //if the savegame exists
-				Directory.Delete(filePath + uiObj.name, true); //delete all save files
+			if (Directory.Exists(path_save + uiObj.name)) { //if the savegame exists
+				Directory.Delete(path_save + uiObj.name, true); //delete all save files
 			}
 			Destroy(uiObj.gameObject); //remove ui element from the scene
 			ResizeLoadUI();
@@ -86,10 +100,10 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private string GetSaveDetails(string PlayerName) {
-		if (File.Exists(filePath + PlayerName + fileName)) {
+		if (File.Exists(path_save + PlayerName + fileName_playerSaveInfo)) {
 			string details = PlayerName + "\t\t\t\t";
 
-			FileStream file = File.OpenRead(filePath + PlayerName + fileName); //open file
+			FileStream file = File.OpenRead(path_save + PlayerName + fileName_playerSaveInfo); //open file
 			BinaryFormatter bf = new BinaryFormatter(); //create formatter
 			GameSave loadedData = bf.Deserialize(file) as GameSave; //deserialize
 			file.Close(); //ensure the file is closed asap
@@ -105,7 +119,7 @@ public class GameManager : MonoBehaviour {
 	/// Finds game save data and populates the Load/Save UI
 	/// </summary>
 	private void InitializeLoadGameUI() {
-		DirectoryInfo dir = new DirectoryInfo(filePath); //get base directory
+		DirectoryInfo dir = new DirectoryInfo(path_save); //get base directory
 		DirectoryInfo[] info = dir.GetDirectories("*"); //get all folders at base directory
 
 		Transform temp; //current ui for savegame
@@ -128,8 +142,8 @@ public class GameManager : MonoBehaviour {
 	private void LoadGame() {
 		if (!AreaManager.instance.SaveOrLoadInProgress) { //prevent multiple loading sequences
 			if (!playerName.Equals("") && !worldName.Equals("")) { //ensure required names are assigned
-				if (File.Exists(filePath + playerName + fileName)) { //ensure the file exists
-					FileStream file = File.OpenRead(filePath + playerName + fileName); //open the file
+				if (File.Exists(path_save + playerName + fileName_playerSaveInfo)) { //ensure the file exists
+					FileStream file = File.OpenRead(path_save + playerName + fileName_playerSaveInfo); //open the file
 					BinaryFormatter bf = new BinaryFormatter(); //create formatter
 					GameSave saveData = bf.Deserialize(file) as GameSave; //load the file into GameSave class
 					file.Close(); //close file
@@ -156,12 +170,14 @@ public class GameManager : MonoBehaviour {
 		LoadGame();
 	}
 
-	public static T LoadObject<T>(string path)
-		where T : UnityEngine.Object {
-		StreamReader reader = new StreamReader(File.Open(path, FileMode.Open));
-		T obj = JsonConvert.DeserializeObject<T>(reader.ReadToEnd());
-		reader.Close();
-		return obj;
+	public static T LoadObject<T>(string path) {
+		if (File.Exists(path)) { //if the file exists
+			StreamReader reader = new StreamReader(File.Open(path, FileMode.Open)); //open file
+			T obj = JsonConvert.DeserializeObject<T>(reader.ReadToEnd()); //deserialize
+			reader.Close(); //close file
+			return obj; //return object
+		}
+		return default; //no file, return null
 	}
 
 	public void PauseToggle() {
@@ -206,7 +222,7 @@ public class GameManager : MonoBehaviour {
 	/// </summary>
 	public void SaveGame() {
 		if (!state_gameInitialized || !AreaManager.instance.SaveOrLoadInProgress) {
-			FileStream file = File.Create(filePath + playerName + fileName);
+			FileStream file = File.Create(path_save + playerName + fileName_playerSaveInfo);
 			BinaryFormatter bf = new BinaryFormatter();
 			bf.Serialize(file, new GameSave());
 			file.Close();
@@ -248,7 +264,7 @@ public class GameManager : MonoBehaviour {
 	/// </summary>
 	public void StartNewGame(int difficulty) {
 		if (playerName != null && !playerName.Equals("")) { //if the player name has been entered
-			if (!File.Exists(filePath + playerName + fileName)) { //if the file doesn't exist, then we can create it
+			if (!File.Exists(path_save + playerName + fileName_playerSaveInfo)) { //if the file doesn't exist, then we can create it
 				WorldManager.instance.GenerateWorldAreas(playerName, worldName); //generate the world
 				currDifficulty = difficulty; //set the difficulty
 				Player.instance.TeleportToPos(Vector3.zero); //move the player to center
