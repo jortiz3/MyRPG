@@ -11,6 +11,8 @@ namespace NPC {
 		[JsonProperty]
 		private string bgStory;
 		[JsonProperty]
+		private string routine;
+		[JsonProperty]
 		private int hp;
 		[JsonProperty]
 		private int stamina;
@@ -29,6 +31,7 @@ namespace NPC {
 
 		public string Name { get { return name; } }
 		public string BackgroundStory { get { return bgStory; } }
+		public string Routine { get { return routine; } }
 		public int base_hp { get { return hp; } }
 		public int base_stamina { get { return stamina; } }
 		public float base_walk_speed { get { return walk; } }
@@ -40,9 +43,10 @@ namespace NPC {
 
 		public NPCType(string Name, int baseHP, int baseStamina, float baseWalkSpeed, float baseSprintSpeed,
 			int basePhysicalAttack, int basePhysicalResistance, int baseMagicAttack, int baseMagicResistance,
-			string backgroundStory = "") {
+			string backgroundStory = "", string Routine = "") {
 			name = Name;
 			bgStory = backgroundStory;
+			routine = Routine;
 			hp = baseHP;
 			stamina = baseStamina;
 			walk = baseWalkSpeed;

@@ -30,53 +30,6 @@ public class Structure : MonoBehaviour {
 		Initialize();
 	}
 
-	public IEnumerator GenerateFurniture() {
-		numStructuresToPopulate++;
-
-		while (StructureGridManager.instance.RegisteringStructures || !registeredToManager) { //if structures are still being registered/placed/moved
-			yield return new WaitForEndOfFrame(); //wait
-		}
-
-		string[] furniturePrefixes = null;
-		switch (GetDimensionSize(dimensions)) { //different amounts of furniture based on size
-			case "small":
-				furniturePrefixes = new string[] { "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_" };
-				break;
-			case "medium":
-				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
-				break;
-			case "large":
-				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
-				break;
-			default:
-				furniturePrefixes = new string[] { "bed_", "chest_", "table_", "chair_" };
-				break;
-		}
-
-		AssetManager.instance.InstantiateFurniture(transform.position, this, "workbench"); //ensure there is always a workbench
-
-		List<Vector3> furniturePositions = new List<Vector3>(); //the positions to spawn furniture
-		int totalPerColumn = (int)(1.5f * (dimensions.y + 1)); //There will be 2 piece of furniture per cell height; 2 * num of vertical cells
-		float spacing = StructureGridManager.instance.CellHeight / 2f;
-		Vector3 adjustment = Vector3.zero;
-		for (int i = 0; i < furniturePrefixes.Length; i++) { //for each prefix
-			adjustment.x = (i / totalPerColumn * spacing) + 1; //use integer division to align position x to columns
-			adjustment.y = (i % totalPerColumn * -spacing) - 1.5f; //use mod operator to evenly space out position y's
-			furniturePositions.Add(transform.position + adjustment); //add a position
-		}
-
-		if (furniturePrefixes.Length == furniturePositions.Count) { //ensure array and list are same size
-			for (int i = 0; i < furniturePrefixes.Length; i++) { //go through all prefixes
-				if (furniturePrefixes[i].Contains("chest")) { //if it is a chest
-					AssetManager.instance.InstantiateContainer(furniturePositions[i], owner: owner, textureName: furniturePrefixes[i] + preset);
-				} else { //all other furniture types
-					AssetManager.instance.InstantiateFurniture(furniturePositions[i], this, furniturePrefixes[i] + preset);
-				}
-			}
-		}
-		numStructuresToPopulate--;
-	}
-
 	public static string GetDimensionSize(Vector2Int dimensions) {
 		if (dimensions.x == dimensions.y) {
 			if (dimensions.x <= 0) {
@@ -124,10 +77,61 @@ public class Structure : MonoBehaviour {
 		lastUpdated = LastUpdated; //replace owner after certain time
 
 		if (instantiateFurniture) {
-			StartCoroutine(GenerateFurniture());
+			StartCoroutine(Populate());
 		}
 
 		SetSprites(textures);
+	}
+
+	public IEnumerator Populate() {
+		numStructuresToPopulate++;
+
+		while (StructureGridManager.instance.RegisteringStructures || !registeredToManager) { //if structures are still being registered/placed/moved
+			yield return new WaitForEndOfFrame(); //wait
+		}
+
+		string[] furniturePrefixes = null;
+		switch (GetDimensionSize(dimensions)) { //different amounts of furniture based on size
+			case "small":
+				furniturePrefixes = new string[] { "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_" };
+				break;
+			case "medium":
+				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
+				break;
+			case "large":
+				furniturePrefixes = new string[] { "bed_", "bed_", "chest_", "rug_", "table_", "chair_", "fireplace_", "stove_", "table_" };
+				break;
+			default:
+				furniturePrefixes = new string[] { "bed_", "chest_", "table_", "chair_" };
+				break;
+		}
+
+		AssetManager.instance.InstantiateFurniture(transform.position, this, "workbench"); //ensure there is always a workbench
+
+		List<Vector3> furniturePositions = new List<Vector3>(); //the positions to spawn furniture
+		int totalPerColumn = (int)(1.5f * (dimensions.y + 1)); //There will be 2 piece of furniture per cell height; 2 * num of vertical cells
+		float spacing = StructureGridManager.instance.CellHeight / 2f;
+		Vector3 adjustment = Vector3.zero;
+		for (int i = 0; i < furniturePrefixes.Length; i++) { //for each prefix
+			adjustment.x = (i / totalPerColumn * spacing) + 1; //use integer division to align position x to columns
+			adjustment.y = (i % totalPerColumn * -spacing) - 1.5f; //use mod operator to evenly space out position y's
+			furniturePositions.Add(transform.position + adjustment); //add a position
+		}
+
+		if (furniturePrefixes.Length == furniturePositions.Count) { //ensure array and list are same size
+			for (int i = 0; i < furniturePrefixes.Length; i++) { //go through all prefixes
+				if (furniturePrefixes[i].Contains("chest")) { //if it is a chest
+					AssetManager.instance.InstantiateContainer(furniturePositions[i], owner: owner, textureName: furniturePrefixes[i] + preset);
+				} else { //all other furniture types
+					AssetManager.instance.InstantiateFurniture(furniturePositions[i], this, furniturePrefixes[i] + preset);
+				}
+			}
+		}
+
+		//create owner(s)
+
+
+		numStructuresToPopulate--;
 	}
 
 	public void RegisterFurniture(Furniture f) {

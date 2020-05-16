@@ -12,9 +12,9 @@ public class Character : MonoBehaviour {
 
 	protected static float base_stamina_regen = 0.1f; //qty per second format
 
-	private int hp;
+	protected int hp;
 	protected int maxHp;
-	private float stamina;
+	protected float stamina;
 	protected int maxStamina;
 	protected float walkSpeed;
 	protected float sprintSpeed;
@@ -41,8 +41,10 @@ public class Character : MonoBehaviour {
 
 	public static CharacterEvent Defeated { get { return defeated; } }
 
-	public int HP { get { return hp; } set { hp = value; } }
-	public int MaxHP { get { return maxHp; } set { maxHp = value; } }
+	public int HP { get { return hp; } }
+	public int MaxHP { get { return maxHp; } }
+	public float Stamina { get { return stamina; } }
+	public float MaxStamina { get { return maxStamina; } }
 	public Directions LookDirection { get { return lookDirection; } }
 
 	public virtual bool Attack() {
@@ -74,15 +76,12 @@ public class Character : MonoBehaviour {
 			defeated = new CharacterEvent();
 		}
 
-		if (maxHp <= 0) { //if not initialized by subclass
-			maxHp = 10; //set base
+		if (hp <= 0) {
+			hp = maxHp;
 		}
-		if (maxStamina <= 0) {
-			maxStamina = 10;
+		if (stamina <= 0) {
+			stamina = maxStamina;
 		}
-
-		hp = maxHp;
-		stamina = maxStamina;
 
 		if (animator == null) { //if animator not established in inspector
 			animator = GetComponent<Animator>(); //try to find on gameobject

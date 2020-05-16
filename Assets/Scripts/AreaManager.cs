@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Areas;
-using Newtonsoft.Json;
 
 /// <summary>
 /// AreaManager: Class that procedurally generates, loads, and manages a grid of Areas.
@@ -336,7 +335,7 @@ public class AreaManager : MonoBehaviour {
 		LoadingScreen.instance.SetText("Loading Save Data..");
 		LoadingScreen.instance.Show();
 
-		currentSaveFolder = Application.persistentDataPath + "/saves" + "/" + playerName + "/" + worldName + "/";
+		currentSaveFolder = GameManager.path_saveData + playerName + "/" + worldName + "/";
 
 		if (!Directory.Exists(currentSaveFolder)) {
 			StartCoroutine(GenerateAllAreas(playerName, worldName, Vector2Int.zero));
@@ -358,9 +357,7 @@ public class AreaManager : MonoBehaviour {
 					GameManager.instance.QuitToMainMenu();
 					yield break; //give up on loading
 				} else {
-					StreamReader reader = new StreamReader(File.Open(currFilePath, FileMode.Open));
-					areas[x, y] = JsonConvert.DeserializeObject<Area>(reader.ReadToEnd());
-					reader.Close();
+					areas[x, y] = GameManager.LoadObject<Area>(currFilePath);
 				}
 			}
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);

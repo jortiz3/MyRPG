@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -270,11 +269,7 @@ namespace Areas {
 		}
 
 		private void Save() {
-			string pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json";
-			StreamWriter writer = new StreamWriter(File.Create(pathToSaveTo));//initialize writer with creating/opening filepath
-			string json = JsonConvert.SerializeObject(this, Formatting.Indented);
-			writer.Write(json); //convert this object to json and write it
-			writer.Close(); //close the file
+			GameManager.SaveObject(this, AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json");
 		}
 
 		public void Save(List<Entity> Entities) {
