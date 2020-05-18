@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using Newtonsoft.Json;
 
 [Serializable]
@@ -12,6 +13,7 @@ public class GameManager : MonoBehaviour {
 	private static string path_data;
 	private static string path_save;
 	private static string fileName_playerSaveInfo;
+	private static UnityEvent onGamePlay;
 
 	private string playerName;
 	private string worldName;
@@ -26,6 +28,7 @@ public class GameManager : MonoBehaviour {
 
 	public static string path_gameData { get { return path_data; } }
 	public static string path_saveData { get { return path_save; } }
+	public static UnityEvent OnGamePlay { get { return onGamePlay; } }
 
 	public bool State_Play { get { return state_play; } }
 	public bool State_Paused { get { return state_paused; } }
@@ -64,6 +67,8 @@ public class GameManager : MonoBehaviour {
 			Items.ItemDatabase.Initialize();
 			Items.ItemModifierDatabase.Initialize();
 			NPC.NPCDatabase.Initialize();
+
+			onGamePlay = new UnityEvent();
 		}
 	}
 
@@ -115,6 +120,11 @@ public class GameManager : MonoBehaviour {
 		return "Save Data Error: Unable to load save details for '" + PlayerName + "'.";
 	}
 
+	private void Initialize() {
+		onGamePlay.Invoke();
+		state_gameInitialized = true; //flag game as initialized
+	}
+
 	/// <summary>
 	/// Finds game save data and populates the Load/Save UI
 	/// </summary>
@@ -155,7 +165,7 @@ public class GameManager : MonoBehaviour {
 					Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
 					CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
 					RefreshSettings();
-					state_gameInitialized = true; //flag game as initialized
+					Initialize();
 				}
 			}
 		}
@@ -185,6 +195,10 @@ public class GameManager : MonoBehaviour {
 		string menuState = state_paused ? "Pause" : "";
 		MenuScript.instance.ChangeState(menuState);
 		RefreshSettings();
+
+		if (!state_paused) {
+			onGamePlay.Invoke();
+		}
 	}
 
 	/// <summary>
@@ -270,7 +284,7 @@ public class GameManager : MonoBehaviour {
 				Player.instance.TeleportToPos(Vector3.zero); //move the player to center
 				SaveGame(); //create a save file
 				RefreshSettings();
-				state_gameInitialized = true; //flag game as initialized
+				Initialize();
 			}
 		} else {
 			//show pop-up stating "Enter a name for your character, then try again."
