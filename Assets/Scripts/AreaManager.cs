@@ -313,13 +313,13 @@ public class AreaManager : MonoBehaviour {
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
 						areas[currentAreaPos.x, currentAreaPos.y].Save(currEntities);
-						GameManager.instance.SaveGame();
 						LoadingScreen.instance.IncreaseProgress(loadIncrement);
 					}
 
 					if (loadingNewArea) { //if loading a new area
 						UpdateAreaExits(position); //hide/display exits when appropriate
 						Container.ResetInstanceIDs(); //reset the ids for the next area
+						Structure.ResetInstanceIDs();
 						StructureGridManager.instance.ResetGridStatus(); //reset grid so any loaded structures can properly snap to it
 						StartCoroutine(areas[position.x, position.y].LoadToScene(navMesh)); //initiate async load area
 						currentAreaPos = position;

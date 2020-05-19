@@ -29,7 +29,7 @@ public class WorldManager : MonoBehaviour {
 			onHour = new TimeEvent();
 			onDayStart = new UnityEvent();
 
-			secondsPerHour = 60f;
+			secondsPerHour = 2f; //default is 60f
 
 			GameManager.OnGamePlay.AddListener(OnGamePlay); //invoked each time play is started
 		}

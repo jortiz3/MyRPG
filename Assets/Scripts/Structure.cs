@@ -200,6 +200,10 @@ public class Structure : MonoBehaviour {
 		}
 	}
 
+	public static void ResetInstanceIDs() {
+		nextInstanceID = 0;
+	}
+
 	public void SetColor(Color c) {
 		if (sprites != null) {
 			for (int i = 0; i < sprites.Length; i++) {

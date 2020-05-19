@@ -77,6 +77,7 @@ namespace NPC {
 					if (routine_current == null || !routine_current.Equals(routine_selected)) { //if selected is not the same as current
 						routine_current = routine_selected; //set the new current routine
 						routine_action_index = 0; //reset current action in current routine
+						action_complete = true;
 						routine_complete = false;
 					}
 				}
@@ -90,12 +91,17 @@ namespace NPC {
 					pos = home.transform.position;
 				}
 			} else if (locationInfo.Equals("bed")) {
-
+				if (home != null) {
+					//find unoccupied bed
+				}
 			} else if (locationInfo.Equals("friend")) {
-
-			} else {
-				pos = Vector2IntS.Parse(locationInfo).ToVector3();
+				//have list of friends
+				//pick random friend
+				//go to friend's house
+			} else if (locationInfo.Equals("inn")) {
+				//find an available inn
 			}
+			navAgent.ResetPath();
 			navAgent.SetDestination(pos);
 		}
 
