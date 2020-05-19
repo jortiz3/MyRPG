@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Notes:
-/// -find a way to tie in OnActionComplete()
 /// Written by Justin Ortiz
 /// </summary>
 namespace NPC {
@@ -17,8 +15,8 @@ namespace NPC {
 		private string routine_current; //contains all methods to go through
 		private string routine_action; //current method
 		private int routine_action_index; //index within the current routine
-		private bool routine_action_invoked;
-		private float time_delay_remaining;
+		private float time_delay_remaining; //amount of time to wait (give players time to react)
+		private bool action_complete; //flag to know when to start next action
 
 		public string Type { get { return type.Name; } }
 
@@ -32,6 +30,10 @@ namespace NPC {
 				base_physical_attack = type.base_physical_attack;
 				base_physical_resistance = type.base_physical_resistance;
 			}
+		}
+
+		private void ClearDelay() {
+			time_delay_remaining = 0;
 		}
 
 		private float GetDelay() {
@@ -95,9 +97,10 @@ namespace NPC {
 
 			WorldManager.OnHour.AddListener(GetRoutine);
 			base.Initialize();
+			OnHit.AddListener(ClearDelay);
 		}
 
-		private void InvokeNextAction() {
+		private void InvokeNextRoutineAction() {
 			string[] actions = routine_current.Split(';');
 			if (routine_action_index + 1 < actions.Length) {
 				routine_action = actions[++routine_action_index];
@@ -109,7 +112,7 @@ namespace NPC {
 					typeof(NonPlayerCharacter).GetMethod(methodInfo[0]).Invoke(this, BindingFlags.NonPublic | BindingFlags.Instance, null, methodInfo[1].Split(','), null);
 				}
 			}
-			routine_action_invoked = true;
+			action_complete = false;
 		}
 
 		public void Load(string Name = "", string npcTypeName = "default", int hp_current = 0, float stamina_current = 0) {
@@ -121,23 +124,31 @@ namespace NPC {
 
 		private void OnActionComplete() {
 			time_delay_remaining = GetDelay();
-			routine_action_invoked = false;
+			action_complete = true;
 		}
 
-		private void Update() {
+		protected override void Update_Character() {
 			if (status_normal) { //if not flinching, not attacking/blocking
 				if (time_delay_remaining > 0) { //if being delayed
 					time_delay_remaining -= Time.deltaTime; //update delay remaining
 				} else { //no longer delayed
-					if (!status_inCombat) { //if not in combat
-						if (!routine_action_invoked) {
-							InvokeNextAction();
+					if (action_complete) { //if either attack was complete or destination reached
+						if (!status_inCombat) { //if not in combat
+							InvokeNextRoutineAction(); //start next routine action
+						} else { //in combat
+							//do combat things
 						}
-					} else {
-						//do combat
+					}
+				}
+
+				if (!action_complete) {
+					//if attack animation complete >> animation state attack rest?
+					if (navAgent.remainingDistance <= navAgent.stoppingDistance) {
+						OnActionComplete();
 					}
 				}
 			} //end if status
+			base.Update_Character();
 		}
 	}
 }

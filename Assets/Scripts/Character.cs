@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 /// <summary>
 /// The base class for all characters (npc & player)
@@ -29,6 +30,7 @@ public class Character : MonoBehaviour {
 	protected bool status_inCombat;
 	private float invulnerableTimer;
 	private float flinchTimer;
+	private UnityEvent onHit;
 
 	private Faction faction;
 
@@ -46,6 +48,7 @@ public class Character : MonoBehaviour {
 	public float Stamina { get { return stamina; } }
 	public float MaxStamina { get { return maxStamina; } }
 	public Directions LookDirection { get { return lookDirection; } }
+	public UnityEvent OnHit { get { return onHit; } }
 
 	public virtual bool Attack() {
 		return true;
@@ -56,7 +59,7 @@ public class Character : MonoBehaviour {
 	}
 
 	private void FixedUpdate() {
-		//to do: update animator
+		Update_Animations();
 	}
 
 	public virtual int GetStat_MagicResistance() {
@@ -75,6 +78,7 @@ public class Character : MonoBehaviour {
 		if (defeated == null) {
 			defeated = new CharacterEvent();
 		}
+		onHit = new UnityEvent();
 
 		if (hp <= 0) {
 			hp = maxHp;
@@ -129,8 +133,10 @@ public class Character : MonoBehaviour {
 
 		if (hp <= 0) {
 			defeated.Invoke(this);
+			gameObject.SetActive(false);
 		} else {
 			flinchTimer = 0.2f;
+			onHit.Invoke();
 		}
 	}
 
@@ -165,6 +171,14 @@ public class Character : MonoBehaviour {
 	}
 
 	private void Update() {
+		Update_Character();
+	}
+
+	protected virtual void Update_Animations() {
+
+	}
+
+	protected virtual void Update_Character() {
 		if (GameManager.instance.State_Play) { //only update when playing
 			status_normal = true;
 

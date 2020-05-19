@@ -16,7 +16,7 @@ namespace NPC {
 
 		private static void GenerateDefaultNPCTypes() {
 			types = new List<NPCType>();
-			types.Add(new NPCType("default", 10, 10, 1.5f, 2.0f, 2, 0, 0, 0, "And now I live on my own.", "6;GoTo(home);Loiter() 12;GoTo(0,0);Loiter() 18;GoTo(home);Loiter() 20;GoTo(bed)"));
+			types.Add(new NPCType("default", 10, 10, 1.5f, 2.0f, 2, 0, 0, 0, "And now I live on my own.", "6;GoTo(home) 12;GoTo(5,5) 18;GoTo(home) 20;GoTo(bed)"));
 			GameManager.SaveObject(types, folderPath + "npcTypes.json");
 		}
 
