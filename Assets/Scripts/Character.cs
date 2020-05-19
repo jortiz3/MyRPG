@@ -62,6 +62,17 @@ public class Character : MonoBehaviour {
 		Update_Animations();
 	}
 
+	public static Character GetCharacter(string characterName) {
+		Transform characterParent = AreaManager.GetEntityParent("character");
+		if (characterParent != null) {
+			Transform child = characterParent.Find(characterName);
+			if (child != null && child.gameObject.activeSelf) {
+				return child.GetComponent<Character>();
+			}
+		}
+		return null;
+	}
+
 	public virtual int GetStat_MagicResistance() {
 		return base_magic_resistance;
 	}

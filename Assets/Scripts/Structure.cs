@@ -161,8 +161,10 @@ public class Structure : MonoBehaviour {
 			}
 		}
 
-		//create owner(s)
+		yield return new WaitForEndOfFrame();
 
+		//create owner(s)
+		AssetManager.instance.InstantiateNPC(transform.position, homeID: instanceID);
 
 		numStructuresToPopulate--;
 	}

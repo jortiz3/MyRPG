@@ -127,8 +127,8 @@ namespace NPC {
 			action_complete = false;
 		}
 
-		public void Load(string Name = "", int HomeID = 0, string npcTypeName = "default", int hp_current = 0, float stamina_current = 0) {
-			gameObject.name = Name;
+		public void Load(string Name = "", string npcTypeName = "default", int HomeID = 0, int hp_current = 0, float stamina_current = 0) {
+			gameObject.name = Name.Equals("") ? NPCDatabase.GenerateName() : Name;
 			AssignType(npcTypeName);
 			hp = hp_current;
 			stamina = stamina_current;

@@ -9,7 +9,7 @@ namespace Areas {
 	/// Written by Justin Ortiz
 	/// </summary>
 	[Serializable, JsonObject(MemberSerialization.Fields)]
-	public class Entity {
+	public sealed class Entity {
 		private string type; //item, structure, scenery object, prefab name
 		private string[] textures; //textures to assign
 		private int id; //itemID, harvestItemID, containerID

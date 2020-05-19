@@ -59,12 +59,6 @@ public class AssetManager : MonoBehaviour {
 		LoadAssets<Texture2D>(out furniture, "Textures/Furniture");
 	}
 
-	public Character InstantiateNPC(string npcTypeName) {
-		string prefabKey = "npc";
-		
-		return null;
-	}
-
 	public Container InstantiateContainer(Vector3 position, int containerID = 0, string owner = "", string textureName = "chest_default", float lastUpdated = -float.MaxValue) {
 		string prefabKey = "container";
 		GameObject spawnedPrefab = null;
@@ -156,6 +150,23 @@ public class AssetManager : MonoBehaviour {
 		}
 		if (spawnedPrefab != null) { //if something didn't go right, and spawnedprefab was assigned
 			Destroy(spawnedPrefab); //remove object from scene
+		}
+		return null;
+	}
+
+	public NonPlayerCharacter InstantiateNPC(Vector3 position, string name = "", string npcTypeName = "default", int homeID = 0, int currentHP = 0, float currentStamina = 0) {
+		string prefabKey = "npc";
+		GameObject spawnedPrefab = null;
+		if (prefabs.ContainsKey(prefabKey)) {
+			spawnedPrefab = Instantiate(prefabs[prefabKey], position, Quaternion.identity);
+			NonPlayerCharacter npc = spawnedPrefab.GetComponent<NonPlayerCharacter>();
+			if (npc != null) {
+				npc.Load(Name: name, npcTypeName: npcTypeName, HomeID: homeID, hp_current: currentHP, stamina_current: currentStamina);
+				return npc;
+			}
+		}
+		if (spawnedPrefab != null) {
+			Destroy(spawnedPrefab);
 		}
 		return null;
 	}
