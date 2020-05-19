@@ -72,7 +72,7 @@ namespace NPC {
 		}
 
 		private static void LoadNPCTypes() {
-			types = GameManager.LoadObject<List<NPCType>>(folderPath + "npcTypes.json");
+			types = Application.isEditor ? null: GameManager.LoadObject<List<NPCType>>(folderPath + "npcTypes.json");
 			if (types == null || types.Count < 1) {
 				GenerateDefaultNPCTypes();
 			}

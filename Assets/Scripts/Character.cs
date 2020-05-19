@@ -23,7 +23,7 @@ public class Character : MonoBehaviour {
 	protected int base_physical_resistance;
 	protected int base_magic_attack;
 	protected int base_magic_resistance;
-	
+
 	//status
 	protected bool status_normal;
 	protected bool status_sprinting;
@@ -193,26 +193,42 @@ public class Character : MonoBehaviour {
 		if (GameManager.instance.State_Play) { //only update when playing
 			status_normal = true;
 
-			if (flinchTimer > 0) {
-				flinchTimer -= Time.deltaTime;
-				status_normal = false;
+			if (0 < flinchTimer) { //if character is flinching
+				flinchTimer -= Time.deltaTime; //decrement the flinch time remaining
+				status_normal = false; //flag status as not normal
 			}
 
-			if (status_sprinting) { //if sprinting
-				if (stamina > 0) { //if there is stamina
-					stamina -= Time.deltaTime * 0.5f; //reduce stamina
+			if (status_normal) { //if normal status
+				if (status_sprinting) { //if sprinting
+					if (0 < stamina) { //if there is stamina
+						stamina -= Time.deltaTime * 0.5f; //reduce stamina
+
+						if (stamina < 0) { //if stamina went below 0
+							stamina = 0; //set to 0
+						}
+					} else { //no stamina
+						navAgent.speed = walkSpeed; //start walking
+						status_sprinting = false; //update status
+					}
 				} else {
-					navAgent.speed = walkSpeed; //start walking
-					status_sprinting = false; //update status
-				}
-			} else {
-				if (stamina < maxStamina) {
-					stamina += Time.deltaTime * GetStat_StaminaRegen();
+					if (stamina < maxStamina) { //if stamina is less than max
+						stamina += Time.deltaTime * GetStat_StaminaRegen(); //regenerate
+					}
+
+					if (stamina > maxStamina) { //if stamina went over max
+						stamina = maxStamina; //set to max
+					}
 				}
 
-				if (stamina > maxStamina) {
-					stamina = maxStamina;
+				if (navAgent.isOnNavMesh && navAgent.isStopped) { //if the agent was stopped
+					navAgent.isStopped = false; //allow it to move again
 				}
+			}
+		}
+
+		if (!status_normal || GameManager.instance.State_Paused) {
+			if (navAgent.isOnNavMesh && !navAgent.isStopped) { //if the agent is moving
+				navAgent.isStopped = true; //stop it
 			}
 		}
 	}

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace NPC {
 		private int routine_action_index; //index within the current routine
 		private float time_delay_remaining; //amount of time to wait (give players time to react)
 		private bool action_complete; //flag to know when to start next action
+		private bool routine_complete; //flag to know when current routine is done
 		private Structure home;
 		private int instanceID_home;
 
@@ -53,17 +55,29 @@ namespace NPC {
 			if (type != null) {
 				string[] routines = type.Routine.Split(' '); //all routines for this npc
 				string[] routine_info_loop; //routine currently being checked within loop
+				string routine_selected = "";
 				int time_parsed; //the time for current parse
 				for (int i = routines.Length - 1; 0 <= i; i--) { //go in reverse order to always get the last closest routine to given time
 					routine_info_loop = routines[i].Split(';'); //separate routine methods & time
 					if (int.TryParse(routine_info_loop[0], out time_parsed)) { //if time retrieved from string
-						if (time >= time_parsed) { //if the checked routine is acceptable for the time
-							if (!routine_current.Equals(routines[i])) { //if the current routine is not the one being checked
-								routine_current = routines[i]; //set the new current routine
-								routine_action_index = 0;
-							}
+						if (time >= time_parsed) { //if the checked routine is acceptable for the time || nothing was accepted
+							routine_selected = routines[i];
 							break;
 						}
+					}
+				}
+
+				if (routine_selected.Equals("")) { //if no suitable routine was found
+					if (routines.Length > 0) { //double-check routines available
+						routine_selected = routines[routines.Length - 1]; //select the last routine
+					}
+				}
+
+				if (!routine_selected.Equals("")) { //if suitable routine found
+					if (routine_current == null || !routine_current.Equals(routine_selected)) { //if selected is not the same as current
+						routine_current = routine_selected; //set the new current routine
+						routine_action_index = 0; //reset current action in current routine
+						routine_complete = false;
 					}
 				}
 			}
@@ -118,16 +132,23 @@ namespace NPC {
 				string[] actions = routine_current.Split(';');
 				if (routine_action_index + 1 < actions.Length) {
 					routine_action = actions[++routine_action_index];
-				}
 
-				if (!routine_action.Equals("")) { //if there is no action currently assigned
-					string[] methodInfo = routine_action.Replace(")", "").Split('('); //deal with parenthesis to get method info
-					if (methodInfo.Length == 2) { //method info needs exactly method name and parameters
-						typeof(NonPlayerCharacter).GetMethod(methodInfo[0]).Invoke(this, BindingFlags.NonPublic | BindingFlags.Instance, null, methodInfo[1].Split(','), null);
+					if (!routine_action.Equals("")) { //if there is no action currently assigned
+						string[] methodInfo = routine_action.Replace(")", "").Split('('); //deal with parenthesis to get method info
+						if (methodInfo.Length == 2) { //method info needs exactly method name and parameters
+							try {
+								GetType().GetMethod(methodInfo[0], BindingFlags.NonPublic | BindingFlags.Instance, null,
+									new Type[] { typeof(string) }, null).Invoke(this, methodInfo[1].Split(',')); //find the method in the class, then  invoke it
+							} catch {
+								Debug.Log("Invoke Error: Failed to call 'NonPlayerCharacter." + methodInfo[0] + "(" + methodInfo[1] + ");'");
+							}
+						}
 					}
+					action_complete = false;
+				} else {
+					routine_complete = true;
 				}
 			}
-			action_complete = false;
 		}
 
 		public void Load(string Name = "", string npcTypeName = "default", int HomeID = 0, int hp_current = 0, float stamina_current = 0) {
@@ -150,7 +171,9 @@ namespace NPC {
 				} else { //no longer delayed
 					if (action_complete) { //if either attack was complete or destination reached
 						if (!status_inCombat) { //if not in combat
-							InvokeNextRoutineAction(); //start next routine action
+							if (!routine_complete) { //if not done with current routine
+								InvokeNextRoutineAction(); //start next routine action
+							}
 						} else { //in combat
 								 //do combat things
 						}

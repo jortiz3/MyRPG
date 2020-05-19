@@ -313,6 +313,7 @@ public class AreaManager : MonoBehaviour {
 					if (saveEntities) {
 						LoadingScreen.instance.SetText("Saving.."); //inform player of process
 						areas[currentAreaPos.x, currentAreaPos.y].Save(currEntities);
+						GameManager.instance.SaveGame();
 						LoadingScreen.instance.IncreaseProgress(loadIncrement);
 					}
 
