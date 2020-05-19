@@ -239,7 +239,7 @@ namespace Areas {
 						Vector3 entityPos = Vector3.zero;
 
 						for (i = 0; i < numEntities; i++) {
-							tempEntity = new Entity(owner, "default", Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" }, true);
+							tempEntity = new Entity(owner, "default", 0, Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" }, true);
 
 							//generate position for the entity
 							entityPos.x = UnityEngine.Random.Range(-currRadius, currRadius);

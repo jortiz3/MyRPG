@@ -24,9 +24,16 @@ namespace NPC {
 			string name = "";
 			if (firstNames != null && firstNames.Length > 0) {
 				name += firstNames[Random.Range(0, firstNames.Length)];
+			} else {
+				name += "Richard";
 			}
+
+			name += " ";
+
 			if (lastNames != null && lastNames.Length > 0) {
 				name += lastNames[Random.Range(0, lastNames.Length)];
+			} else {
+				name += "Nail";
 			}
 			return name;
 		}

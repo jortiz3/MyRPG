@@ -17,6 +17,8 @@ namespace NPC {
 		private int routine_action_index; //index within the current routine
 		private float time_delay_remaining; //amount of time to wait (give players time to react)
 		private bool action_complete; //flag to know when to start next action
+		private Structure home;
+		private int instanceID_home;
 
 		public string Type { get { return type.Name; } }
 
@@ -69,7 +71,9 @@ namespace NPC {
 		private void GoTo(string locationInfo) {
 			Vector3 pos = Vector3.zero;
 			if (locationInfo.Equals("home")) {
-
+				if (home != null) {
+					pos = home.transform.position;
+				}
 			} else if (locationInfo.Equals("bed")) {
 
 			} else if (locationInfo.Equals("friend")) {
@@ -95,6 +99,14 @@ namespace NPC {
 				base_physical_resistance += (int)(1.5f * scaleRating);
 			}
 
+			if (0 < instanceID_home) {
+				home = Structure.GetStructure(instanceID_home);
+
+				if (home != null) {
+					home.SetOwner(gameObject.name);
+				}
+			}
+
 			WorldManager.OnHour.AddListener(GetRoutine);
 			base.Initialize();
 			OnHit.AddListener(ClearDelay);
@@ -115,11 +127,12 @@ namespace NPC {
 			action_complete = false;
 		}
 
-		public void Load(string Name = "", string npcTypeName = "default", int hp_current = 0, float stamina_current = 0) {
+		public void Load(string Name = "", int HomeID = 0, string npcTypeName = "default", int hp_current = 0, float stamina_current = 0) {
 			gameObject.name = Name;
 			AssignType(npcTypeName);
 			hp = hp_current;
 			stamina = stamina_current;
+			instanceID_home = HomeID;
 		}
 
 		private void OnActionComplete() {
@@ -136,7 +149,7 @@ namespace NPC {
 						if (!status_inCombat) { //if not in combat
 							InvokeNextRoutineAction(); //start next routine action
 						} else { //in combat
-							//do combat things
+								 //do combat things
 						}
 					}
 				}

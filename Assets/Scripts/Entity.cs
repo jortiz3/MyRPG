@@ -56,10 +56,10 @@ namespace Areas {
 		/// <summary>
 		/// Creates entity data for structures.
 		/// </summary>
-		public Entity(string Owner, string Preset, Vector2Int Dimensions, Vector3 Position, string[] Textures, bool InstantiateFurniture = false, float LastUpdated = 0) {
+		public Entity(string Owner, string Preset, int StructureID, Vector2Int Dimensions, Vector3 Position, string[] Textures, bool InstantiateFurniture = false, float LastUpdated = 0) {
 			type = "structure";
 			textures = Textures;
-			id = -1;
+			id = StructureID;
 			uniqueString_0 = Dimensions.ToString();
 			uniqueString_1 = Owner;
 			uniqueString_2 = Preset;
@@ -155,14 +155,14 @@ namespace Areas {
 					break;
 				case "structure":
 					Structure s = AssetManager.instance.InstantiateStructure(position: position, dimensions: Vector2IntS.Parse(uniqueString_0).ToVector2Int(),
-						owner: uniqueString_1, preset: uniqueString_2, instantiateFurniture: uniqueBool_0, textureNames: textures, lastUpdated);
+						instanceID: id, owner: uniqueString_1, preset: uniqueString_2, instantiateFurniture: uniqueBool_0, textureNames: textures, lastUpdated: lastUpdated);
 					if (s != null) { //if instantiated
 						return true;
 					}
 					break;
 				case "scenery":
 					SceneryObject sc = AssetManager.instance.InstantiateSceneryObject(position: position, textureName: textures[0], harvestedItemID: id,
-						sceneryObjectHP: quantity, allowStructureCollision: uniqueBool_0, lastUpdated);
+						sceneryObjectHP: quantity, allowStructureCollision: uniqueBool_0, lastUpdated: lastUpdated);
 					if (sc != null) {
 						return true;
 					}
@@ -205,7 +205,7 @@ namespace Areas {
 				case "structure":
 					Structure s = transform.GetComponent<Structure>(); //get structure component
 					if (s != null) { //if component was there
-						temp = new Entity(s.Owner, s.Preset, s.Dimensions, transform.position, s.GetTextures(), false, s.LastUpdated);
+						temp = new Entity(s.Owner, s.Preset, s.InstanceID, s.Dimensions, transform.position, s.GetTextures(), false, s.LastUpdated);
 					}
 					break;
 				case "scenery":

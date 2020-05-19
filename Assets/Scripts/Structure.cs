@@ -7,23 +7,26 @@ using UnityEngine;
 /// </summary>
 public class Structure : MonoBehaviour {
 	private static int numStructuresToPopulate; //used to track how many structures need to instantiate furniture
+	private static int nextInstanceID;
 
 	private Color[] defaultColors;
 	[SerializeField, Tooltip("All of the sprites that make up the structure.")]
 	private SpriteRenderer[] sprites;
 	[SerializeField, Tooltip("The structure's additional cell size (x,y); Default size of 1 == (0,0)")]
 	private Vector2Int dimensions;
-	private string owner; //convert to character? load character in load() using string?
 	private string preset;
 	private List<Furniture> furniture;
 	private bool registeredToManager;
+	private int instanceID;
 	private float lastUpdated;
+	private string owner;
 
 	public static bool PopulationInProgress { get { return numStructuresToPopulate > 0; } }
 	public Vector2Int Dimensions { get { return dimensions; } }
 	public string Owner { get { return owner; } }
 	public string Preset { get { return preset; } }
 	public bool Registered { get { return registeredToManager; } set { registeredToManager = value; } }
+	public int InstanceID { get { return instanceID; } }
 	public float LastUpdated { get { return lastUpdated; } }
 
 	private void Awake() {
@@ -43,6 +46,23 @@ public class Structure : MonoBehaviour {
 			}
 		}
 		return "unique";
+	}
+	protected int GetNextInstanceID() {
+		return ++nextInstanceID; //increment id then return it
+	}
+
+	public static Structure GetStructure(int instanceID) {
+		if (instanceID >= 0) {
+			Transform structureParent = AreaManager.GetEntityParent("structure");
+			string[] currNameInfo;
+			foreach (Transform child in structureParent) {
+				currNameInfo = child.name.Split('_');
+				if (currNameInfo[currNameInfo.Length - 1].Equals(instanceID.ToString())) {
+					return child.GetComponent<Structure>();
+				}
+			}
+		}
+		return null;
 	}
 
 	public string[] GetTextures() {
@@ -65,16 +85,29 @@ public class Structure : MonoBehaviour {
 				defaultColors[i] = sprites[i].color;
 			}
 		}
+
+		if (instanceID <= 0) {
+			instanceID = GetNextInstanceID();
+		}
+
+		gameObject.name += "_" + instanceID.ToString();
 	}
 
 	/// <summary>
 	/// Passes required information to an already-instantiated structure.
 	/// </summary>
-	public void Load(Vector2Int Dimensions, string Owner = "Player", string Preset = "default", bool instantiateFurniture = false, Texture2D[] textures = null, float LastUpdated = 0) {
+	public void Load(Vector2Int Dimensions, int InstanceID = 0, string Owner = "Player", string Preset = "default", bool instantiateFurniture = false, Texture2D[] textures = null, float LastUpdated = 0) {
 		dimensions = Dimensions;
 		owner = Owner;
 		preset = Preset;
 		lastUpdated = LastUpdated; //replace owner after certain time
+
+		if (0 < InstanceID) {
+			if (nextInstanceID < InstanceID) {
+				nextInstanceID = InstanceID;
+			}
+			instanceID = InstanceID;
+		}
 
 		if (instantiateFurniture) {
 			StartCoroutine(Populate());

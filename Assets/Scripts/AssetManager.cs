@@ -199,7 +199,7 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string preset = "default",
+	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, int instanceID = 0, string owner = "Player", string preset = "default",
 		bool instantiateFurniture = false, string[] textureNames = null, float lastUpdated = 0) {
 		string prefabKey = "structure_" + Structure.GetDimensionSize(dimensions);
 		GameObject spawnedPrefab = null;
@@ -226,7 +226,7 @@ public class AssetManager : MonoBehaviour {
 					if (position != null) { //if given valid position
 						spawnedStructure.transform.position = position; //set the position of the object
 					}
-					spawnedStructure.Load(dimensions, owner, preset, instantiateFurniture, curr_texture_references, lastUpdated); //pass required info to structure
+					spawnedStructure.Load(dimensions, instanceID, owner, preset, instantiateFurniture, curr_texture_references, lastUpdated); //pass required info to structure
 					return spawnedStructure; //return reference to spawned structure
 				}
 			}//endif prefab reference != null
