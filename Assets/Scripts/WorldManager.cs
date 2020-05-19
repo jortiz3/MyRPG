@@ -38,7 +38,7 @@ public class WorldManager : MonoBehaviour {
 	/// <summary>
 	/// Uses the elapsed game time to determine the current hour of day.
 	/// </summary>
-	private int GetCurrentHour() {
+	public int GetCurrentHour() {
 		return (int)(GameManager.instance.ElapsedGameTime / secondsPerHour) % 24; //convert minutes to hours, then mod by 24 to determine current hour of day
 	}
 

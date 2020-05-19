@@ -20,7 +20,8 @@ namespace NPC {
 		private Structure home;
 		private int instanceID_home;
 
-		public string Type { get { return type.Name; } }
+		public string Type { get { return type != null ? type.Name : "null"; } }
+		public int InstanceID_Home { get { return instanceID_home; } }
 
 		private void AssignType(string typeName) {
 			type = NPCDatabase.GetType(typeName);
@@ -106,22 +107,24 @@ namespace NPC {
 					home.SetOwner(gameObject.name);
 				}
 			}
-
+			GetRoutine(WorldManager.instance.GetCurrentHour());
 			WorldManager.OnHour.AddListener(GetRoutine);
 			base.Initialize();
 			OnHit.AddListener(ClearDelay);
 		}
 
 		private void InvokeNextRoutineAction() {
-			string[] actions = routine_current.Split(';');
-			if (routine_action_index + 1 < actions.Length) {
-				routine_action = actions[++routine_action_index];
-			}
+			if (!routine_current.Equals("")) {
+				string[] actions = routine_current.Split(';');
+				if (routine_action_index + 1 < actions.Length) {
+					routine_action = actions[++routine_action_index];
+				}
 
-			if (!routine_action.Equals("")) { //if there is no action currently assigned
-				string[] methodInfo = routine_action.Replace(")", "").Split('('); //deal with parenthesis to get method info
-				if (methodInfo.Length == 2) { //method info needs exactly method name and parameters
-					typeof(NonPlayerCharacter).GetMethod(methodInfo[0]).Invoke(this, BindingFlags.NonPublic | BindingFlags.Instance, null, methodInfo[1].Split(','), null);
+				if (!routine_action.Equals("")) { //if there is no action currently assigned
+					string[] methodInfo = routine_action.Replace(")", "").Split('('); //deal with parenthesis to get method info
+					if (methodInfo.Length == 2) { //method info needs exactly method name and parameters
+						typeof(NonPlayerCharacter).GetMethod(methodInfo[0]).Invoke(this, BindingFlags.NonPublic | BindingFlags.Instance, null, methodInfo[1].Split(','), null);
+					}
 				}
 			}
 			action_complete = false;

@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using Newtonsoft.Json;
+using NPC;
 
 namespace Areas {
 
@@ -12,28 +13,32 @@ namespace Areas {
 	public sealed class Entity {
 		private string type; //item, structure, scenery object, prefab name
 		private string[] textures; //textures to assign
-		private int id; //itemID, harvestItemID, containerID
-		private int quantity; //harvestCount
-		private string uniqueString_0; //prefix, structure dimensions, furniture owner
-		private string uniqueString_1; //suffix, structure owner
-		private string uniqueString_2; //container info, structure preset
-		private bool uniqueBool_0; //allow structure collision, instantiate furniture on first instantiate
-		private float positionX;
-		private float positionY;
-		private int lastUpdated; // time since last update (seconds)
+		private int int_0; //itemID, harvestItemID, containerID
+		private int int_1; //harvestCount, npc hp
+		private int int_2; //time since last update (seconds)
+		private float float_0; //pos.x
+		private float float_1; //pos.y
+		private float float_2; //npc stamina
+		private string string_0; //prefix, structure dimensions, furniture owner
+		private string string_1; //suffix, structure owner
+		private string string_2; //container info, structure preset
+		private bool bool_0; //allow structure collision, instantiate furniture on first instantiate
+		
+		
 
 		public Entity() {
 			type = "null";
 			textures = null;
-			id = -1;
-			quantity = 0;
-			uniqueString_0 = "";
-			uniqueString_1 = "";
-			uniqueString_2 = "";
-			uniqueBool_0 = false;
-			positionX = 0;
-			positionY = 0;
-			lastUpdated = 0;
+			int_0 = 0;
+			int_1 = 0;
+			float_2 = 0f;
+			string_0 = "";
+			string_1 = "";
+			string_2 = "";
+			bool_0 = false;
+			float_0 = 0;
+			float_1 = 0;
+			int_2 = 0;
 		}
 
 		/// <summary>
@@ -42,15 +47,16 @@ namespace Areas {
 		public Entity(int ItemID, string Prefix, string Suffix, int Quantity, Vector3 Position, string Texture, string containerInfo = "", float LastUpdated = 0) {
 			type = "item";
 			textures = new string[] { Texture };
-			id = ItemID;
-			uniqueString_0 = Prefix;
-			uniqueString_1 = Suffix;
-			uniqueString_2 = containerInfo;
-			quantity = Quantity;
-			uniqueBool_0 = false;
-			positionX = Position.x;
-			positionY = Position.y;
-			lastUpdated = (int)LastUpdated;
+			int_0 = ItemID;
+			int_1 = Quantity;
+			int_2 = (int)LastUpdated;
+			float_0 = Position.x;
+			float_1 = Position.y;
+			float_2 = 0f;
+			string_0 = Prefix;
+			string_1 = Suffix;
+			string_2 = containerInfo;
+			bool_0 = false;
 		}
 
 		/// <summary>
@@ -59,15 +65,16 @@ namespace Areas {
 		public Entity(string Owner, string Preset, int StructureID, Vector2Int Dimensions, Vector3 Position, string[] Textures, bool InstantiateFurniture = false, float LastUpdated = 0) {
 			type = "structure";
 			textures = Textures;
-			id = StructureID;
-			uniqueString_0 = Dimensions.ToString();
-			uniqueString_1 = Owner;
-			uniqueString_2 = Preset;
-			quantity = 0;
-			uniqueBool_0 = InstantiateFurniture;
-			positionX = Position.x;
-			positionY = Position.y;
-			lastUpdated = (int)LastUpdated;
+			int_0 = StructureID;
+			int_1 = 0;
+			int_2 = (int)LastUpdated;
+			float_0 = Position.x;
+			float_1 = Position.y;
+			float_2 = 0f;
+			string_0 = Dimensions.ToString();
+			string_1 = Owner;
+			string_2 = Preset;
+			bool_0 = InstantiateFurniture;
 		}
 
 		/// <summary>
@@ -76,15 +83,16 @@ namespace Areas {
 		public Entity(int ItemID, int HarvestCount, bool AllowStructureCollision, Vector3 Position, string Texture, float LastUpdated = 0) {
 			type = "scenery";
 			textures = new string[] { Texture };
-			id = ItemID;
-			uniqueString_0 = "";
-			uniqueString_1 = "";
-			uniqueString_2 = "";
-			quantity = HarvestCount;
-			uniqueBool_0 = AllowStructureCollision;
-			positionX = Position.x;
-			positionY = Position.y;
-			lastUpdated = (int)LastUpdated;
+			int_0 = ItemID;
+			int_1 = HarvestCount;
+			int_2 = (int)LastUpdated;
+			float_0 = Position.x;
+			float_1 = Position.y;
+			float_2 = 0f;
+			string_0 = "";
+			string_1 = "";
+			string_2 = "";
+			bool_0 = AllowStructureCollision;
 		}
 
 		/// <summary>
@@ -93,15 +101,16 @@ namespace Areas {
 		public Entity(Vector3 position, string owner = "", string Texture = "chest_default", float LastUpdated = 0) {
 			type = "furniture";
 			textures = new string[] { Texture };
-			id = 0;
-			quantity = 0;
-			uniqueString_0 = owner;
-			uniqueString_1 = "";
-			uniqueString_2 = "";
-			uniqueBool_0 = false;
-			positionX = position.x;
-			positionY = position.y;
-			lastUpdated = (int)LastUpdated;
+			int_0 = 0;
+			int_1 = 0;
+			int_2 = (int)LastUpdated;
+			float_0 = position.x;
+			float_1 = position.y;
+			float_2 = 0f;
+			string_0 = owner;
+			string_1 = "";
+			string_2 = "";
+			bool_0 = false;
 		}
 
 		/// <summary>
@@ -110,15 +119,32 @@ namespace Areas {
 		public Entity(Vector3 position, int containerID = -1, string owner = "", string Texture = "chest_default", float LastUpdated = 0) {
 			type = "container";
 			textures = new string[] { Texture };
-			id = containerID;
-			quantity = 0;
-			uniqueString_0 = owner;
-			uniqueString_1 = "";
-			uniqueString_2 = "";
-			uniqueBool_0 = false;
-			positionX = position.x;
-			positionY = position.y;
-			lastUpdated = (int)LastUpdated;
+			int_0 = containerID;
+			int_1 = 0;
+			int_2 = (int)LastUpdated;
+			float_0 = position.x;
+			float_1 = position.y;
+			float_2 = 0f;
+			string_0 = owner;
+			string_1 = "";
+			string_2 = "";
+			bool_0 = false;
+		}
+
+
+		public Entity(Vector3 position, string name = "", string npcTypeName = "default", int homeID = -1, int hp = 0, float stamina = 0f) {
+			type = "npc";
+			textures = null;
+			int_0 = homeID;
+			int_1 = hp;
+			int_2 = 0;
+			float_0 = position.x;
+			float_1 = position.y;
+			float_2 = stamina;
+			string_0 = name;
+			string_1 = npcTypeName;
+			string_2 = "";
+			bool_0 = false;
 		}
 
 		/// <summary>
@@ -127,57 +153,61 @@ namespace Areas {
 		public Entity(string prefabName, Vector3 position) {
 			type = prefabName;
 			textures = null;
-			id = -1;
-			quantity = 0;
-			uniqueString_0 = "";
-			uniqueString_1 = "";
-			uniqueString_2 = "";
-			uniqueBool_0 = false;
-			positionX = position.x;
-			positionY = position.y;
-			lastUpdated = (int)GameManager.instance.ElapsedGameTime;
+			int_0 = 0;
+			int_1 = 0;
+			int_2 = (int)GameManager.instance.ElapsedGameTime;
+			float_0 = position.x;
+			float_1 = position.y;
+			float_2 = 0f;
+			string_0 = "";
+			string_1 = "";
+			string_2 = "";
+			bool_0 = false;
 		}
 
 		public bool Instantiate() {
-			Vector3 position = new Vector3(positionX, positionY);
+			Vector3 position = new Vector3(float_0, float_1);
 			switch (type) {
 				case "item":
 					int containerID = -1; //no container
 					try {
-						containerID = int.Parse(uniqueString_2);
+						containerID = int.Parse(string_2);
 					} catch {}
 
-					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: id, containerID: containerID, quantity: quantity,
-						textureName: textures[0], lastUpdated: lastUpdated);
+					Item i = AssetManager.instance.InstantiateItem(position: position, itemID: int_0, containerID: containerID, quantity: int_1,
+						textureName: textures[0], lastUpdated: int_2);
 					if (i != null) {
 						return true;
 					}
 					break;
 				case "structure":
-					Structure s = AssetManager.instance.InstantiateStructure(position: position, dimensions: Vector2IntS.Parse(uniqueString_0).ToVector2Int(),
-						instanceID: id, owner: uniqueString_1, preset: uniqueString_2, instantiateFurniture: uniqueBool_0, textureNames: textures, lastUpdated: lastUpdated);
+					Structure s = AssetManager.instance.InstantiateStructure(position: position, dimensions: Vector2IntS.Parse(string_0).ToVector2Int(),
+						instanceID: int_0, owner: string_1, preset: string_2, instantiateFurniture: bool_0, textureNames: textures, lastUpdated: int_2);
 					if (s != null) { //if instantiated
 						return true;
 					}
 					break;
 				case "scenery":
-					SceneryObject sc = AssetManager.instance.InstantiateSceneryObject(position: position, textureName: textures[0], harvestedItemID: id,
-						sceneryObjectHP: quantity, allowStructureCollision: uniqueBool_0, lastUpdated: lastUpdated);
+					SceneryObject sc = AssetManager.instance.InstantiateSceneryObject(position: position, textureName: textures[0], harvestedItemID: int_0,
+						sceneryObjectHP: int_1, allowStructureCollision: bool_0, lastUpdated: int_2);
 					if (sc != null) {
 						return true;
 					}
 					break;
 				case "furniture":
-					Furniture f = AssetManager.instance.InstantiateFurniture(position, owner: uniqueString_0, textureName: textures[0], lastUpdated: lastUpdated);
+					Furniture f = AssetManager.instance.InstantiateFurniture(position, owner: string_0, textureName: textures[0], lastUpdated: int_2);
 					if (f != null) {
 						return true;
 					}
 					break;
 				case "container":
-					Container c = AssetManager.instance.InstantiateContainer(position, containerID: id, owner: uniqueString_0, textureName: textures[0], lastUpdated: lastUpdated);
+					Container c = AssetManager.instance.InstantiateContainer(position, containerID: int_0, owner: string_0, textureName: textures[0], lastUpdated: int_2);
 					if (c != null) {
 						return true;
 					}
+					break;
+				case "npc":
+					NonPlayerCharacter npc = AssetManager.instance.InstantiateNPC(position, name: string_0, npcTypeName: string_1, homeID: int_0, currentHP: int_1, currentStamina: float_2);
 					break;
 				default:
 					GameObject spawned = AssetManager.instance.InstantiatePrefab(position, type);
@@ -230,6 +260,12 @@ namespace Areas {
 						temp = new Entity(c.transform.position, containerID, c.Owner, c.GetTextureName(), c.LastUpdated);
 					}
 					break;
+				case "npc":
+					NonPlayerCharacter npc = transform.GetComponent<NonPlayerCharacter>();
+					if (npc != null) {
+						temp = new Entity(transform.position, name: transform.name, npcTypeName: npc.Type, npc.InstanceID_Home, npc.HP, npc.Stamina);
+					}
+					break;
 				default:
 					temp = new Entity(transform.name, transform.position);
 					break;
@@ -238,8 +274,8 @@ namespace Areas {
 		}
 
 		public void SetPosition(Vector3 position) {
-			positionX = position.x;
-			positionY = position.y;
+			float_0 = position.x;
+			float_1 = position.y;
 		}
 	}
 }
