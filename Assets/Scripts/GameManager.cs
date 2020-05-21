@@ -3,7 +3,6 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 using Newtonsoft.Json;
 
 [Serializable]
@@ -13,7 +12,6 @@ public class GameManager : MonoBehaviour {
 	private static string path_data;
 	private static string path_save;
 	private static string fileName_playerSaveInfo;
-	private static UnityEvent onGamePlay;
 
 	private string playerName;
 	private string worldName;
@@ -28,7 +26,6 @@ public class GameManager : MonoBehaviour {
 
 	public static string path_gameData { get { return path_data; } }
 	public static string path_saveData { get { return path_save; } }
-	public static UnityEvent OnGamePlay { get { return onGamePlay; } }
 
 	public bool State_Play { get { return state_play; } }
 	public bool State_Paused { get { return state_paused; } }
@@ -67,8 +64,6 @@ public class GameManager : MonoBehaviour {
 			Items.ItemDatabase.Initialize();
 			Items.ItemModifierDatabase.Initialize();
 			NPC.NPCDatabase.Initialize();
-
-			onGamePlay = new UnityEvent();
 		}
 	}
 
@@ -121,7 +116,6 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private void Initialize() {
-		onGamePlay.Invoke();
 		state_gameInitialized = true; //flag game as initialized
 	}
 
@@ -195,10 +189,6 @@ public class GameManager : MonoBehaviour {
 		string menuState = state_paused ? "Pause" : "";
 		MenuScript.instance.ChangeState(menuState);
 		RefreshSettings();
-
-		if (!state_paused) {
-			onGamePlay.Invoke();
-		}
 	}
 
 	/// <summary>

@@ -13,9 +13,7 @@ public class WorldManager : MonoBehaviour {
 	private static TimeEvent onHour; //to be invoked on each hour change, passing the current hour
 	private static UnityEvent onDayStart; //to be invoked at the start of each day >> hr 0 || 24
 	private static float secondsPerHour; //60 seconds per hr, so 1 second = 1 minute in game
-
-	private bool thread_running;
-	private bool thread_cancel;
+	private static int currentTime;
 
 	public static TimeEvent OnHour { get { return onHour; } }
 	public static UnityEvent OnDayStart { get { return onDayStart; } }
@@ -30,8 +28,19 @@ public class WorldManager : MonoBehaviour {
 			onDayStart = new UnityEvent();
 
 			secondsPerHour = 2f; //default is 60f
+		}
+	}
 
-			GameManager.OnGamePlay.AddListener(OnGamePlay); //invoked each time play is started
+	private void FixedUpdate() { //every frame
+		if (GameManager.instance.State_Play) { //if game is running
+			int newTime = GetCurrentHour(); //check time
+			if (newTime != currentTime) { //if the hour has changed
+				currentTime = newTime; //set the current time
+				onHour.Invoke(currentTime); //invoke on hour event listeners
+				if (currentTime == 0) { //if it is the first hour of the day
+					onDayStart.Invoke(); //invoke on day start listeners
+				}
+			}
 		}
 	}
 
@@ -57,41 +66,7 @@ public class WorldManager : MonoBehaviour {
 		StartCoroutine(AreaManager.instance.LoadAreasFromSave(playerName, worldName, currentPosition));
 	}
 
-	private void OnGamePlay() {
-		StartCoroutine(UpdateTime());
-	}
-
 	public void Save() {
 		AreaManager.instance.SaveCurrentArea();
-	}
-
-	private IEnumerator UpdateTime() {
-		if (thread_running) { //if this type of thread is running already
-			thread_cancel = true; //cancel previous thread because it will be out of sync
-		}
-
-		while (thread_running) { //wait until prev thread is done
-			yield return new WaitForEndOfFrame();
-		}
-
-		thread_running = true; //flag this thread as running
-		float secondsToNextHour = secondsPerHour - (GameManager.instance.ElapsedGameTime % (int)secondsPerHour); //subtract remainder of current hour from seconds per hour
-		int currentTime;
-		while (true) { //infinite loop
-			yield return new WaitForSeconds(secondsToNextHour); //wait for next check
-			if (GameManager.instance.State_Play && !thread_cancel) {
-				currentTime = GetCurrentHour();
-				if (currentTime == 0) {
-					onDayStart.Invoke();
-				} else {
-					onHour.Invoke(currentTime);
-				}
-				secondsToNextHour = 60f;
-			} else {
-				break;
-			}
-		}
-		thread_cancel = false;
-		thread_running = false;
 	}
 }

@@ -110,7 +110,8 @@ public class Player : Character {
 	}
 
 	public override void TeleportToPos(Vector3 position) {
-		StartCoroutine(Teleport(position, true));
+		base.TeleportToPos(position);
+		CameraManager.instance.RefocusOnTarget();
 	}
 
 	public void Unequip(Item item) {

@@ -101,6 +101,7 @@ namespace NPC {
 			} else if (locationInfo.Equals("inn")) {
 				//find an available inn
 			}
+			navAgent.isStopped = false;
 			navAgent.ResetPath();
 			navAgent.SetDestination(pos);
 		}
@@ -162,12 +163,14 @@ namespace NPC {
 			AssignType(npcTypeName);
 			hp = hp_current;
 			stamina = stamina_current;
-			instanceID_home = HomeID;
+			instanceID_home = HomeID; //somehow value is changed to 0 after this point
 		}
 
 		private void OnActionComplete() {
 			time_delay_remaining = GetDelay();
 			action_complete = true;
+			navAgent.isStopped = true;
+			Debug.Log("action complete");
 		}
 
 		protected override void Update_Character() {

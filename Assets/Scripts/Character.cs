@@ -155,18 +155,8 @@ public class Character : MonoBehaviour {
 		transform.SetParent(AreaManager.GetEntityParent("Character"));
 	}
 
-	protected IEnumerator Teleport(Vector3 position, bool refocusCamera = false) {
-		navAgent.enabled = false;
-		transform.position = position;
-		yield return new WaitForEndOfFrame();
-		navAgent.enabled = true;
-		if (refocusCamera) {
-			CameraManager.instance.RefocusOnTarget();
-		}
-	}
-
 	public virtual void TeleportToPos(Vector3 position) {
-		StartCoroutine(Teleport(position));
+		navAgent.Warp(position);
 	}
 
 	protected void ToggleSprint() {
