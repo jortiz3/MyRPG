@@ -140,18 +140,18 @@ namespace NPC {
 				if (routine_action_index + 1 < actions.Length) {
 					routine_action = actions[++routine_action_index];
 
-					if (!routine_action.Equals("")) { //if there is no action currently assigned
+					if (!routine_action.Equals("")) { //if non-null string obtained from actions
 						string[] methodInfo = routine_action.Replace(")", "").Split('('); //deal with parenthesis to get method info
 						if (methodInfo.Length == 2) { //method info needs exactly method name and parameters
 							try {
 								GetType().GetMethod(methodInfo[0], BindingFlags.NonPublic | BindingFlags.Instance, null,
 									new Type[] { typeof(string) }, null).Invoke(this, methodInfo[1].Split(',')); //find the method in the class, then  invoke it
+								action_complete = false; //this is only called if the method was successfully invoked
 							} catch {
 								Debug.Log("Invoke Error: Failed to call 'NonPlayerCharacter." + methodInfo[0] + "(" + methodInfo[1] + ");'");
 							}
 						}
 					}
-					action_complete = false;
 				} else {
 					routine_complete = true;
 				}
@@ -170,7 +170,6 @@ namespace NPC {
 			time_delay_remaining = GetDelay();
 			action_complete = true;
 			navAgent.isStopped = true;
-			Debug.Log("action complete");
 		}
 
 		protected override void Update_Character() {
@@ -191,7 +190,7 @@ namespace NPC {
 
 				if (!action_complete) {
 					//if attack animation complete >> animation state attack rest?
-					if (navAgent.remainingDistance <= navAgent.stoppingDistance) {
+					if (navAgent.remainingDistance <= navAgent.stoppingDistance) { //doesn't always work. attempts: navAgent.velocity.sqrMagnitude > 0; .pathpending; .pathstatus
 						OnActionComplete();
 					}
 				}
