@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using internal_Area;
+using NPC;
 
 public class AssetManager : MonoBehaviour {
 
@@ -57,10 +57,6 @@ public class AssetManager : MonoBehaviour {
 		LoadAssets<Texture2D>(out structures, "Textures/Structures");
 		yield return new WaitForEndOfFrame();
 		LoadAssets<Texture2D>(out furniture, "Textures/Furniture");
-	}
-
-	public Character InstantiateCharacter() {
-		return null;
 	}
 
 	public Container InstantiateContainer(Vector3 position, int containerID = 0, string owner = "", string textureName = "chest_default", float lastUpdated = -float.MaxValue) {
@@ -158,6 +154,23 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
+	public NonPlayerCharacter InstantiateNPC(Vector3 position, string name = "", string npcTypeName = "default", int homeID = 0, int currentHP = 0, float currentStamina = 0) {
+		string prefabKey = "npc";
+		GameObject spawnedPrefab = null;
+		if (prefabs.ContainsKey(prefabKey)) {
+			spawnedPrefab = Instantiate(prefabs[prefabKey], position, Quaternion.identity);
+			NonPlayerCharacter npc = spawnedPrefab.GetComponent<NonPlayerCharacter>();
+			if (npc != null) {
+				npc.Load(Name: name, npcTypeName: npcTypeName, HomeID: homeID, hp_current: currentHP, stamina_current: currentStamina);
+				return npc;
+			}
+		}
+		if (spawnedPrefab != null) {
+			Destroy(spawnedPrefab);
+		}
+		return null;
+	}
+
 	public GameObject InstantiatePrefab(Vector3 position, string prefabName) {
 		if (prefabs.ContainsKey(prefabName)) {
 			GameObject spawnedPrefab = Instantiate(prefabs[prefabName], position, Quaternion.identity);
@@ -197,7 +210,7 @@ public class AssetManager : MonoBehaviour {
 		return null;
 	}
 
-	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, string owner = "Player", string preset = "default",
+	public Structure InstantiateStructure(Vector3 position, Vector2Int dimensions, int instanceID = 0, string owner = "Player", string preset = "default",
 		bool instantiateFurniture = false, string[] textureNames = null, float lastUpdated = 0) {
 		string prefabKey = "structure_" + Structure.GetDimensionSize(dimensions);
 		GameObject spawnedPrefab = null;
@@ -224,7 +237,7 @@ public class AssetManager : MonoBehaviour {
 					if (position != null) { //if given valid position
 						spawnedStructure.transform.position = position; //set the position of the object
 					}
-					spawnedStructure.Load(dimensions, owner, preset, instantiateFurniture, curr_texture_references, lastUpdated); //pass required info to structure
+					spawnedStructure.Load(dimensions, instanceID, owner, preset, instantiateFurniture, curr_texture_references, lastUpdated); //pass required info to structure
 					return spawnedStructure; //return reference to spawned structure
 				}
 			}//endif prefab reference != null

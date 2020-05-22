@@ -1,12 +1,11 @@
 ﻿using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Newtonsoft.Json;
 
-namespace internal_Area {
+namespace Areas {
 
 	/// <summary>
 	/// Area: Class that randomly populates, manages, and displays entities that belong in an area.
@@ -240,7 +239,7 @@ namespace internal_Area {
 						Vector3 entityPos = Vector3.zero;
 
 						for (i = 0; i < numEntities; i++) {
-							tempEntity = new Entity(owner, "default", Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" }, true);
+							tempEntity = new Entity(owner, "default", 0, Vector2Int.one, Vector3.zero, new string[] { "floor_default", "roof_default", "door_default" }, true);
 
 							//generate position for the entity
 							entityPos.x = UnityEngine.Random.Range(-currRadius, currRadius);
@@ -270,11 +269,7 @@ namespace internal_Area {
 		}
 
 		private void Save() {
-			string pathToSaveTo = AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json";
-			StreamWriter writer = new StreamWriter(File.Create(pathToSaveTo));//initialize writer with creating/opening filepath
-			string json = JsonConvert.SerializeObject(this, Formatting.Indented);
-			writer.Write(json); //convert this object to json and write it
-			writer.Close(); //close the file
+			GameManager.SaveObject(this, AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json");
 		}
 
 		public void Save(List<Entity> Entities) {

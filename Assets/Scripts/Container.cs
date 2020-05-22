@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using internal_Items;
+using Items;
 
 /// <summary>
 /// Stores a list of items and displays them to the screen. Written by Justin Ortiz
@@ -410,10 +410,12 @@ public class Container : Interactable {
 	}
 
 	private bool RemoveUIElement(Item item) {
-		Transform element = displayParent.Find(GetElementName(item));
-		if (element != null) {
-			Destroy(element.gameObject);
-			return true;
+		if (displayParent != null) {
+			Transform element = displayParent.Find(GetElementName(item));
+			if (element != null) {
+				Destroy(element.gameObject);
+				return true;
+			}
 		}
 		return false;
 	}

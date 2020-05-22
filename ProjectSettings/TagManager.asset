@@ -11,6 +11,7 @@ TagManager:
   - furniture
   - uielement_container
   - container
+  - npc
   layers:
   - Default
   - TransparentFX

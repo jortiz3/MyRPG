@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace internal_Items {
+namespace Items {
 	public class ItemModifierDatabase {
 		private static List<ItemModifier> prefixes;
 		private static List<ItemModifier> suffixes;

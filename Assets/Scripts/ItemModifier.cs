@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace internal_Items {
+namespace Items {
 	[Serializable]
 	public class ItemModifier {
 		[SerializeField]

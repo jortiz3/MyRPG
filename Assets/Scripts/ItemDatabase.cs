@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace internal_Items {
+namespace Items {
 	/// <summary>
 	/// Written by Justin Ortiz
 	/// </summary>

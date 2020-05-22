@@ -51,4 +51,8 @@ public class Vector2IntS {
 	public Vector2Int ToVector2Int() {
 		return new Vector2Int(x, y);
 	}
+
+	public Vector3 ToVector3() {
+		return new Vector3(x, y);
+	}
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace internal_Items {
+namespace Items {
 	/// <summary>
 	/// Written by Justin Ortiz
 	/// </summary>
