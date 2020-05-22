@@ -251,7 +251,7 @@ public class InputManager : MonoBehaviour {
 					slot_name = "Hotbar_" + slot_index;
 					if (keyBindings.ContainsKey(slot_name)) {
 						if (Input.GetKeyDown(keyBindings[slot_name])) {
-							HUD.instance.UseHotbarSlot(slot_name);
+							HUD.UseHotbarSlot(slot_name);
 						}
 					}
 				}

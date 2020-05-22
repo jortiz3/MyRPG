@@ -55,7 +55,7 @@ public class Interactable : MonoBehaviour {
 
 	protected virtual void InteractInternal() {
 		if (interactable) { //ensures player is within range to interact
-			HUD.instance.HideInteractionText(); //hide the interact text
+			HUD.HideInteractionText(); //hide the interact text
 			displayedInteractable = null; //remove flag from this
 			interactable = false; //ensure player can no longer interact
 		}
@@ -76,7 +76,7 @@ public class Interactable : MonoBehaviour {
 					if (displayedInteractable != null) { //if something is already displayed
 						displayedInteractable.interactable = false; //ensure only 1 interactable is used at a time
 					}
-					HUD.instance.ShowInteractionText(interactMessage); //show the interaction text
+					HUD.ShowInteractionText(interactMessage); //show the interaction text
 					displayedInteractable = this; //flag this as shown
 					interactable = true; //allow player to interact
 				}
@@ -89,7 +89,7 @@ public class Interactable : MonoBehaviour {
 			if (other.CompareTag("Player")) { //player exits the interact range
 				if (displayedInteractable != null) { //if an interaction is displayed
 					if (displayedInteractable.Equals(this)) { //if this is the interaction currently being displayed
-						HUD.instance.HideInteractionText(); //hide the text
+						HUD.HideInteractionText(); //hide the text
 						displayedInteractable = null; //remove flag for this being the displayed interaction
 					}
 				}

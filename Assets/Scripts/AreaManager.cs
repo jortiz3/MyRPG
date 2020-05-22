@@ -265,8 +265,7 @@ public class AreaManager : MonoBehaviour {
 					LoadingScreen.instance.SetText("Gathering Current Area Data..");
 
 					bool loadingNewArea = currentAreaPos.Equals(position) ? false : true; //if the given area position is the same as current, different steps will be taken
-					float numIncrements = saveEntities ? transform.childCount + 1 : transform.childCount;
-					float loadIncrement = ((1f - LoadingScreen.instance.GetProgress()) / 2f) / numIncrements;
+					float loadIncrement = ((1f - LoadingScreen.instance.GetProgress()) / 2f) / transform.childCount;
 					List<Entity> currEntities = new List<Entity>(); //list to store entities currently in scene
 					Transform parent;
 					Transform child;
@@ -311,9 +310,7 @@ public class AreaManager : MonoBehaviour {
 					} //end for parent
 
 					if (saveEntities) {
-						LoadingScreen.instance.SetText("Saving.."); //inform player of process
-						areas[currentAreaPos.x, currentAreaPos.y].Save(currEntities);
-						LoadingScreen.instance.IncreaseProgress(loadIncrement);
+						areas[currentAreaPos.x, currentAreaPos.y].UpdateEntities(currEntities);
 					}
 
 					if (loadingNewArea) { //if loading a new area
@@ -368,8 +365,13 @@ public class AreaManager : MonoBehaviour {
 		LoadArea(loadedPos, resetLoadingScreen: false); //loading screen updated/hidden elsewhere
 	}
 
-	public void SaveCurrentArea() {
+	public void Save() {
 		LoadArea(position: currentAreaPos, saveEntities: true, resetLoadingScreen: false);
+		foreach (Area a in areas) {
+			if (a.Dirty) { //if the area has been edited/updated since the last save
+				a.Save(); //save changes
+			}
+		}
 	}
 
 	private void UpdateAreaExits(Vector2Int position) {

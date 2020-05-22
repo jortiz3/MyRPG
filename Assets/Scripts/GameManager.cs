@@ -64,6 +64,7 @@ public class GameManager : MonoBehaviour {
 			Items.ItemDatabase.Initialize();
 			Items.ItemModifierDatabase.Initialize();
 			NPC.NPCDatabase.Initialize();
+			HUD.Initialize();
 		}
 	}
 
@@ -158,6 +159,7 @@ public class GameManager : MonoBehaviour {
 					WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
 					Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
 					CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
+					HUD.LoadSettings();
 					RefreshSettings();
 					Initialize();
 				}
@@ -212,7 +214,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void RefreshSettings() {
-		HUD.instance.RefreshSettings();
+		HUD.RefreshSettings();
 	}
 
 	private void ResizeLoadUI() {

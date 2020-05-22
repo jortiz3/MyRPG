@@ -50,7 +50,7 @@ public class ContextManager : MonoBehaviour {
 	}
 
 	public void HUD_BeginHotkeyAssignment() {
-		HUD.instance.BeginHotkeyAssignment(Container.GetDisplayedItem(currFocus.name));
+		HUD.BeginHotkeyAssignment(Container.GetDisplayedItem(currFocus.name));
 	}
 
 	public void Select(Transform newFocus) {
@@ -59,7 +59,7 @@ public class ContextManager : MonoBehaviour {
 		switch (newFocus.tag) {
 			case "uielement_container":
 				Item item = Container.GetDisplayedItem(newFocus.name);
-				if (!HUD.instance.SelectItem(item)) {
+				if (!HUD.SelectItem(item)) {
 					currFocus = newFocus;
 				}
 				break;

@@ -121,7 +121,7 @@ public class StructureGridManager : MonoBehaviour {
 
 	public void CancelStructureEdit() {
 		CameraManager.instance.Reset(); //camera follow player again
-		HUD.instance.HideInteractionText(); //ensure no text is displayed
+		HUD.HideInteractionText(); //ensure no text is displayed
 		if (originalCell != null) {
 			MoveStructureEdit(originalCell);
 			FinalizeStructureEdit();
@@ -211,7 +211,7 @@ public class StructureGridManager : MonoBehaviour {
 		yield return new WaitForEndOfFrame();
 
 		CameraManager.instance.Reset();
-		HUD.instance.HideInteractionText();
+		HUD.HideInteractionText();
 
 		editEnabled = false;
 		editFinalizing = false;
@@ -222,9 +222,9 @@ public class StructureGridManager : MonoBehaviour {
 	private void FixedUpdate() {
 		if (editEnabled) { //only update interactions during editing
 			if (canFinalize) { //if the the building can be placed
-				HUD.instance.ShowInteractionText("Left-Click to finalize.");
+				HUD.ShowInteractionText("Left-Click to finalize.");
 			} else {
-				HUD.instance.HideInteractionText();
+				HUD.HideInteractionText();
 			}
 		}
 	}

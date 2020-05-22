@@ -6,39 +6,16 @@ using HUD_Elements;
 /// <summary>
 /// Modifies various text and slider objects displayed on the static HUD. Written by Justin Ortiz
 /// </summary>
-public class HUD : MonoBehaviour {
-	public static HUD instance;
-
+public static class HUD {
+	private static Transform settings_hud;
 	private static string setting_clickSelectKey = "HUD_Hotkey Bar Click Enabled";
 	private static bool setting_clickSelectEnabled; //this determines whether the player can click hotbar elements during play to use them
+	private static List<HotbarElement> hotbar;
+	private static Text interactionText;
 
-	private Text interactionText;
-	private List<HotbarElement> hotbar;
 	public static bool Setting_ClickSelectEnabled { get { return setting_clickSelectEnabled; } }
 
-	private void Awake() {
-		if (instance != null) {
-			Destroy(gameObject);
-		} else {
-			instance = this;
-
-			interactionText = transform.Find("Interaction").GetComponent<Text>();
-			HideInteractionText();
-
-			hotbar = new List<HotbarElement>();
-
-			if (PlayerPrefs.HasKey(setting_clickSelectKey)) {
-				setting_clickSelectEnabled =  PlayerPrefs.GetInt(setting_clickSelectKey) == 1 ? true : false;
-			} else {
-				setting_clickSelectEnabled = true;
-			}
-
-			Transform settings_hud = GameObject.Find("Settings_HUD").transform; //the parent for all HUD settings
-			settings_hud.Find(setting_clickSelectKey).GetComponent<Toggle>().onValueChanged.AddListener(SetClickSelectSetting); //ensure the toggle is tied to the setting
-		}
-	}
-
-	public void BeginHotkeyAssignment(Item item) {
+	public static void BeginHotkeyAssignment(Item item) {
 		if (item != null) {
 			HotbarElement.BeginHotkeyAssignment(item); //begin assignment detection
 			SetHotbarHighlight(true);
@@ -57,12 +34,12 @@ public class HUD : MonoBehaviour {
 		return temp;
 	}
 
-	public void EndHotkeyAssignment() {
+	public static void EndHotkeyAssignment() {
 		HotbarElement.EndHotkeyAssignment();
 		SetHotbarHighlight(false);
 	}
 
-	public void HideInteractionText() {
+	public static void HideInteractionText() {
 		if (interactionText != null) {
 			if (interactionText.gameObject.activeSelf) {
 				interactionText.gameObject.SetActive(false);
@@ -70,7 +47,31 @@ public class HUD : MonoBehaviour {
 		}
 	}
 
-	public void RegisterHotbarElement(HotbarElement element) {
+	public static void Initialize() {
+		interactionText = GameManager.instance.transform.Find("Interaction").GetComponent<Text>();
+		HideInteractionText();
+
+		hotbar = new List<HotbarElement>();
+
+		if (PlayerPrefs.HasKey(setting_clickSelectKey)) {
+			setting_clickSelectEnabled = PlayerPrefs.GetInt(setting_clickSelectKey) == 1 ? true : false;
+		} else {
+			setting_clickSelectEnabled = true;
+		}
+
+		settings_hud = GameObject.Find("Settings_HUD").transform; //the parent for all HUD settings
+		settings_hud.Find(setting_clickSelectKey).GetComponent<Toggle>().onValueChanged.AddListener(SetClickSelectSetting); //ensure the toggle is tied to the setting
+	}
+
+	public static void LoadSettings() {
+		settings_hud.Find(setting_clickSelectKey).GetComponent<Toggle>().isOn = PlayerPrefs.GetInt(setting_clickSelectKey) == 1 ? true : false;
+
+		for (int i = 0; i < hotbar.Count; i++) {
+			hotbar[i].LoadAssignment(PlayerPrefs.GetString(hotbar[i].name));
+		}
+	}
+
+	public static void RegisterHotbarElement(HotbarElement element) {
 		if (hotbar != null) {
 			if (element != null) {
 				hotbar.Add(element);
@@ -78,7 +79,7 @@ public class HUD : MonoBehaviour {
 		}
 	}
 
-	public void RemoveHotkeyAssignment(Item item) {
+	public static void RemoveHotkeyAssignment(Item item) {
 		if (item != null) {
 			foreach (HotbarElement element in hotbar) {
 				if (element.Assigned_Item != null) {
@@ -92,9 +93,13 @@ public class HUD : MonoBehaviour {
 
 	public static void SaveSettings() {
 		PlayerPrefs.SetInt(setting_clickSelectKey, setting_clickSelectEnabled ? 1 : 0);
+
+		for (int i = 0; i < hotbar.Count; i++) {
+			PlayerPrefs.SetString(hotbar[i].name, hotbar[i].GetAssignmentName());
+		}
 	}
 
-	public bool SelectItem(Item item) {
+	public static bool SelectItem(Item item) {
 		if (item != null) { //ensure item has reference
 			if (item.Slottable) { //if item is slottable
 				if (HotbarElement.HotkeySelected) { //a hotkey was selected beforehand -- player intends to assign this item to a hotkey
@@ -117,7 +122,7 @@ public class HUD : MonoBehaviour {
 		setting_clickSelectEnabled = newSetting;
 	}
 
-	private void SetHotbarHighlight(bool active) {
+	private static void SetHotbarHighlight(bool active) {
 		foreach (HotbarElement element in hotbar) {
 			element.SetHighlightActive(active); //highlight all hotbar elements
 		}
@@ -127,7 +132,7 @@ public class HUD : MonoBehaviour {
 	/// To be used when changing settings.
 	/// </summary>
 	/// <param name="interactable">Buttons should be clickable (True/False).</param>
-	public void RefreshSettings() {
+	public static void RefreshSettings() {
 		//hotbar settings
 		bool interactable = true; //default to true
 		if (MenuScript.instance.CurrentState.Equals("") || LoadingScreen.instance.isActive()) { //if no menu displayed
@@ -139,7 +144,7 @@ public class HUD : MonoBehaviour {
 		}
 	}
 
-	public void ShowInteractionText(string text) {
+	public static void ShowInteractionText(string text) {
 		if (interactionText != null) {
 			interactionText.text = text;
 			if (!interactionText.gameObject.activeSelf) {
@@ -151,7 +156,7 @@ public class HUD : MonoBehaviour {
 	/// <summary>
 	/// Called by InputManager.cs.
 	/// </summary>
-	public void UseHotbarSlot(string slotName) {
+	public static void UseHotbarSlot(string slotName) {
 		foreach (HotbarElement element in hotbar) {
 			if (element.transform.name.Equals(slotName)) {
 				element.Select(true);

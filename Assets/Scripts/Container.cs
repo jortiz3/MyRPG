@@ -301,7 +301,7 @@ public class Container : Interactable {
 	protected IEnumerator RefreshDisplay(Toggle tab, bool changeState) {
 		if (changeState) { //only toggle state when necessary
 			MenuScript.instance.ChangeState("Inventory"); //try to change to inventory state
-			HUD.instance.RefreshSettings();
+			HUD.RefreshSettings();
 		}
 
 		if (!MenuScript.instance.CurrentState.Equals("")) { //if successfully changed
@@ -406,7 +406,7 @@ public class Container : Interactable {
 			RefreshWeight();
 		}
 		RemoveUIElement(item);
-		HUD.instance.RemoveHotkeyAssignment(item);
+		HUD.RemoveHotkeyAssignment(item);
 	}
 
 	private bool RemoveUIElement(Item item) {
@@ -451,7 +451,7 @@ public class Container : Interactable {
 					Remove(item); //remove item from the container
 
 					if (!other.Equals(Inventory.instance)) { //if the other container is not the player's inventory
-						HUD.instance.RemoveHotkeyAssignment(item); //ensure the item is not displayed on the hotbar
+						HUD.RemoveHotkeyAssignment(item); //ensure the item is not displayed on the hotbar
 					}
 
 					transferred = true;

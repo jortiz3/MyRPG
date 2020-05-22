@@ -30,7 +30,7 @@ namespace HUD_Elements {
 			if (i != null) {
 				if (i.Slottable) {
 					ClearAssignment();
-					HUD.instance.RemoveHotkeyAssignment(i); //ensure this item is not assigned to another hotkey
+					HUD.RemoveHotkeyAssignment(i); //ensure this item is not assigned to another hotkey
 
 					if (image_assigned != null) {
 						image_assigned.sprite = i.GetSprite();
@@ -66,7 +66,7 @@ namespace HUD_Elements {
 				image_assigned.color = Color.clear;
 			}
 
-			HUD.instance.RegisterHotbarElement(this);
+			HUD.RegisterHotbarElement(this);
 		}
 
 		public static void BeginHotkeyAssignment(Item item) {
@@ -91,6 +91,23 @@ namespace HUD_Elements {
 			hotkeyAssignmentActive = false; //stop checking for assignment
 		}
 
+		public string GetAssignmentName() {
+			string assignment = "";
+			if (item != null) {
+				assignment = "item_" + item.ToString();
+			} //if skill
+			return assignment;
+		}
+
+		public void LoadAssignment(string assignmentName) {
+			if (assignmentName.Contains("item")) {
+				Item i = Inventory.instance.GetItem(assignmentName.Split('_')[1]); //try to get the item from player's inventory
+				if (i != null) { //if item retrieved
+					Assign(i); //assign to this slot
+				}
+			}
+		}
+
 		public static void UnselectHotkey() {
 			if (selected_hotkey != null) { //if there's a selected hotkey
 				selected_hotkey.SetHighlightActive(false); //remove highlight
@@ -107,7 +124,7 @@ namespace HUD_Elements {
 				if (hotkeyAssignmentActive) { //player clicked slottable item, then this
 					selected_item = HUD.GetValidAssignment(selected_item);
 					Assign(selected_item); //assign the selected item to this hotkey
-					HUD.instance.EndHotkeyAssignment(); //inform HUD assignment should end
+					HUD.EndHotkeyAssignment(); //inform HUD assignment should end
 				} else { //hotkey was selected first
 					if (selected_hotkey != this) { //if another hotkey was selected prior
 						UnselectHotkey(); //remove other key as selected

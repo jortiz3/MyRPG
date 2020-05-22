@@ -31,10 +31,12 @@ namespace Areas {
 		private bool discovered;
 		[JsonProperty]
 		private int lastUpdated;
+		private bool dirty; //let's us know if this area needs to be saved
 
 		public static bool PopulationInProgress { get { return numAreasToPopulate > 0; } }
 		public Vector2IntS MapPosition { get { return position; } }
 		public bool Discovered { get { return discovered; } }
+		public bool Dirty { get { return dirty; } }
 		public int LastUpdated { get { return lastUpdated; } }
 		public string TypeName { get { return typeName; } }
 
@@ -268,21 +270,14 @@ namespace Areas {
 			numAreasToPopulate--;
 		}
 
-		private void Save() {
+		public void Save() {
 			GameManager.SaveObject(this, AreaManager.CurrentSaveFolder + position.x + "_" + position.y + ".json");
+			dirty = false;
 		}
 
-		public void Save(List<Entity> Entities) {
-			UpdateEntities(Entities);
-			Save();
-		}
-
-		public void SetPosition(Vector2Int newPosition) {
-			position = new Vector2IntS(newPosition);
-		}
-
-		private void UpdateEntities(List<Entity> Entities) {
+		public void UpdateEntities(List<Entity> Entities) {
 			entities = Entities; //set the new reference
+			dirty = true;
 		}
 	}
 }
