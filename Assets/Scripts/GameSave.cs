@@ -23,6 +23,8 @@ public class GameSave {
 	private float player_position_x;
 	[SerializeField]
 	private float player_position_y;
+	[SerializeField]
+	private string[] hotbarAssignments;
 
 	public string Date { get { return date; } }
 	public string Version { get { return version; } }
@@ -30,6 +32,7 @@ public class GameSave {
 	public string WorldName { get { return worldName; } }
 	public int Difficulty { get { return currDifficulty; } }
 	public float ElapsedGameTime { get { return elapsedGameTime; } }
+	public string[] HotbarAssignments { get { return hotbarAssignments; } }
 
 	public GameSave() {
 		date = DateTime.Now.Date.ToString();
@@ -46,6 +49,8 @@ public class GameSave {
 		//save player position
 		player_position_x = Player.instance.transform.position.x;
 		player_position_y = Player.instance.transform.position.y;
+
+		hotbarAssignments = HUD.GetHotbarAssignments();
 	}
 
 	public Vector2Int GetAreaPosition() {

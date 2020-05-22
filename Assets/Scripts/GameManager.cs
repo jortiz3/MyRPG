@@ -159,7 +159,7 @@ public class GameManager : MonoBehaviour {
 					WorldManager.instance.LoadAreaData(playerName, worldName, saveData.GetAreaPosition()); //load all areas & start at last saved position
 					Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
 					CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
-					HUD.LoadSettings();
+					HUD.LoadHotbarAssignments(saveData.HotbarAssignments);
 					RefreshSettings();
 					Initialize();
 				}
@@ -226,16 +226,18 @@ public class GameManager : MonoBehaviour {
 	/// <summary>
 	/// Called by button(s) using unity inspector & certain in-game events
 	/// </summary>
-	public void SaveGame() {
+	public void SaveGame(bool saveWorld = true) {
 		if (!state_gameInitialized || !AreaManager.instance.SaveOrLoadInProgress) {
 			FileStream file = File.Create(path_save + playerName + fileName_playerSaveInfo);
 			BinaryFormatter bf = new BinaryFormatter();
 			bf.Serialize(file, new GameSave());
 			file.Close();
 
-			WorldManager.instance.Save();
-
 			UpdateCurrLoadElement();
+
+			if (saveWorld) {
+				WorldManager.instance.Save();
+			}
 		}
 	}
 
@@ -274,7 +276,7 @@ public class GameManager : MonoBehaviour {
 				WorldManager.instance.GenerateWorldAreas(playerName, worldName); //generate the world
 				currDifficulty = difficulty; //set the difficulty
 				Player.instance.TeleportToPos(Vector3.zero); //move the player to center
-				SaveGame(); //create a save file
+				SaveGame(false); //create a save file
 				RefreshSettings();
 				Initialize();
 			}

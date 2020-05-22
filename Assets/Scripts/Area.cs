@@ -113,7 +113,11 @@ namespace Areas {
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
 			yield return new WaitForEndOfFrame(); //ensure loading bar changes are rendered
 			InstantiateEntities(); //begin instantiating entities
-			yield return new WaitForSeconds(2f);
+			yield return new WaitForSeconds(1f);
+			if (!HUD.Hotbar_Loaded) {
+				HUD.ApplyLoadedHotbarAssignments();
+				yield return new WaitForEndOfFrame();
+			}
 
 			LoadingScreen.instance.SetText("Populating structures..");
 			LoadingScreen.instance.IncreaseProgress(loadingIncrement);
