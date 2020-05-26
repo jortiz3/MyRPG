@@ -65,6 +65,7 @@ public class GameManager : MonoBehaviour {
 			Items.ItemModifierDatabase.Initialize();
 			NPC.NPCDatabase.Initialize();
 			HUD.Initialize();
+			CraftingManager.Initialize();
 		}
 	}
 
@@ -160,6 +161,7 @@ public class GameManager : MonoBehaviour {
 					Player.instance.TeleportToPos(saveData.GetPlayerPosition()); //move the player to last saved position
 					CameraManager.instance.RefocusOnTarget(); //move the camera to follow player
 					HUD.LoadHotbarAssignments(saveData.HotbarAssignments);
+					CraftingManager.LoadSchematics(saveData.Schematics_Item);
 					RefreshSettings();
 					Initialize();
 				}

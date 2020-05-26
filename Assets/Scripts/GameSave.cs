@@ -25,6 +25,8 @@ public class GameSave {
 	private float player_position_y;
 	[SerializeField]
 	private string[] hotbarAssignments;
+	[SerializeField]
+	private int[] schematics_item;
 
 	public string Date { get { return date; } }
 	public string Version { get { return version; } }
@@ -33,6 +35,7 @@ public class GameSave {
 	public int Difficulty { get { return currDifficulty; } }
 	public float ElapsedGameTime { get { return elapsedGameTime; } }
 	public string[] HotbarAssignments { get { return hotbarAssignments; } }
+	public int[] Schematics_Item { get { return schematics_item; } }
 
 	public GameSave() {
 		date = DateTime.Now.Date.ToString();
@@ -51,6 +54,7 @@ public class GameSave {
 		player_position_y = Player.instance.transform.position.y;
 
 		hotbarAssignments = HUD.GetHotbarAssignments();
+		schematics_item = CraftingManager.GetSchematics_Item();
 	}
 
 	public Vector2Int GetAreaPosition() {
