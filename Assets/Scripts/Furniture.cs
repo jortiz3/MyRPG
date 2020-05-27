@@ -97,7 +97,7 @@ public class Furniture : Interactable {
 				if (editEnabled) { //if editing a furniture obj
 					if (editObj.Equals(this)) { //if this is the obj
 						if (parent == null || currStructure.Equals(parent)) { //if triggered by parent structure or no parent structure
-							sprite.color = StructureCell.Color_Unoccupied; //color = green
+							sprite.color = GameManager.Color_Available; //color = green
 							canFinalize = true; //can place here
 							triggered = 0f; //flag canFinalize as triggered recently
 						}
@@ -152,7 +152,7 @@ public class Furniture : Interactable {
 				if (triggered < 0.15f) { //if triggered recently
 					triggered += Time.deltaTime;
 				} else { //not triggered recently
-					sprite.color = StructureCell.Color_Occupied;
+					sprite.color = GameManager.Color_Unavailable;
 					canFinalize = false; //flag for not placing
 				}
 			}

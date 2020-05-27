@@ -12,6 +12,10 @@ public class GameManager : MonoBehaviour {
 	private static string path_data;
 	private static string path_save;
 	private static string fileName_playerSaveInfo;
+	private static Color color_default = new Color(1f, 1f, 1f, 0.5f);
+	private static Color color_highlight = Color.yellow;
+	private static Color color_available = new Color(0.2f, 1f, 0.2f, 0.5f);
+	private static Color color_unavailable = new Color(1f, 0f, 0f, 0.5f);
 
 	private string playerName;
 	private string worldName;
@@ -26,6 +30,10 @@ public class GameManager : MonoBehaviour {
 
 	public static string path_gameData { get { return path_data; } }
 	public static string path_saveData { get { return path_save; } }
+	public static Color Color_Default { get { return color_default; } }
+	public static Color Color_Highlight { get { return color_highlight; } }
+	public static Color Color_Available { get { return color_available; } }
+	public static Color Color_Unavailable { get { return color_unavailable; } }
 
 	public bool State_Play { get { return state_play; } }
 	public bool State_Paused { get { return state_paused; } }

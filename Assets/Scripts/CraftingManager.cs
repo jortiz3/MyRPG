@@ -6,17 +6,23 @@ using UnityEngine.UI;
 /// <summary>
 /// Handles the crafting of items & furniture. Written by Justin Ortiz
 /// Notes:
-/// -sort alphabetically in ui on display
-/// -add bool to item database to mark whether item can be crafted
+/// 
+/// -add sort functions
+/// --sort alphabetically
+/// --sort by schematic type, then by alphabetically within type
+/// -add remove .slottable from itemInfo >> determine item slottable based on .equipable || .consumable
 /// --add functionality in item.cs to be a schematic
 /// ---change image to schematic icon in both inventory ui and on ground
+/// -show/hide tab on inventory open/close if crafting table utilized; hide parent_component on inventory close
+/// --use unity event on menuchange? possibly simplify update method in GameManager.cs
 /// </summary>
 
 public class CraftingManager : MonoBehaviour {
 	public static CraftingManager instance;
 
 	private static Toggle uiToggle;
-	private static Transform uiParent;
+	private static Transform parent_component; //the parent component selection ui
+	private static Transform parent_schematic; //the parent for schematic ui
 	private static Transform prefab_schematic;
 	private static List<int> schematics_item;
 	//store learned furniture schematics
@@ -31,6 +37,12 @@ public class CraftingManager : MonoBehaviour {
 		if (instance == null) {
 			uiToggle = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
 			uiToggle.onValueChanged.AddListener(OnToggleChanged);
+
+			parent_component = transform.parent.Find("Inventory_Crafting_Component_Selection");
+			parent_component.Find("Button_Crafting_Submit").GetComponent<Button>().onClick.AddListener(OnCraftingSubmit);
+
+			parent_schematic = transform.Find("ScrollRect_Inventory_Crafting").Find("Inventory_Crafting_Content");
+			prefab_schematic = parent_schematic.GetChild(0);
 
 			schematics_item = new List<int>();
 
@@ -54,13 +66,23 @@ public class CraftingManager : MonoBehaviour {
 		}
 	}
 
+	private static void OnCraftingSubmit() {
+		if (component_main != null) {
+
+
+			component_main = null;
+			component_detail = null;
+			parent_component.gameObject.SetActive(false);
+		}
+	}
+
 	private static void OnToggleChanged(bool value) {
 		//sort elements
 		//reposition scroll rect to top
 	}
 
-	private static void RefreshUIElement(int index) {
-		if (uiParent != null) {
+	private static void RefreshUIElement() {
+		if (parent_schematic != null) {
 
 		}
 	}

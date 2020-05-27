@@ -8,8 +8,6 @@ namespace HUD_Elements {
 	public class HotbarElement : MonoBehaviour {
 		private static HotbarElement selected_hotkey;
 		private static Item selected_item;
-		private static Color color_default = Color.white;
-		private static Color color_highlight = Color.yellow;
 		private static Color color_assignment = new Color(1f, 1f, 1f, 0.8f);
 		private static bool hotkeyAssignmentActive;
 
@@ -146,7 +144,7 @@ namespace HUD_Elements {
 
 		public void SetHighlightActive(bool active) {
 			if (image_button != null) {
-				image_button.color = active ? color_highlight : color_default;
+				image_button.color = active ? GameManager.Color_Highlight : Color.white;
 			}
 		}
 

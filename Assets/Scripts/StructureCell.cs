@@ -5,22 +5,15 @@ using UnityEngine.UI;
 /// Tracks whether it is occupied; Detects mouse input while in edit mode. Written by Justin Ortiz
 /// </summary>
 public class StructureCell : MonoBehaviour {
-	private static Color color_default = new Color(1f, 1f, 1f, 0.5f);
-	private static Color color_occupied = new Color(1f, 0f, 0f, 0.5f);
-	private static Color color_unoccupied = new Color(0.2f, 1f, 0.2f, 0.5f);
-
 	private int childIndex;
 	private bool occupied;
 	private Image image;
-
-	public static Color Color_Occupied { get { return color_occupied; } }
-	public static Color Color_Unoccupied { get { return color_unoccupied; } }
 
 	public bool Occupied { get { return occupied; } }
 
 	private void Awake() {
 		image = GetComponent<Image>();
-		SetColor(color_default);
+		SetColor(GameManager.Color_Default);
 	}
 	
 	/// <summary>
@@ -44,7 +37,7 @@ public class StructureCell : MonoBehaviour {
 
 	public void Reset() {
 		occupied = false;
-		SetColor(color_default);
+		SetColor(GameManager.Color_Default);
 	}
 
 	/// <summary>
@@ -65,7 +58,7 @@ public class StructureCell : MonoBehaviour {
 	/// Flags this cell as occupied; To be used on structure placement
 	/// </summary>
 	public void SetOccupied() {
-		SetColor(color_occupied);
+		SetColor(GameManager.Color_Unavailable);
 		occupied = true;
 	}
 }//end of class

@@ -293,9 +293,9 @@ public class StructureGridManager : MonoBehaviour {
 		canFinalize = CheckForFinalize(cellPos, currEditStructure); //check to see if structure can be finalized in this index
 
 		if (canFinalize) { //if all the required cells were unoccupied
-			currEditStructure.SetColor(StructureCell.Color_Unoccupied); //show the player they are able to place there
+			currEditStructure.SetColor(GameManager.Color_Available); //show the player they are able to place there
 		} else {
-			currEditStructure.SetColor(StructureCell.Color_Occupied); //show the player they can't place there
+			currEditStructure.SetColor(GameManager.Color_Unavailable); //show the player they can't place there
 		}
 
 		currCell = cell;
