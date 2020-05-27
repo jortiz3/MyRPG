@@ -65,7 +65,6 @@ public class GameManager : MonoBehaviour {
 			Items.ItemModifierDatabase.Initialize();
 			NPC.NPCDatabase.Initialize();
 			HUD.Initialize();
-			CraftingManager.Initialize();
 		}
 	}
 

@@ -12,16 +12,32 @@ using UnityEngine.UI;
 /// ---change image to schematic icon in both inventory ui and on ground
 /// </summary>
 
-public static class CraftingManager {
+public class CraftingManager : MonoBehaviour {
+	public static CraftingManager instance;
+
 	private static Toggle uiToggle;
 	private static Transform uiParent;
 	private static Transform prefab_schematic;
-
 	private static List<int> schematics_item;
 	//store learned furniture schematics
+	private static Item component_main;
+	private static Item component_detail;
 
 	public static void AddSchematic_Item(int itemID) {
 		schematics_item.Add(itemID);
+	}
+
+	void Awake() {
+		if (instance == null) {
+			uiToggle = GameObject.Find("Toggle_Inventory_Other").GetComponent<Toggle>();
+			uiToggle.onValueChanged.AddListener(OnToggleChanged);
+
+			schematics_item = new List<int>();
+
+			instance = this;
+		} else {
+			Destroy(this); //destroy only this component
+		}
 	}
 
 	public static int[] GetSchematics_Item() {
@@ -30,14 +46,6 @@ public static class CraftingManager {
 			return schematics_item.ToArray();
 		}
 		return null;
-	}
-
-	public static void Initialize() {
-		//get ui parent, get prefab
-
-		schematics_item = new List<int>();
-
-		//uitoggle.onvaluechanged += onDisplay
 	}
 
 	public static void LoadSchematics(int[] items /*, int[] furniture*/) {

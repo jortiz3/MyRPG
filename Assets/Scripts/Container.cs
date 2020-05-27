@@ -11,19 +11,20 @@ public class Container : Interactable {
 	protected static Container nonplayerContainer; //container the player is currently interacting with
 	protected static Container displayedContainer;
 	protected static Toggle currTab;
-	private static int numContainersToPopulate;
 
 	private static Toggle npcTab; //non-player container tab
 	private static Text npcTabText; //text displayed on non-player container tab -- to display the name of container
+	private static Transform displayParent; //the parent for this container's ui elements
 	private static Transform containerElementPrefab;
 	private static int nextInstanceID;
+	private static int numContainersToPopulate;
 
 	protected List<Item> items;
 	private float totalWeight;
 	protected float maxWeight;
 	protected int instanceID; //never 0 or less than
 	protected bool optout_populateItems;
-	protected Transform displayParent; //the parent for this container's ui elements
+	
 
 	public static bool PopulationInProgress { get { return numContainersToPopulate > 0; } }
 	public float TotalWeight { get { return totalWeight; } }
@@ -173,7 +174,7 @@ public class Container : Interactable {
 		}
 
 		if (displayParent == null) {
-			displayParent = GameObject.Find("Inventory_Container_Other_Content").transform;
+			displayParent = GameObject.Find("Inventory_Container_Content").transform;
 		}
 
 		if (items == null) {
@@ -262,6 +263,7 @@ public class Container : Interactable {
 	protected void OnToggleValueChanged(bool active) {
 		if (active) {
 			displayedContainer = this;
+			Display(false);
 		}
 	}
 
@@ -317,7 +319,6 @@ public class Container : Interactable {
 					npcTab.gameObject.SetActive(npcActive); //show/hide non-player container tab
 					npcTabText.text = npcActive ? CustomFormatting.Capitalize(gameObject.name.Split('_')[0]) : "null"; //show the name of the container
 					nonplayerContainer = npcActive ? this : null; //if the container is active, then we need to assign this container to static reference
-					currTab.isOn = false;
 				}
 			}
 
@@ -327,7 +328,7 @@ public class Container : Interactable {
 			yield return new WaitForEndOfFrame(); //pause
 
 			for (int i = 0; i < items.Count; i++) { //loop through all items
-				RefreshUIElement(items[i]); //refresh the ui element for the ite
+				RefreshUIElement(items[i]); //refresh the ui element for the item
 				yield return new WaitForEndOfFrame(); //wait a frame
 			}
 			RefreshWeight(); //display the total weight
@@ -338,7 +339,6 @@ public class Container : Interactable {
 			currParentRect.sizeDelta = new Vector2(currParentRect.sizeDelta.x, items.Count * elementHeight); //set new rect bounds
 
 			displayedContainer = this; //since displaying is complete, store reference to this container
-			currTab.isOn = true; //ensure the ui parents are hidden and displayed properly
 		} else { //closing inventory
 			ContextManager.instance.Hide(); //ensure any displayed context menus are hidden
 		}
@@ -470,9 +470,8 @@ public class Container : Interactable {
 				}
 			}
 
-			if (transferred) {
-				other.Display(false); //display other first to refresh ui elements
-				Display(false); //display this second to overwrite displayedContainer
+			if (transferred) { //if the item was transferred
+				Display(false); //refresh the display
 			}
 		}
 

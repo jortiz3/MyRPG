@@ -21,8 +21,7 @@ public class Inventory : Container {
 	}
 
 	protected override void Initialize() {
-		displayParent = GameObject.Find("Inventory_Container_Player_Content").transform; //get ui parent for player inventory
-		playerInfo = GameObject.Find("Inventory_Player_Info").transform; //get the player info
+		playerInfo = GameObject.Find("Inventory_Container_PlayerInfo").transform; //get the player info
 
 		tab = GameObject.Find("Toggle_Inventory_Player").GetComponent<Toggle>(); //get the tab for the player's bag
 		tab.onValueChanged.AddListener(OnToggleValueChanged); //ensure pressing the tab marks this container as displayed
